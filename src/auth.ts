@@ -1,13 +1,12 @@
-import "./auth-type-augmentations";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@prisma/client";
+import authConfig from "@/auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  trustHost: true,
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  ...authConfig,
   providers: [
     Credentials({
       name: "Credentials",
@@ -36,20 +35,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: UserRole }).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = (token.id as string) ?? session.user.id;
-        session.user.role = (token.role as UserRole) ?? "client";
-      }
-      return session;
-    },
-  },
 });
