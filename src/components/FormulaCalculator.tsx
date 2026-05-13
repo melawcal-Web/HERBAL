@@ -13,7 +13,10 @@ export function FormulaCalculator({
   value: FormulaJson;
   onChange: (value: FormulaJson) => void;
 }) {
-  const ingredients = value.ingredients?.length ? value.ingredients : [emptyIngredient()];
+  const ingredients = useMemo(
+    () => (value.ingredients?.length ? value.ingredients : [emptyIngredient()]),
+    [value.ingredients],
+  );
   const note = value.note ?? "";
 
   const formula: FormulaJson = useMemo(
