@@ -29,7 +29,7 @@ export function TherapistSpotlight({ therapists }: { therapists: SpotlightTherap
 
   if (!n) {
     return (
-      <section className="rounded-3xl border border-dashed border-herbal-200 bg-herbal-50/50 px-6 py-12 text-center text-slate-600">
+      <section className="glass-panel rounded-3xl border-dashed border-herbal-300/60 px-6 py-12 text-center text-slate-600">
         <p className="font-medium text-herbal-800">בקרוב — מטפלים יוצגו כאן</p>
         <p className="mt-2 text-sm">הריצו <code className="rounded bg-white px-1">npx prisma db seed</code> או פריסה עם seed כדי לראות דוגמאות.</p>
       </section>
@@ -39,7 +39,7 @@ export function TherapistSpotlight({ therapists }: { therapists: SpotlightTherap
   const t = therapists[i]!;
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-herbal-100 bg-gradient-to-br from-white via-herbal-50/80 to-sage/20 shadow-lg shadow-herbal-900/10">
+    <section className="glass-panel-strong overflow-hidden rounded-3xl border-herbal-200/50 shadow-lift ring-1 ring-white/60">
       <div className="grid gap-0 md:grid-cols-2">
         <div className="relative aspect-[4/3] min-h-[220px] md:min-h-[320px]">
           {t.image ? (

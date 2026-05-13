@@ -14,27 +14,27 @@ function deployLabel() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-herbal-200 bg-white/80 py-10 text-center text-sm text-slate-600 animate-fade-in">
-      <div className="mx-auto max-w-6xl px-4">
-        <p className="font-display text-herbal-800">
+    <footer className="relative z-10 mt-auto px-3 pb-6 pt-8 sm:px-4">
+      <div className="glass-panel mx-auto max-w-6xl px-4 py-8 text-center text-sm text-slate-600 animate-fade-in sm:py-10">
+        <p className="inline-block font-display text-base font-semibold text-gradient-herbal sm:text-lg">
           The Center for Herbal Therapists · המרכז למטפלים בצמחי מרפא
         </p>
-        <p className="mt-2 max-w-2xl mx-auto">
+        <p className="mx-auto mt-2 max-w-2xl text-slate-600">
           פלטפורמה לקהילה, לימודים ותיעוד קליני. Community, learning, and clinical documentation in one place.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-4">
-          <Link href="/herbal-index" className="text-herbal-700 underline-offset-4 hover:underline min-h-[44px] inline-flex items-center">
+        <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
+          <Link href="/herbal-index" className="link-pill min-h-[44px] inline-flex items-center">
             Herbal Index
           </Link>
-          <Link href="/marketplace" className="text-herbal-700 underline-offset-4 hover:underline min-h-[44px] inline-flex items-center">
+          <Link href="/marketplace" className="link-pill min-h-[44px] inline-flex items-center">
             Marketplace
           </Link>
-          <Link href="/auth/register" className="text-herbal-700 underline-offset-4 hover:underline min-h-[44px] inline-flex items-center">
+          <Link href="/auth/register" className="link-pill min-h-[44px] inline-flex items-center">
             Join
           </Link>
           <Link
             href="/admin"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-amber-400 bg-amber-50 px-4 text-amber-950 hover:bg-amber-100"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-amber-300/80 bg-gradient-to-br from-amber-50 to-amber-100/90 px-4 text-amber-950 shadow-sm backdrop-blur-sm transition hover:scale-[1.02] hover:shadow-md"
           >
             כניסה לניהול
           </Link>

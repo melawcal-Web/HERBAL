@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Providers } from "@/app/providers";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
 const notoHebrew = Noto_Sans_Hebrew({
   variable: "--font-display",
@@ -30,10 +31,11 @@ export default async function RootLayout({
 
   return (
     <html lang="he" dir="rtl">
-      <body className={`${notoHebrew.variable} flex min-h-screen flex-col font-sans`}>
+      <body className={`${notoHebrew.variable} relative flex min-h-screen flex-col font-sans`}>
+        <AmbientBackground />
         <Providers>
           <SiteHeader session={session} />
-          <main className="flex-1">{children}</main>
+          <main className="relative z-10 flex-1">{children}</main>
           <SiteFooter />
         </Providers>
       </body>

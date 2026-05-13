@@ -134,3 +134,18 @@ model HerbalArticle {
   @@index([therapistId])
   @@map("herbal_articles")
 }
+
+model SiteConfig {
+  id String @id @default("default")
+
+  heroSlides Json @map("hero_slides")
+
+  githubUsername  String? @map("github_username") @db.VarChar(191)
+  vercelUsername  String? @map("vercel_username") @db.VarChar(191)
+  railwayUsername String? @map("railway_username") @db.VarChar(191)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_config")
+}

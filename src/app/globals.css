@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --herbal-bg: #f4faf4;
-  --herbal-card: #ffffff;
+  --herbal-bg: #f3f8f4;
+  --herbal-card: rgba(255, 255, 255, 0.72);
   --herbal-accent: #4a9250;
   --herbal-muted: #5c7a5e;
 }
@@ -13,12 +13,56 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
-  @apply min-h-screen bg-herbal-50 text-slate-800 antialiased;
+  @apply min-h-screen text-slate-800 antialiased;
+}
+
+@layer components {
+  .glass-panel {
+    @apply rounded-2xl border border-white/60 bg-white/65 shadow-glass backdrop-blur-xl;
+  }
+
+  .glass-panel-strong {
+    @apply rounded-2xl border border-white/70 bg-white/80 shadow-lift backdrop-blur-2xl;
+  }
+
+  .btn-shimmer {
+    background: linear-gradient(
+      105deg,
+      #3a7540 0%,
+      #4a9250 25%,
+      #5cb85c 45%,
+      #4a9250 65%,
+      #3a7540 100%
+    );
+    background-size: 200% auto;
+    @apply animate-shimmer text-white shadow-lg shadow-herbal-600/30 transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] motion-reduce:animate-none;
+  }
+
+  .link-pill {
+    @apply rounded-full border border-white/50 bg-white/50 px-4 py-2 text-sm font-medium text-herbal-800 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-herbal-200/80 hover:bg-white/90 hover:shadow-md hover:-translate-y-0.5;
+  }
 }
 
 @layer utilities {
   .therapist-photo-bw {
     filter: grayscale(100%) contrast(1.08);
+  }
+
+  .text-gradient-herbal {
+    @apply bg-gradient-to-bl from-herbal-900 via-emerald-800 to-herbal-600 bg-clip-text text-transparent;
   }
 }

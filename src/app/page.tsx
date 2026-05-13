@@ -32,86 +32,97 @@ export default async function HomePage() {
   const hourSlot = new Date().getUTCHours() + new Date().getUTCDate();
   const therapistsForSlider = rotateList(spotlight, hourSlot);
 
+  const cards = [
+    {
+      title: "למטפלים",
+      body: "דפי נחיתה אישיים, כלי EMR, יומן טיפולים, והעלאת פתקים בכתב יד.",
+    },
+    {
+      title: "ללקוחות",
+      body: "הרשמה מאובטחת, חיפוש מטפלים, וקריאת מאמרים מקושרים לאינדקס הצמחים.",
+    },
+    {
+      title: "לניהול",
+      body: "לוח בקרה עם תמונת מצב, ביקורת פעילות, ומקום לאימות תשלומים.",
+    },
+  ];
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-      <section className="animate-slide-up text-center">
-        <p className="text-sm font-medium uppercase tracking-wide text-sage">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <section className="animate-slide-up text-center opacity-0 [animation-delay:80ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100">
+        <p className="inline-flex items-center gap-2 rounded-full border border-herbal-200/60 bg-white/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-herbal-700 shadow-sm backdrop-blur-sm sm:text-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
           The Center for Herbal Therapists
         </p>
-        <h1 className="mt-3 font-display text-3xl font-bold text-herbal-900 sm:text-5xl">
+        <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-gradient-herbal sm:text-5xl md:text-6xl">
           המרכז למטפלים בצמחי מרפא
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
           קהילה, שוק, ויומן טיפולים דיגיטלי עם מחשבון נוסחאות. מותאם לנייד, לוח ומחשב.
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
           <Link
             href="/marketplace"
-            className="inline-flex min-h-[48px] min-w-[200px] items-center justify-center rounded-full bg-herbal-600 px-8 py-3 text-white shadow-lg shadow-herbal-600/25 transition hover:bg-herbal-500 active:scale-[0.98]"
+            className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center rounded-full px-10 py-3.5 text-base font-semibold btn-shimmer"
           >
             גלו את השוק
           </Link>
           <Link
             href="/herbal-index"
-            className="inline-flex min-h-[48px] min-w-[200px] items-center justify-center rounded-full border border-herbal-300 bg-white px-8 py-3 text-herbal-800 transition hover:border-herbal-500 hover:bg-herbal-50 active:scale-[0.98]"
+            className="glass-panel inline-flex min-h-[52px] min-w-[220px] items-center justify-center rounded-full border-herbal-200/90 px-10 py-3.5 text-base font-semibold text-herbal-800 transition hover:-translate-y-0.5 hover:shadow-lift"
           >
             אינדקס צמחים
           </Link>
         </div>
       </section>
 
-      <section className="mt-14">
+      <section className="mt-12 opacity-0 animate-slide-up [animation-delay:200ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100 sm:mt-16">
         <TherapistSpotlight therapists={therapistsForSlider} />
       </section>
 
-      <section className="mt-16 grid gap-6 sm:grid-cols-3">
-        {[
-          {
-            title: "למטפלים",
-            body: "דפי נחיתה אישיים, כלי EMR, יומן טיפולים, והעלאת פתקים בכתב יד.",
-          },
-          {
-            title: "ללקוחות",
-            body: "הרשמה מאובטחת, חיפוש מטפלים, וקריאת מאמרים מקושרים לאינדקס הצמחים.",
-          },
-          {
-            title: "לניהול",
-            body: "לוח בקרה עם תמונת מצב, ביקורת פעילות, ומקום לאימות תשלומים.",
-          },
-        ].map((c) => (
+      <section className="mt-12 grid gap-5 sm:grid-cols-3 sm:mt-16">
+        {cards.map((c, idx) => (
           <article
             key={c.title}
-            className="rounded-2xl border border-herbal-100 bg-white/90 p-6 shadow-sm shadow-herbal-900/5 transition hover:-translate-y-0.5 hover:shadow-md"
+            style={{ animationDelay: `${280 + idx * 90}ms` }}
+            className="glass-panel group p-6 opacity-0 shadow-glass animate-slide-up [animation-fill-mode:forwards] transition duration-500 hover:-translate-y-1 hover:border-herbal-200/90 hover:shadow-lift motion-reduce:opacity-100 motion-reduce:animate-none"
           >
-            <h2 className="font-display text-xl text-herbal-900">{c.title}</h2>
-            <p className="mt-2 text-slate-600">{c.body}</p>
+            <div className="mb-3 h-1 w-12 rounded-full bg-gradient-to-l from-herbal-500 to-emerald-400 transition-all duration-500 group-hover:w-20" />
+            <h2 className="font-display text-xl font-bold text-herbal-900">{c.title}</h2>
+            <p className="mt-2 leading-relaxed text-slate-600">{c.body}</p>
           </article>
         ))}
       </section>
 
-      <section className="mt-16 rounded-3xl border border-herbal-200 bg-gradient-to-br from-white to-herbal-50 p-8 text-center sm:p-12">
-        <h2 className="font-display text-2xl text-herbal-900">התחלו עכשיו</h2>
-        <p className="mt-2 text-slate-600">
-          {session?.user
-            ? `שלום, ${session.user.name}. עברו לאזור האישי.`
-            : "הירשמו כמטפל או כלקוח כדי לגשת לכלים המלאים."}
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          {session?.user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-herbal-600 px-6 py-3 text-white hover:bg-herbal-500"
-            >
-              אזור אישי
-            </Link>
-          ) : (
-            <Link
-              href="/auth/register"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-herbal-600 px-8 py-3 text-white hover:bg-herbal-500"
-            >
-              הרשמה
-            </Link>
-          )}
+      <section className="mt-12 opacity-0 animate-slide-up [animation-delay:520ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100 sm:mt-16">
+        <div className="relative glass-panel-strong overflow-hidden p-8 text-center sm:p-12">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(74,146,80,0.08),transparent_50%)]" />
+          <h2 className="relative font-display text-2xl font-bold text-gradient-herbal sm:text-3xl">התחלו עכשיו</h2>
+          <p className="relative mx-auto mt-3 max-w-lg text-slate-600">
+            {session?.user
+              ? `שלום, ${session.user.name}. עברו לאזור האישי.`
+              : "הירשמו כמטפל או כלקוח כדי לגשת לכלים המלאים."}
+          </p>
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            {session?.user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white btn-shimmer"
+              >
+                אזור אישי
+              </Link>
+            ) : (
+              <Link
+                href="/auth/register"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-full px-10 py-3 text-base font-semibold text-white btn-shimmer"
+              >
+                הרשמה
+              </Link>
+            )}
+          </div>
         </div>
       </section>
     </div>
