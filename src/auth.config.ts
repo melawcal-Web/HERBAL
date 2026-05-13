@@ -5,6 +5,7 @@ import type { UserRole } from "@prisma/client";
 /** Edge-safe: no Prisma client / bcrypt. Used by `middleware.ts` only. */
 export default {
   trustHost: true,
+  providers: [],
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     async jwt({ token, user }) {
