@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  // נדרש לפריסה על שרתי לינוקס (למשל Vercel)
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  therapist
+  client
+  admin
+}
+
+enum SubscriptionStatus {
+  none
+  active
+  past_due
+  canceled
+}
+
+enum ProductType {
+  zoom
+  workshop
+  supervision
+  shelf_product
+}
+
+model User {
+  id               String               @id @default(cuid())
+  name             String
+  email            String               @unique
+  passwordHash     String
+  role             UserRole             @default(client)
+  subStatus        SubscriptionStatus   @default(none) @map("sub_status")
+  image            String?
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  therapistProfile TherapistProfile?
+  clinicalLogsAsTherapist ClinicalLog[] @relation("TherapistLogs")
+  clinicalLogsAsClient    ClinicalLog[] @relation("ClientLogs")
+  herbalArticles HerbalArticle[]
+  auditEntries   AuditLog[]           @relation("AuditActor")
+
+  @@map("users")
+}
+
+model TherapistProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  slug         String   @unique
+  bio          String   @db.Text
+  specialty1   String   @map("specialty_1")
+  specialty2   String   @map("specialty_2")
+  specialty3   String   @map("specialty_3")
+  contactInfo  Json     @map("contact_info")
+  socialLinks  Json     @map("social_links")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("therapist_profiles")
+}
+
+model ClinicalLog {
+  id           String   @id @default(cuid())
+  therapistId  String   @map("therapist_id")
+  clientId     String   @map("client_id")
+  date         DateTime
+  notesImage   String?  @map("notes_image")
+  formulaJson  Json     @map("formula_json")
+  summary      String   @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  therapist User @relation("TherapistLogs", fields: [therapistId], references: [id], onDelete: Cascade)
+  client    User @relation("ClientLogs", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([therapistId, date])
+  @@index([clientId])
+  @@map("clinical_logs")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  type        ProductType
+  title       String
+  description String      @db.Text
+  price       Decimal     @db.Decimal(10, 2)
+  memberPrice Decimal     @map("member_price") @db.Decimal(10, 2)
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model HerbalArticle {
+  id          String   @id @default(cuid())
+  therapistId String @map("therapist_id")
+  title       String
+  slug        String   @unique
+  excerpt     String   @db.VarChar(500)
+  body        String   @db.LongText
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  therapist User @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+
+  @@index([therapistId])
+  @@map("herbal_articles")
+}

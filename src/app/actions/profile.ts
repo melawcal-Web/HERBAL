@@ -1,0 +1,57 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { assertTherapist } from "@/lib/formula";
+import { writeAudit } from "@/lib/audit";
+
+export async function updateTherapistProfile(input: {
+  slug: string;
+  bio: string;
+  specialty1: string;
+  specialty2: string;
+  specialty3: string;
+  contactPhone: string;
+  contactCity: string;
+  website: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id || !assertTherapist(session.user.role)) {
+    throw new Error("אין הרשאה");
+  }
+
+  const slugTaken = await prisma.therapistProfile.findFirst({
+    where: { slug: input.slug, NOT: { userId: session.user.id } },
+  });
+  if (slugTaken) {
+    throw new Error("כתובת הדף (slug) תפוסה");
+  }
+
+  const prev = await prisma.therapistProfile.findUnique({ where: { userId: session.user.id } });
+
+  await prisma.therapistProfile.update({
+    where: { userId: session.user.id },
+    data: {
+      slug: input.slug,
+      bio: input.bio,
+      specialty1: input.specialty1,
+      specialty2: input.specialty2,
+      specialty3: input.specialty3,
+      contactInfo: { phone: input.contactPhone, city: input.contactCity },
+      socialLinks: { website: input.website },
+    },
+  });
+
+  await writeAudit({
+    actorId: session.user.id,
+    action: "therapist_profile.update",
+    entityType: "TherapistProfile",
+    entityId: session.user.id,
+    metadata: { fromSlug: prev?.slug, toSlug: input.slug },
+  });
+
+  revalidatePath("/dashboard/profile");
+  if (prev?.slug) revalidatePath(`/t/${prev.slug}`);
+  revalidatePath(`/t/${input.slug}`);
+}

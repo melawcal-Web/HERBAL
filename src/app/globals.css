@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --herbal-bg: #f4faf4;
+  --herbal-card: #ffffff;
+  --herbal-accent: #4a9250;
+  --herbal-muted: #5c7a5e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply min-h-screen bg-herbal-50 text-slate-800 antialiased;
+}
+
+@layer utilities {
+  .therapist-photo-bw {
+    filter: grayscale(100%) contrast(1.08);
+  }
+}

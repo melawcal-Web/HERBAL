@@ -1,0 +1,40 @@
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { assertTherapist } from "@/lib/formula";
+import { ProfileForm } from "./profile-form";
+
+export default async function TherapistProfilePage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/signin");
+  if (!assertTherapist(session.user.role)) redirect("/dashboard");
+
+  const profile = await prisma.therapistProfile.findUnique({
+    where: { userId: session.user.id },
+  });
+  if (!profile) redirect("/dashboard");
+
+  const contact = profile.contactInfo as { phone?: string; city?: string };
+  const social = profile.socialLinks as { website?: string };
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <h1 className="font-display text-3xl text-herbal-900">פרופיל מטפל/ת</h1>
+      <p className="mt-2 text-slate-600">הדף הציבורי זמין בכתובת /t/{profile.slug}</p>
+      <div className="mt-8">
+        <ProfileForm
+          initial={{
+            slug: profile.slug,
+            bio: profile.bio,
+            specialty1: profile.specialty1,
+            specialty2: profile.specialty2,
+            specialty3: profile.specialty3,
+            contactPhone: contact.phone ?? "",
+            contactCity: contact.city ?? "",
+            website: social.website ?? "",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
