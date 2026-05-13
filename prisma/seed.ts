@@ -3,6 +3,13 @@ import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const IMG_DEMO =
+  "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80";
+const IMG_SHIRA =
+  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a?auto=format&fit=crop&w=800&q=80";
+const IMG_MICHAEL =
+  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=800&q=80";
+
 async function main() {
   if ((await prisma.product.count()) === 0) {
     await prisma.product.createMany({
@@ -61,28 +68,118 @@ async function main() {
 
   const therapistUser = await prisma.user.upsert({
     where: { email: demoTherapistEmail },
-    update: { role: "therapist", passwordHash: thHash, name: "מטפל/ת לדוגמה" },
+    update: {
+      role: "therapist",
+      passwordHash: thHash,
+      name: "ד״ר רונית אלון",
+      image: IMG_DEMO,
+    },
     create: {
       email: demoTherapistEmail,
-      name: "מטפל/ת לדוגמה",
+      name: "ד״ר רונית אלון",
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
+      image: IMG_DEMO,
     },
   });
 
   await prisma.therapistProfile.upsert({
     where: { userId: therapistUser.id },
-    update: {},
+    update: {
+      slug: "ronit-alon",
+      bio: "מטפלת בצמחי מרפא קלינית מעל עשור — ליווי תזונתי, תמציות מותאמות אישית, והדרכת משפחות. מרפאה חמה ומקצועית במרכז הארץ.",
+      specialty1: "תמציות וטינקטורות",
+      specialty2: "תמיכה במערכת עיכול",
+      specialty3: "נשים וילדים",
+    },
     create: {
       userId: therapistUser.id,
-      slug: "demo-therapist",
-      bio: "מטפל/ת לדוגמה במרכז — עדכנו טקסט זה לאחר ההתקנה.",
-      specialty1: "תמציות",
-      specialty2: "תזונה",
-      specialty3: "ילדים",
-      contactInfo: { phone: "+972-00-0000000", city: "תל אביב" },
+      slug: "ronit-alon",
+      bio: "מטפלת בצמחי מרפא קלינית מעל עשור — ליווי תזונתי, תמציות מותאמות אישית, והדרכת משפחות. מרפאה חמה ומקצועית במרכז הארץ.",
+      specialty1: "תמציות וטינקטורות",
+      specialty2: "תמיכה במערכת עיכול",
+      specialty3: "נשים וילדים",
+      contactInfo: { phone: "+972-52-0000000", city: "תל אביב" },
       socialLinks: { website: "https://example.com" },
+    },
+  });
+
+  const shira = await prisma.user.upsert({
+    where: { email: "shira.demo@example.com" },
+    update: {
+      name: "שירה לוי",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_SHIRA,
+    },
+    create: {
+      email: "shira.demo@example.com",
+      name: "שירה לוי",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_SHIRA,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: shira.id },
+    update: {
+      slug: "shira-levi-herbs",
+      bio: "מטפלת מוסמכת המתמחה בצמחי מרפא לעור ולרגיעה — שילוב של מסורת ומחקר עדכני. סדנאות קטנות וליווי אחד־על־אחד.",
+      specialty1: "עור ורגיעה",
+      specialty2: "סדנאות צמחים",
+      specialty3: "ליווי אישי",
+    },
+    create: {
+      userId: shira.id,
+      slug: "shira-levi-herbs",
+      bio: "מטפלת מוסמכת המתמחה בצמחי מרפא לעור ולרגיעה — שילוב של מסורת ומחקר עדכני. סדנאות קטנות וליווי אחד־על־אחד.",
+      specialty1: "עור ורגיעה",
+      specialty2: "סדנאות צמחים",
+      specialty3: "ליווי אישי",
+      contactInfo: { phone: "+972-54-0000000", city: "חיפה" },
+      socialLinks: { instagram: "@shira_herbs_demo" },
+    },
+  });
+
+  const michael = await prisma.user.upsert({
+    where: { email: "michael.demo@example.com" },
+    update: {
+      name: "מיכאל ברק",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_MICHAEL,
+    },
+    create: {
+      email: "michael.demo@example.com",
+      name: "מיכאל ברק",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_MICHAEL,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: michael.id },
+    update: {
+      slug: "michael-barak-clinical",
+      bio: "מטפל קליני בצמחי מרפא — דגש על תמיכה במערכת נשימה, שינה, ואנרגיה יומיומית. חויב בהשגחה מקצועית וממשיך ללמוד מדי שנה.",
+      specialty1: "שינה ורוגע",
+      specialty2: "נשימה וחיסון",
+      specialty3: "תזונה צמחית",
+    },
+    create: {
+      userId: michael.id,
+      slug: "michael-barak-clinical",
+      bio: "מטפל קליני בצמחי מרפא — דגש על תמיכה במערכת נשימה, שינה, ואנרגיה יומיומית. חויב בהשגחה מקצועית וממשיך ללמוד מדי שנה.",
+      specialty1: "שינה ורוגע",
+      specialty2: "נשימה וחיסון",
+      specialty3: "תזונה צמחית",
+      contactInfo: { phone: "+972-50-0000000", city: "ירושלים" },
+      socialLinks: {},
     },
   });
 
@@ -130,7 +227,16 @@ async function main() {
   });
 
   // eslint-disable-next-line no-console
-  console.log("Seed complete. Admin:", adminEmail, "Therapist:", demoTherapistEmail, "Client:", demoClientEmail);
+  console.log(
+    "Seed complete. Admin:",
+    adminEmail,
+    "Therapists:",
+    demoTherapistEmail,
+    "shira.demo@example.com",
+    "michael.demo@example.com",
+    "Client:",
+    demoClientEmail,
+  );
 }
 
 main()

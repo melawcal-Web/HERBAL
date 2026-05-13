@@ -1,14 +1,7 @@
 import Link from "next/link";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 
 export default async function AdminPage() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "admin") {
-    redirect("/");
-  }
-
   const [users, therapists, logs, products, audits] = await Promise.all([
     prisma.user.count(),
     prisma.therapistProfile.count(),
@@ -23,13 +16,21 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <div
+        className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-right text-sm text-amber-950"
+        role="status"
+      >
+        <strong>מצב ניהול פתוח</strong> — הדף זמין לכולם ללא התחברות (לבקשתכם לשלב זה). לפני עלייה לאוויר עם משתמשים
+        אמיתיים: יש להחזיר בדיקת מנהל ב־קוד וב־middleware.
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-herbal-900">מרכז ניהול — תמונת על</h1>
           <p className="mt-2 text-slate-600">פעילות, ביקורת, ותשלומים (חיבור ספק יבוצע ב-DEPLOY).</p>
         </div>
-        <Link href="/dashboard" className="text-sm text-herbal-700 underline">
-          חזרה ללוח הבקרה
+        <Link href="/" className="text-sm text-herbal-700 underline">
+          חזרה לדף הבית
         </Link>
       </div>
 
@@ -53,8 +54,8 @@ export default async function AdminPage() {
       <section className="mt-12 rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm">
         <h2 className="font-display text-xl text-herbal-900">אימות תשלומים</h2>
         <p className="mt-2 text-sm text-slate-600">
-          חברו כאן ספק סליקה (Stripe / PayPal / משלים מקומי). עד אז, עקבו אחרי העברות בנק ידנית וסמנו
-          בטבלה פנימית.
+          חברו כאן ספק סליקה (Stripe / PayPal / משלים מקומי). עד אז, עקבו אחרי העברות בנק ידנית וסמנו בטבלה
+          פנימית.
         </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[520px] text-right text-sm">

@@ -1,8 +1,36 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { TherapistSpotlight } from "@/components/TherapistSpotlight";
+
+export const dynamic = "force-dynamic";
+
+function rotateList<T>(items: T[], offset: number): T[] {
+  if (!items.length) return items;
+  const o = ((offset % items.length) + items.length) % items.length;
+  return [...items.slice(o), ...items.slice(0, o)];
+}
 
 export default async function HomePage() {
   const session = await auth();
+
+  const raw = await prisma.therapistProfile.findMany({
+    include: { user: { select: { name: true, image: true } } },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const spotlight = raw.map((p) => ({
+    slug: p.slug,
+    name: p.user.name,
+    image: p.user.image,
+    bio: p.bio,
+    specialty1: p.specialty1,
+    specialty2: p.specialty2,
+    specialty3: p.specialty3,
+  }));
+
+  const hourSlot = new Date().getUTCHours() + new Date().getUTCDate();
+  const therapistsForSlider = rotateList(spotlight, hourSlot);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
@@ -30,6 +58,10 @@ export default async function HomePage() {
             אינדקס צמחים
           </Link>
         </div>
+      </section>
+
+      <section className="mt-14">
+        <TherapistSpotlight therapists={therapistsForSlider} />
       </section>
 
       <section className="mt-16 grid gap-6 sm:grid-cols-3">
@@ -66,22 +98,12 @@ export default async function HomePage() {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {session?.user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-herbal-600 px-6 py-3 text-white hover:bg-herbal-500"
-              >
-                אזור אישי
-              </Link>
-              {session.user.role === "admin" && (
-                <Link
-                  href="/admin"
-                  className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-herbal-400 px-6 py-3 text-herbal-800 hover:bg-white"
-                >
-                  ניהול
-                </Link>
-              )}
-            </>
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-herbal-600 px-6 py-3 text-white hover:bg-herbal-500"
+            >
+              אזור אישי
+            </Link>
           ) : (
             <Link
               href="/auth/register"

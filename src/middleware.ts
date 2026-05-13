@@ -8,7 +8,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/dashboard")) {
     if (!isLoggedIn) {
       const url = new URL("/auth/signin", req.nextUrl.origin);
       url.searchParams.set("callbackUrl", pathname);
@@ -16,13 +16,9 @@ export default auth((req) => {
     }
   }
 
-  if (pathname.startsWith("/admin") && req.auth?.user?.role !== "admin") {
-    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
-  }
-
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*"],
 };
