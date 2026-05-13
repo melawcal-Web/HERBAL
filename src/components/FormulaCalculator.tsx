@@ -19,12 +19,14 @@ export function FormulaCalculator({
   );
   const note = value.note ?? "";
 
-  const formula: FormulaJson = useMemo(
-    () => ({ ingredients, note: note || undefined }),
+  const rows = useMemo(
+    () =>
+      computeFormulaPercentages({
+        ingredients,
+        note: note || undefined,
+      }),
     [ingredients, note],
   );
-
-  const rows = useMemo(() => computeFormulaPercentages(formula), [formula]);
 
   function emit(nextIngredients: FormulaIngredient[], nextNote: string) {
     onChange({
