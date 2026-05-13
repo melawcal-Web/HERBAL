@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export async function writeAudit(params: {
   actorId?: string | null;
@@ -14,7 +15,10 @@ export async function writeAudit(params: {
         action: params.action,
         entityType: params.entityType,
         entityId: params.entityId ?? undefined,
-        metadata: params.metadata ?? undefined,
+        metadata:
+          params.metadata === undefined
+            ? undefined
+            : (params.metadata as Prisma.InputJsonValue),
       },
     });
   } catch {
