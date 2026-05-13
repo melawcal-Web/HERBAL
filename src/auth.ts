@@ -1,27 +1,9 @@
+import "./auth-type-augmentations";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@prisma/client";
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role: UserRole;
-    };
-  }
-}
-
-declare module "@auth/core/jwt" {
-  interface JWT {
-    id?: string;
-    role?: UserRole;
-  }
-}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
