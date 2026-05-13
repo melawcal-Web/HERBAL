@@ -41,6 +41,7 @@ export async function updateSiteServiceUsernames(input: {
   });
 
   revalidatePath("/", "layout");
+  revalidatePath("/admin/links");
 }
 
 export async function updateSiteHeroSlides(slides: HeroSlide[]) {
