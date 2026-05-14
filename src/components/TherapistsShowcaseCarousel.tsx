@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { pickDemoImage } from "@/lib/demo-placeholders";
 import { therapistPublicHref } from "@/lib/therapist-public";
 
 export type TherapistShowcaseItem = {
@@ -16,6 +17,13 @@ export type TherapistShowcaseItem = {
 
 function specialtyLine(t: TherapistShowcaseItem) {
   return [t.specialty1, t.specialty2, t.specialty3].filter(Boolean).join(" · ");
+}
+
+/** תמונה לכרטיס ציבורי — תמיד https (תמונת משתמש או placeholder יציב). */
+function showcasePhotoUrl(t: TherapistShowcaseItem): string {
+  const u = t.image?.trim();
+  if (u?.startsWith("https://")) return u;
+  return pickDemoImage(`showcase-${t.id}`, "therapists");
 }
 
 /** Distance from viewport center → for parallax only */
@@ -284,23 +292,17 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
               >
                 <div className="relative h-full w-full overflow-hidden">
                   <div className="absolute inset-0 overflow-hidden">
-                    {t.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={t.image}
-                        alt=""
-                        className="therapist-photo-bw h-[112%] w-[112%] max-w-none object-cover object-center contrast-[1.06]"
-                        style={{
-                          transform: `translateX(${v.parallaxX}px) translateY(${v.parallaxX * 0.1}px)`,
-                          willChange: reducedMotion ? undefined : "transform",
-                        }}
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-herbal-800 to-herbal-950 text-[clamp(3rem,18vw,5.5rem)] font-bold text-white/25">
-                        {t.name.slice(0, 1)}
-                      </div>
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={showcasePhotoUrl(t)}
+                      alt=""
+                      className="therapist-photo-bw h-[112%] w-[112%] max-w-none object-cover object-center contrast-[1.06]"
+                      style={{
+                        transform: `translateX(${v.parallaxX}px) translateY(${v.parallaxX * 0.1}px)`,
+                        willChange: reducedMotion ? undefined : "transform",
+                      }}
+                      draggable={false}
+                    />
                   </div>
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/78 via-black/20 to-transparent" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-right sm:p-6">

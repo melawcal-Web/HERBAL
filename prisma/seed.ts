@@ -11,7 +11,12 @@ const IMG_RONIT = `https://images.unsplash.com/photo-1551836022-d5d88e9218df?${U
 const IMG_SHIRA = `https://images.unsplash.com/photo-1573496359142-b8d87734a5a?${U}`;
 const IMG_MICHAEL = `https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?${U}`;
 const IMG_YAEL = `https://images.unsplash.com/photo-1594824476967-48c8b964273f?${U}`;
-const IMG_ERAN = `https://images.unsplash.com/photo-1582750433449-648ed127bb54?${U}`;
+
+/** תמונת פרופיל דמו קבועה לערן כהן — https יציב לכרטיס ציבורי */
+const IMG_ERAN_COHEN_CARD = `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?${U}`;
+const IMG_DEMO_NOA_GOLAN = `https://images.unsplash.com/photo-1580489944761-15a19d654956?${U}`;
+const IMG_DEMO_AMIR_SELIM = `https://images.unsplash.com/photo-1500648767791-00dcc994a43e?${U}`;
+const IMG_DEMO_DANA_EREZ = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?${U}`;
 
 const IMG_ZOOM = `https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?${U}`;
 const IMG_WORKSHOP = `https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?${U}`;
@@ -61,7 +66,6 @@ async function main() {
     imgShira,
     imgMichael,
     imgYael,
-    imgEran,
     covChamomile,
     covLavender,
     covMint,
@@ -77,7 +81,6 @@ async function main() {
     unsplashImage("woman therapist portrait natural light studio", IMG_SHIRA, "portrait"),
     unsplashImage("male doctor portrait professional headshot", IMG_MICHAEL, "portrait"),
     unsplashImage("woman wellness portrait soft professional", IMG_YAEL, "portrait"),
-    unsplashImage("young man professional portrait outdoor", IMG_ERAN, "portrait"),
     unsplashImage("chamomile flowers botanical close up", FB_CHAMOMILE, "landscape"),
     unsplashImage("lavender field purple flowers botanical", FB_LAVENDER, "landscape"),
     unsplashImage("fresh mint leaves green macro", FB_MINT, "landscape"),
@@ -519,7 +522,7 @@ async function main() {
       name: "ערן כהן",
       role: "therapist",
       passwordHash: thHash,
-      image: imgEran,
+      image: IMG_ERAN_COHEN_CARD,
     },
     create: {
       email: "dan.demo@example.com",
@@ -527,7 +530,7 @@ async function main() {
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: imgEran,
+      image: IMG_ERAN_COHEN_CARD,
     },
   });
 
@@ -578,13 +581,208 @@ async function main() {
     },
   });
 
+  const noaGolan = await prisma.user.upsert({
+    where: { email: "noa.herbal.demo@example.com" },
+    update: {
+      name: "נועה גולן",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_DEMO_NOA_GOLAN,
+    },
+    create: {
+      email: "noa.herbal.demo@example.com",
+      name: "נועה גולן",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_DEMO_NOA_GOLAN,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: noaGolan.id },
+    update: {
+      slug: "noa-golan-herbal",
+      bio: "מטפלת בצמחי מרפא עם התמחות בספורט, בהתאוששות אחרי מאמץ, ובתזונה צמחית מעשית. אני מלווה אתכם בהיכרות עם הגוף — מתי לעצור, מתי להפנות לרופא/ה, ואיך לבנות שגרה בטוחה סביב אימונים וחיים עמוסים.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; השלמות בתזונת ספורט ובשיקום עדין אחרי פציעות קלות.",
+      specialty1: "ספורט",
+      specialty2: "התאוששות",
+      specialty3: "תזונה צמחית",
+      contactInfo: {
+        phone: "+972-52-610-6106",
+        city: "תל אביב",
+        whatsapp: "972526106106",
+        email: "noa.sport.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/noa-sport-herbs",
+        instagram: "noa.herbal.motion",
+        facebook: "NoaHerbalSportDemo",
+        tiktok: "noa.herbs.run",
+      },
+    },
+    create: {
+      userId: noaGolan.id,
+      slug: "noa-golan-herbal",
+      bio: "מטפלת בצמחי מרפא עם התמחות בספורט, בהתאוששות אחרי מאמץ, ובתזונה צמחית מעשית. אני מלווה אתכם בהיכרות עם הגוף — מתי לעצור, מתי להפנות לרופא/ה, ואיך לבנות שגרה בטוחה סביב אימונים וחיים עמוסים.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; השלמות בתזונת ספורט ובשיקום עדין אחרי פציעות קלות.",
+      specialty1: "ספורט",
+      specialty2: "התאוששות",
+      specialty3: "תזונה צמחית",
+      contactInfo: {
+        phone: "+972-52-610-6106",
+        city: "תל אביב",
+        whatsapp: "972526106106",
+        email: "noa.sport.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/noa-sport-herbs",
+        instagram: "noa.herbal.motion",
+        facebook: "NoaHerbalSportDemo",
+        tiktok: "noa.herbs.run",
+      },
+    },
+  });
+
+  const amirSelim = await prisma.user.upsert({
+    where: { email: "amir.herbal.demo@example.com" },
+    update: {
+      name: "אמיר סלים",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_DEMO_AMIR_SELIM,
+    },
+    create: {
+      email: "amir.herbal.demo@example.com",
+      name: "אמיר סלים",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_DEMO_AMIR_SELIM,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: amirSelim.id },
+    update: {
+      slug: "amir-selim-herbal",
+      bio: "מטפל בצמחי מרפא עם ניסיון בליווי גברים בגיל האמצע — לחץ, שינה, ועיכול — תוך שמירה על שפה ברורה ועל גבולות מול רפואה קונבנציונלית. הקליניקה שלי מדגישה הסברים, תיעוד, ומעקב הדוק אחרי שינויים.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; קורסים בפסיכונוירואימונולוגיה ובפרמקולוגיה צמחית.",
+      specialty1: "לחץ",
+      specialty2: "שינה",
+      specialty3: "עיכול",
+      contactInfo: {
+        phone: "+972-50-720-7207",
+        city: "חולון",
+        whatsapp: "972507207207",
+        email: "amir.mens.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/amir-mens-herbs",
+        instagram: "amir.herbal.calm",
+        facebook: "AmirHerbalDemo",
+        tiktok: "amir.herbs.talk",
+      },
+    },
+    create: {
+      userId: amirSelim.id,
+      slug: "amir-selim-herbal",
+      bio: "מטפל בצמחי מרפא עם ניסיון בליווי גברים בגיל האמצע — לחץ, שינה, ועיכול — תוך שמירה על שפה ברורה ועל גבולות מול רפואה קונבנציונלית. הקליניקה שלי מדגישה הסברים, תיעוד, ומעקב הדוק אחרי שינויים.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; קורסים בפסיכונוירואימונולוגיה ובפרמקולוגיה צמחית.",
+      specialty1: "לחץ",
+      specialty2: "שינה",
+      specialty3: "עיכול",
+      contactInfo: {
+        phone: "+972-50-720-7207",
+        city: "חולון",
+        whatsapp: "972507207207",
+        email: "amir.mens.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/amir-mens-herbs",
+        instagram: "amir.herbal.calm",
+        facebook: "AmirHerbalDemo",
+        tiktok: "amir.herbs.talk",
+      },
+    },
+  });
+
+  const danaErez = await prisma.user.upsert({
+    where: { email: "dana.herbal.demo@example.com" },
+    update: {
+      name: "דנה ארזי",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_DEMO_DANA_EREZ,
+    },
+    create: {
+      email: "dana.herbal.demo@example.com",
+      name: "דנה ארזי",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_DEMO_DANA_EREZ,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: danaErez.id },
+    update: {
+      slug: "dana-erez-herbal",
+      bio: "מטפלת בצמחי מרפא עם דגש על עור, אלרגיות עונתיות, ותמיכה בשגרת טיפוח ביתית בטוחה. אני מלווה תהליכים איטיים — עם בדיקות רגישות לתרופות חיצוניות, לילדים, ולרגישות עור.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; השלמות בדרמטולוגיה צמחית ובשימוש חיצוני מבוקר.",
+      specialty1: "עור",
+      specialty2: "אלרגיה עונתית",
+      specialty3: "טיפוח ביתי",
+      contactInfo: {
+        phone: "+972-54-830-8308",
+        city: "רמת השרון",
+        whatsapp: "972548308308",
+        email: "dana.skin.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/dana-skin-herbs",
+        instagram: "dana.herbal.skin",
+        facebook: "DanaHerbalSkinDemo",
+        tiktok: "dana.herbs.glow",
+      },
+    },
+    create: {
+      userId: danaErez.id,
+      slug: "dana-erez-herbal",
+      bio: "מטפלת בצמחי מרפא עם דגש על עור, אלרגיות עונתיות, ותמיכה בשגרת טיפוח ביתית בטוחה. אני מלווה תהליכים איטיים — עם בדיקות רגישות לתרופות חיצוניות, לילדים, ולרגישות עור.",
+      clinicalExperience:
+        "הסמכה בצמחי מרפא; השלמות בדרמטולוגיה צמחית ובשימוש חיצוני מבוקר.",
+      specialty1: "עור",
+      specialty2: "אלרגיה עונתית",
+      specialty3: "טיפוח ביתי",
+      contactInfo: {
+        phone: "+972-54-830-8308",
+        city: "רמת השרון",
+        whatsapp: "972548308308",
+        email: "dana.skin.herbs@herbal-demo.il",
+      },
+      socialLinks: {
+        website: "https://example.com/dana-skin-herbs",
+        instagram: "dana.herbal.skin",
+        facebook: "DanaHerbalSkinDemo",
+        tiktok: "dana.herbs.glow",
+      },
+    },
+  });
+
   await prisma.user.updateMany({
     where: { role: "therapist" },
     data: { therapistVerification: "approved", registrationPersona: "therapist" },
   });
 
   await prisma.therapistProfile.updateMany({
-    where: { userId: { in: [michael.id, eran.id] } },
+    where: { userId: { in: [michael.id, eran.id, amirSelim.id] } },
     data: { publicTherapistTitle: "male" },
   });
 
@@ -808,6 +1006,9 @@ async function main() {
     "michael.demo@example.com",
     "yael.demo@example.com",
     "dan.demo@example.com (ערן כהן)",
+    "noa.herbal.demo@example.com",
+    "amir.herbal.demo@example.com",
+    "dana.herbal.demo@example.com",
     "Client:",
     demoClientEmail,
   );
