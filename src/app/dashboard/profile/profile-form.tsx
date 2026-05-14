@@ -11,6 +11,8 @@ type Initial = {
   specialty1: string;
   specialty2: string;
   specialty3: string;
+  acceptsSupervisionRequests: boolean;
+  supervisionHourlyRate: string;
   contactPhone: string;
   contactCity: string;
   contactWhatsapp: string;
@@ -41,6 +43,11 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           specialty1: form.specialty1,
           specialty2: form.specialty2,
           specialty3: form.specialty3,
+          acceptsSupervisionRequests: form.acceptsSupervisionRequests,
+          supervisionHourlyRate:
+            form.acceptsSupervisionRequests && form.supervisionHourlyRate.trim() !== ""
+              ? Number(form.supervisionHourlyRate)
+              : null,
           contactPhone: form.contactPhone,
           contactCity: form.contactCity,
           contactWhatsapp: form.contactWhatsapp,
@@ -100,6 +107,38 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             />
           </div>
         ))}
+      </div>
+      <div className="rounded-2xl border border-herbal-200/80 bg-herbal-50/60 p-4">
+        <label className="flex cursor-pointer items-start gap-3 text-sm font-medium text-herbal-900">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-herbal-300 text-herbal-700"
+            checked={form.acceptsSupervisionRequests}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                acceptsSupervisionRequests: e.target.checked,
+                supervisionHourlyRate: e.target.checked ? form.supervisionHourlyRate : "",
+              })
+            }
+          />
+          <span>לאפשר פניות להשגחה מקצועית מהדף הציבורי</span>
+        </label>
+        {form.acceptsSupervisionRequests ? (
+          <div className="mt-4">
+            <label className="text-sm font-medium text-slate-700">מחיר לשעה (₪)</label>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+              dir="ltr"
+              value={form.supervisionHourlyRate}
+              onChange={(e) => setForm({ ...form, supervisionHourlyRate: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-slate-600">יוצג בדף הציבורי לצד פרטי ההשגחה.</p>
+          </div>
+        ) : null}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

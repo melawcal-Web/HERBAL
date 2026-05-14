@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertTherapist } from "@/lib/formula";
@@ -13,6 +14,8 @@ export async function updateTherapistProfile(input: {
   specialty1: string;
   specialty2: string;
   specialty3: string;
+  acceptsSupervisionRequests: boolean;
+  supervisionHourlyRate: number | null;
   contactPhone: string;
   contactCity: string;
   contactWhatsapp: string;
@@ -34,6 +37,12 @@ export async function updateTherapistProfile(input: {
     throw new Error("כתובת הדף (slug) תפוסה");
   }
 
+  if (input.acceptsSupervisionRequests) {
+    if (input.supervisionHourlyRate == null || Number.isNaN(input.supervisionHourlyRate) || input.supervisionHourlyRate <= 0) {
+      throw new Error("כאשר מאפשרים השגחה, יש להזין מחיר לשעה חיובי");
+    }
+  }
+
   const prev = await prisma.therapistProfile.findUnique({
     where: { userId: session.user.id },
     select: { slug: true, id: true },
@@ -48,6 +57,11 @@ export async function updateTherapistProfile(input: {
       specialty1: input.specialty1,
       specialty2: input.specialty2,
       specialty3: input.specialty3,
+      acceptsSupervisionRequests: input.acceptsSupervisionRequests,
+      supervisionHourlyRate:
+        input.acceptsSupervisionRequests && input.supervisionHourlyRate != null && input.supervisionHourlyRate > 0
+          ? new Prisma.Decimal(input.supervisionHourlyRate)
+          : null,
       contactInfo: {
         phone: input.contactPhone,
         city: input.contactCity,

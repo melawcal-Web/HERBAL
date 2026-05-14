@@ -1,16 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createAdminProduct, type CreateAdminProductState } from "@/app/actions/admin-product";
+import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
 
-function SubmitButton({ pending }: { pending: boolean }) {
+function SubmitButton({ pending, disabled }: { pending: boolean; disabled?: boolean }) {
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-herbal-500 disabled:opacity-60"
     >
-      {pending ? "שומרים…" : "הוספת מוצר"}
+      {pending ? "שומרים…" : "הוספה לקורסים וסדנאות"}
     </button>
   );
 }
@@ -20,6 +21,7 @@ export function AddProductForm() {
     createAdminProduct,
     undefined,
   );
+  const [img, setImg] = useState("");
 
   return (
     <form action={action} className="mt-6 space-y-4">
@@ -67,22 +69,11 @@ export function AddProductForm() {
           />
         </div>
       </div>
-      <div>
-        <label htmlFor="ap-image" className="text-sm font-medium text-slate-700">
-          כתובת תמונה (https בלבד)
-        </label>
-        <input
-          id="ap-image"
-          name="imageUrl"
-          type="url"
-          required
-          placeholder="https://…"
-          className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2 text-left font-mono text-sm"
-        />
-      </div>
+      <input type="hidden" name="imageUrl" value={img} readOnly />
+      <HebrewUnsplashPicker value={img} onChange={setImg} />
       {state && !state.ok && <p className="text-sm text-rose-600">{state.error}</p>}
       {state?.ok && <p className="text-sm text-herbal-700">{state.message}</p>}
-      <SubmitButton pending={pending} />
+      <SubmitButton pending={pending} disabled={!img.startsWith("https://")} />
     </form>
   );
 }

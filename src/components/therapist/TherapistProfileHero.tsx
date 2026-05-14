@@ -16,7 +16,7 @@ type Props = {
 };
 
 /**
- * Hero: full-bleed photo (B&W default) + bottom band aligning title, name, city, tags, and overlay contact icons.
+ * Hero: full-bleed photo (B&W default) + compact identity row + small specialty pills + overlay icons.
  */
 export function TherapistProfileHero({
   imageUrl,
@@ -32,7 +32,7 @@ export function TherapistProfileHero({
   const toneClass = showColor ? "grayscale-0" : "therapist-photo-bw";
 
   return (
-    <div className="relative min-h-[min(72vh,640px)] w-full overflow-hidden bg-neutral-950 md:min-h-[min(78vh,720px)]">
+    <div className="relative min-h-[min(68vh,560px)] w-full overflow-hidden bg-neutral-950 md:min-h-[min(72vh,640px)]">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -62,39 +62,36 @@ export function TherapistProfileHero({
 
       <TherapistHeroSocialBar contact={contact} social={social} />
 
-      {/* Bottom band: identity + pills share one horizontal visual region; icons sit on lowest row */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-[4.25rem] pt-24 text-right sm:px-8 sm:pb-[4.5rem] sm:pt-28 md:px-12 md:pb-24 md:pt-32">
-        <div className="mx-auto flex w-full max-w-5xl flex-col items-stretch gap-5 md:flex-row md:items-end md:justify-between md:gap-10">
-          <div className="md:max-w-[58%]">
-            <p
-              className="text-[11px] font-medium tracking-[0.18em] text-white/88 sm:text-xs"
-              style={{ textShadow: "0 2px 14px rgba(0,0,0,0.85)" }}
-            >
-              מטפל/ת בצמחי מרפא
-            </p>
-            <h1
-              className="mt-2 font-display text-[clamp(2.15rem,6.2vw,3.85rem)] font-bold leading-[1.04] tracking-tight text-white md:text-[clamp(2.45rem,3.8vw,4.1rem)]"
-              style={{ textShadow: "0 4px 28px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,1)" }}
-            >
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-[4rem] pt-20 text-right sm:px-8 sm:pb-[4.25rem] sm:pt-24 md:px-12 md:pb-20">
+        <div className="mx-auto max-w-5xl">
+          <div
+            className="flex flex-wrap items-baseline justify-end gap-x-2 gap-y-1"
+            style={{ textShadow: "0 2px 18px rgba(0,0,0,0.88)" }}
+          >
+            <span className="text-[10px] font-medium tracking-[0.16em] text-white/88 sm:text-[11px]">מטפל/ת בצמחי מרפא</span>
+            <span className="hidden text-white/35 sm:inline" aria-hidden>
+              ·
+            </span>
+            <span className="font-display text-2xl font-bold leading-tight text-white sm:text-3xl md:text-[clamp(1.85rem,3.2vw,2.75rem)]">
               {therapistName}
-            </h1>
+            </span>
             {serviceCity ? (
-              <p
-                className="mt-2 text-lg font-semibold text-white/95 sm:text-xl"
-                style={{ textShadow: "0 2px 16px rgba(0,0,0,0.85)" }}
-              >
-                {serviceCity}
-              </p>
+              <>
+                <span className="text-white/35" aria-hidden>
+                  ·
+                </span>
+                <span className="text-base font-semibold text-white/95 sm:text-lg">{serviceCity}</span>
+              </>
             ) : null}
           </div>
 
           {specialties.length > 0 ? (
-            <ul className="flex flex-wrap justify-center gap-2 md:max-w-[42%] md:justify-end md:pb-1">
+            <ul className="mt-4 flex flex-wrap justify-end gap-1.5">
               {specialties.map((s) => (
                 <li
                   key={s}
-                  className="rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm"
-                  style={{ textShadow: "0 1px 10px rgba(0,0,0,0.75)" }}
+                  className="rounded-full border border-white/35 bg-black/35 px-2.5 py-0.5 text-[10px] font-semibold text-white/95 backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs"
+                  style={{ textShadow: "0 1px 8px rgba(0,0,0,0.75)" }}
                 >
                   {s}
                 </li>

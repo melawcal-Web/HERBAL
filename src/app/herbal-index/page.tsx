@@ -28,6 +28,9 @@ export default async function HerbalIndexPage() {
                   {a.title}
                 </Link>
               </h2>
+              {a.category ? (
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-herbal-700/90">{a.category}</p>
+              ) : null}
               <p className="mt-2 text-slate-600">{a.excerpt}</p>
               <p className="mt-3 text-sm text-sage">
                 מטפל/ת:{" "}

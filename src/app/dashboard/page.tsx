@@ -2,7 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { AddProductForm } from "@/app/admin/products/add-product-form";
+import { DashboardAddContent } from "@/components/dashboard/DashboardAddContent";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -46,44 +46,18 @@ export default async function DashboardPage() {
             </Link>
           </>
         )}
-        <Link
-          href="/therapists"
-          className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <h2 className="text-lg font-semibold text-herbal-900">מטפלים</h2>
-          <p className="mt-2 text-sm text-slate-600">עיון בדפי נחיתה אישיים.</p>
-        </Link>
-        <Link
-          href="/herbal-index"
-          className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <h2 className="text-lg font-semibold text-herbal-900">אינדקס צמחים</h2>
-          <p className="mt-2 text-sm text-slate-600">מאמרים מקצועיים מקושרים למטפלים.</p>
-        </Link>
         {isAdmin && (
           <Link
             href="/admin"
-            className="rounded-2xl border border-herbal-200 bg-herbal-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="rounded-2xl border border-herbal-200 bg-herbal-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:col-span-2"
           >
             <h2 className="text-lg font-semibold text-herbal-900">מרכז ניהול</h2>
-            <p className="mt-2 text-sm text-slate-600">תמונת על, ביקורת ותשלומים.</p>
+            <p className="mt-2 text-sm text-slate-600">תמונת על, ביקורת, משתמשים ורשימת קורסים וסדנאות.</p>
           </Link>
         )}
       </div>
 
-      {isAdmin && (
-        <section className="mt-10 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
-          <h2 className="font-display text-xl font-bold text-herbal-900">הוספת מוצר — קורסים וסדנאות</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            פריט חדש יופיע בדף הבית ובעמוד קורסים וסדנאות. ניתן גם לנהל מ{" "}
-            <Link href="/admin/products" className="font-semibold text-herbal-800 underline-offset-2 hover:underline">
-              מרכז הניהול
-            </Link>
-            .
-          </p>
-          <AddProductForm />
-        </section>
-      )}
+      {isAdmin && <DashboardAddContent />}
 
       {role === "client" && (
         <section className="mt-10">

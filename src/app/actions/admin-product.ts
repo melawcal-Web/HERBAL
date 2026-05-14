@@ -46,7 +46,7 @@ export async function createAdminProduct(
 
   const created = await prisma.product.create({
     data: {
-      type: "shelf_product",
+      type: "workshop",
       title,
       description,
       imageUrl,

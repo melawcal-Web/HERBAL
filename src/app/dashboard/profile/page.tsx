@@ -45,8 +45,11 @@ export default async function TherapistProfilePage() {
             bio: profile.bio ?? "",
             clinicalExperience: profile.clinicalExperience ?? "",
             specialty1: profile.specialty1 ?? "",
-            specialty2: profile.specialty2,
-            specialty3: profile.specialty3,
+            specialty2: profile.specialty2 ?? "",
+            specialty3: profile.specialty3 ?? "",
+            acceptsSupervisionRequests: profile.acceptsSupervisionRequests ?? false,
+            supervisionHourlyRate:
+              profile.supervisionHourlyRate != null ? String(Number(profile.supervisionHourlyRate)) : "",
             contactPhone: contact.phone ?? "",
             contactCity: contact.city ?? "",
             contactWhatsapp: contact.whatsapp ?? "",

@@ -1,4 +1,4 @@
-import { PrismaClient, ProductType, type Prisma } from "@prisma/client";
+import { PrismaClient, ProductType, Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { DEFAULT_SITE_TITLE, DEFAULT_VISION_SLIDES } from "../src/lib/home-vision";
 
@@ -48,24 +48,12 @@ async function unsplashImage(
   }
 }
 
-async function ensureProduct(data: {
-  type: ProductType;
-  title: string;
-  description: string;
-  price: number;
-  memberPrice: number;
-  imageUrl: string;
-}) {
-  const existing = await prisma.product.findFirst({ where: { title: data.title } });
-  if (existing) {
-    await prisma.product.update({ where: { id: existing.id }, data });
-  } else {
-    await prisma.product.create({ data });
-  }
+function whenIso(d: string) {
+  return new Date(d).toISOString();
 }
 
 async function main() {
-  /** Fresh demo catalog for קורסים וסדנאות (avoid duplicate rows when titles change) */
+  /** Fresh demo catalog for קורסים וסדנאות */
   await prisma.product.deleteMany({});
 
   const [
@@ -102,51 +90,205 @@ async function main() {
     unsplashImage("digestive health herbs kitchen shelf", IMG_SHELF, "landscape"),
   ]);
 
-  await ensureProduct({
-    type: ProductType.workshop,
-    title: "סדנת מסחטות ומשחות — רוקחות טבעית למטפלים",
-    description:
-      "מפגש ידיים מסודר: בחירת חומרי גלם, יחסי חילוץ, אלכוהול ושמני בסיס, תיוג ואחסון בטוח. כולל תבניות תיעוד ודגשים משפטיים לעבודה מקצועית.",
-    price: 540,
-    memberPrice: 460,
-    imageUrl: imgWorkshop,
-  });
-  await ensureProduct({
-    type: ProductType.zoom,
-    title: "זום מקצועי — ליווי צמחי בגיל מבוגר ובטיחות תרופתית",
-    description:
-      "ארבעה מפגשים: מיפוי תרופות נפוצות, נקודות הפסקה, תיעוד בקליניקה, ושיחה עם רופא/ת משפחה. מיועד למטפלים מוסמכים בצמחי מרפא.",
-    price: 380,
-    memberPrice: 310,
-    imageUrl: imgZoom,
-  });
-  await ensureProduct({
-    type: ProductType.workshop,
-    title: "סדנת חרדה קלה — חליטות, ריח, וכלים לבית",
-    description:
-      "קבוצה קטנה, קצב רגוע: הדגמות בטוחות, טעימות מבוקרות, ותרגילי רוגע. מתאים גם למדריכי הורים ולמטפלים המחפשים חוויה מקצועית.",
-    price: 425,
-    memberPrice: 365,
-    imageUrl: imgAnxiety,
-  });
-  await ensureProduct({
-    type: ProductType.supervision,
-    title: "השגחה קבוצתית — פוריות, מחזור וליווי צמחי עדין",
-    description:
-      "מעגל חודשי למטפלים העוסקים בנשים: ניסוח שאלות לרופאות, תיעוד, וצמחים בשלבים שונים של החיים. עד 10 משתתפים.",
-    price: 275,
-    memberPrice: 235,
-    imageUrl: imgSupervision,
-  });
-  await ensureProduct({
-    type: ProductType.zoom,
-    title: "זום — מיקרוביום ועיכול: מהמחקר לפרקטיקה",
-    description:
-      "שעה וחצי מרוכזת: צמחי מרה, סיבים תזונתיים, וקריאה ביקורתית של מאמרים. כולל שאלות ותשובות וחומרי עזר דיגיטליים.",
-    price: 118,
-    memberPrice: 95,
-    imageUrl: imgDigest,
-  });
+  const workshopSeeds: Array<{
+    title: string;
+    description: string;
+    price: number;
+    memberPrice: number;
+    imageUrl: string;
+    metadata: { location: string; startsAt: string; maxParticipants: number };
+  }> = [
+    {
+      title: "סדנת מסחטות ומשחות — רמת גן",
+      description: "קורס פרונטלי · רמת גן",
+      price: 540,
+      memberPrice: 460,
+      imageUrl: imgWorkshop,
+      metadata: { location: "רמת גן", startsAt: whenIso("2026-07-03T09:30"), maxParticipants: 16 },
+    },
+    {
+      title: "סדנת חליטות וארומה — חיפה",
+      description: "קורס פרונטלי · חיפה",
+      price: 410,
+      memberPrice: 350,
+      imageUrl: imgAnxiety,
+      metadata: { location: "חיפה", startsAt: whenIso("2026-07-18T17:00"), maxParticipants: 12 },
+    },
+    {
+      title: "יום עיון רוקחות טבעית — ירושלים",
+      description: "קורס פרונטלי · ירושלים",
+      price: 590,
+      memberPrice: 500,
+      imageUrl: imgDigest,
+      metadata: { location: "ירושלים", startsAt: whenIso("2026-08-01T09:00"), maxParticipants: 20 },
+    },
+    {
+      title: "סדנת עור רגיש וצמחים — רעננה",
+      description: "קורס פרונטלי · רעננה",
+      price: 480,
+      memberPrice: 410,
+      imageUrl: imgWorkshop,
+      metadata: { location: "רעננה", startsAt: whenIso("2026-08-12T18:30"), maxParticipants: 10 },
+    },
+    {
+      title: "מעבדת נוסחאות ביתיות — נס ציונה",
+      description: "קורס פרונטלי · נס ציונה",
+      price: 520,
+      memberPrice: 440,
+      imageUrl: imgAnxiety,
+      metadata: { location: "נס ציונה", startsAt: whenIso("2026-09-05T10:00"), maxParticipants: 14 },
+    },
+  ];
+
+  for (const w of workshopSeeds) {
+    const desc = `${w.description} · ${new Date(w.metadata.startsAt).toLocaleString("he-IL")}`;
+    await prisma.product.create({
+      data: {
+        type: ProductType.workshop,
+        title: w.title,
+        description: desc,
+        price: w.price,
+        memberPrice: w.memberPrice,
+        imageUrl: w.imageUrl,
+        metadata: w.metadata as Prisma.InputJsonValue,
+        active: true,
+      },
+    });
+  }
+
+  const zoomSeeds: Array<{
+    title: string;
+    price: number;
+    memberPrice: number;
+    imageUrl: string;
+    metadata: { zoomUrl: string; startsAt: string; maxParticipants: number };
+  }> = [
+    {
+      title: "זום — בטיחות תרופתית וצמחים",
+      price: 360,
+      memberPrice: 300,
+      imageUrl: imgZoom,
+      metadata: {
+        zoomUrl: "https://zoom.us/j/8001110001",
+        startsAt: whenIso("2026-07-08T20:00"),
+        maxParticipants: 40,
+      },
+    },
+    {
+      title: "זום — עיכול ומיקרוביום",
+      price: 118,
+      memberPrice: 95,
+      imageUrl: imgDigest,
+      metadata: {
+        zoomUrl: "https://zoom.us/j/8001110002",
+        startsAt: whenIso("2026-07-22T19:30"),
+        maxParticipants: 60,
+      },
+    },
+    {
+      title: "זום — חרדה קלה וצמחי הרגעה",
+      price: 140,
+      memberPrice: 115,
+      imageUrl: imgZoom,
+      metadata: {
+        zoomUrl: "https://zoom.us/j/8001110003",
+        startsAt: whenIso("2026-08-04T20:15"),
+        maxParticipants: 35,
+      },
+    },
+    {
+      title: "זום — פוריות משלימה — שאלות למומחים",
+      price: 220,
+      memberPrice: 185,
+      imageUrl: imgZoom,
+      metadata: {
+        zoomUrl: "https://zoom.us/j/8001110004",
+        startsAt: whenIso("2026-08-20T19:00"),
+        maxParticipants: 25,
+      },
+    },
+    {
+      title: "זום — תיעוד קליני ואתיקה",
+      price: 95,
+      memberPrice: 79,
+      imageUrl: imgDigest,
+      metadata: {
+        zoomUrl: "https://zoom.us/j/8001110005",
+        startsAt: whenIso("2026-09-02T18:00"),
+        maxParticipants: 50,
+      },
+    },
+  ];
+
+  for (const z of zoomSeeds) {
+    const desc = `מפגש זום · ${new Date(z.metadata.startsAt).toLocaleString("he-IL")}`;
+    await prisma.product.create({
+      data: {
+        type: ProductType.zoom,
+        title: z.title,
+        description: desc,
+        price: z.price,
+        memberPrice: z.memberPrice,
+        imageUrl: z.imageUrl,
+        metadata: z.metadata as Prisma.InputJsonValue,
+        active: true,
+      },
+    });
+  }
+
+  const supervisionSeeds: Array<{
+    title: string;
+    price: number;
+    imageUrl: string;
+    metadata: { startsAt: string; maxParticipants: number };
+  }> = [
+    {
+      title: "השגחה קבוצתית — פוריות ומחזור",
+      price: 260,
+      imageUrl: imgSupervision,
+      metadata: { startsAt: whenIso("2026-07-11T08:30"), maxParticipants: 10 },
+    },
+    {
+      title: "השגחה — עבודה עם מתבגרים",
+      price: 240,
+      imageUrl: imgSupervision,
+      metadata: { startsAt: whenIso("2026-07-25T08:30"), maxParticipants: 8 },
+    },
+    {
+      title: "השגחה — אינטראקציות תרופתיות",
+      price: 280,
+      imageUrl: imgSupervision,
+      metadata: { startsAt: whenIso("2026-08-08T08:30"), maxParticipants: 12 },
+    },
+    {
+      title: "השגחה — תסקיר מקרה קליני",
+      price: 200,
+      imageUrl: imgSupervision,
+      metadata: { startsAt: whenIso("2026-08-29T08:30"), maxParticipants: 6 },
+    },
+    {
+      title: "השגחה — פתיחת קליניקה חדשה",
+      price: 310,
+      imageUrl: imgSupervision,
+      metadata: { startsAt: whenIso("2026-09-14T08:30"), maxParticipants: 10 },
+    },
+  ];
+
+  for (const s of supervisionSeeds) {
+    const desc = `השגחה מקצועית · ${new Date(s.metadata.startsAt).toLocaleString("he-IL")}`;
+    await prisma.product.create({
+      data: {
+        type: ProductType.supervision,
+        title: s.title,
+        description: desc,
+        price: s.price,
+        memberPrice: s.price,
+        imageUrl: s.imageUrl,
+        metadata: s.metadata as Prisma.InputJsonValue,
+        active: true,
+      },
+    });
+  }
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
   const adminPassword = process.env.ADMIN_PASSWORD ?? "ChangeMe123!";
   const passwordHash = await hash(adminPassword, 12);
@@ -207,6 +349,8 @@ async function main() {
         facebook: "HerbalRonitDemo",
         tiktok: "ronit.herbs",
       },
+      acceptsSupervisionRequests: true,
+      supervisionHourlyRate: new Prisma.Decimal(420),
     },
     create: {
       userId: therapistUser.id,
@@ -229,6 +373,8 @@ async function main() {
         facebook: "HerbalRonitDemo",
         tiktok: "ronit.herbs",
       },
+      acceptsSupervisionRequests: true,
+      supervisionHourlyRate: new Prisma.Decimal(420),
     },
   });
 
@@ -503,6 +649,7 @@ async function main() {
     where: { slug: "mallow-soothing" },
     update: {
       title: "קמומיל רפואי (Matricaria chamomilla) — רוגע עיכולי ושימוש חיצוני זהיר",
+      category: "עיכול ודלקות",
       excerpt:
         "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
@@ -517,6 +664,7 @@ async function main() {
       therapistId: therapistUser.id,
       title: "קמומיל רפואי (Matricaria chamomilla) — רוגע עיכולי ושימוש חיצוני זהיר",
       slug: "mallow-soothing",
+      category: "עיכול ודלקות",
       excerpt:
         "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
@@ -533,6 +681,7 @@ async function main() {
     where: { slug: "chamomile-gentle-demo" },
     update: {
       title: "לבנדר רפואי (Lavandula angustifolia) — רוגע, שינה ושמן אתרי בטוח",
+      category: "רוגע ושינה",
       excerpt:
         "מבט מקצועי על לבנדר: שימושים בשינה קלה, ברוגע עצבי, ובשמן אתרי — כולל ריכוזים, רגישות עור, והנחיות זהירות לילדים ולבהריון.",
       body:
@@ -546,6 +695,7 @@ async function main() {
       therapistId: shira.id,
       title: "לבנדר רפואי (Lavandula angustifolia) — רוגע, שינה ושמן אתרי בטוח",
       slug: "chamomile-gentle-demo",
+      category: "רוגע ושינה",
       excerpt:
         "מבט מקצועי על לבנדר: שימושים בשינה קלה, ברוגע עצבי, ובשמן אתרי — כולל ריכוזים, רגישות עור, והנחיות זהירות לילדים ולבהריון.",
       body:
@@ -561,6 +711,7 @@ async function main() {
     where: { slug: "ginger-warm-demo" },
     update: {
       title: "מנטה חריפה (Mentha × piperita) — עיכול, כאב ראש קל, ובטיחות מינון",
+      category: "נשימה ועיכול",
       excerpt:
         "מנטה כצמח מרפא: שימושים מסורתיים בעיכול, בכאבי ראש קלים, ובמערכת נשימה — לצד אזהרות בגסטריטיס רפלוקס, בהנקה, ובשילוב עם תרופות מסוימות.",
       body:
@@ -574,6 +725,7 @@ async function main() {
       therapistId: michael.id,
       title: "מנטה חריפה (Mentha × piperita) — עיכול, כאב ראש קל, ובטיחות מינון",
       slug: "ginger-warm-demo",
+      category: "נשימה ועיכול",
       excerpt:
         "מנטה כצמח מרפא: שימושים מסורתיים בעיכול, בכאבי ראש קלים, ובמערכת נשימה — לצד אזהרות בגסטריטיס רפלוקס, בהנקה, ובשילוב עם תרופות מסוימות.",
       body:
@@ -589,6 +741,7 @@ async function main() {
     where: { slug: "lemon-balm-calm-demo" },
     update: {
       title: "שיבולת שועל (Avena sativa) — תמיכה עדינה ברוגע ובמערכת עצבים",
+      category: "עצבים ושינה",
       excerpt:
         "שיבולת שועל כצמח מרפא: שימושים מסורתיים ברוגע עצבי קל, בתמיכה בשינה, ובמסגרת ליווי תזונתי — עם דגש על איכות תכשיר ועל גבולות ההבטחה הקלינית.",
       body:
@@ -602,6 +755,7 @@ async function main() {
       therapistId: yael.id,
       title: "שיבולת שועל (Avena sativa) — תמיכה עדינה ברוגע ובמערכת עצבים",
       slug: "lemon-balm-calm-demo",
+      category: "עצבים ושינה",
       excerpt:
         "שיבולת שועל כצמח מרפא: שימושים מסורתיים ברוגע עצבי קל, בתמיכה בשינה, ובמסגרת ליווי תזונתי — עם דגש על איכות תכשיר ועל גבולות ההבטחה הקלינית.",
       body:
@@ -617,6 +771,7 @@ async function main() {
     where: { slug: "nettle-nourish-demo" },
     update: {
       title: "אזוב מצוי (Origanum syriacum) — ארומה חזקה, עיכול, ושימוש זהיר בשמן אתרי",
+      category: "ארומטיקה ועיכול",
       excerpt:
         "אזוב (זעתר בורא) כצמח מרפא: שימושים מסורתיים בעיכול, בארומה חזקה, ובשמן אתרי — כולל אזהרות לילדים, להריון, ולרגישות נשימתית.",
       body:
@@ -630,6 +785,7 @@ async function main() {
       therapistId: eran.id,
       title: "אזוב מצוי (Origanum syriacum) — ארומה חזקה, עיכול, ושימוש זהיר בשמן אתרי",
       slug: "nettle-nourish-demo",
+      category: "ארומטיקה ועיכול",
       excerpt:
         "אזוב (זעתר בורא) כצמח מרפא: שימושים מסורתיים בעיכול, בארומה חזקה, ובשמן אתרי — כולל אזהרות לילדים, להריון, ולרגישות נשימתית.",
       body:

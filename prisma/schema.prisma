@@ -63,6 +63,10 @@ model TherapistProfile {
   specialty1   String   @map("specialty_1")
   specialty2   String   @map("specialty_2")
   specialty3   String   @map("specialty_3")
+  /** האם לקבל פניות להשגחה מקצועית מהדף הציבורי */
+  acceptsSupervisionRequests Boolean @default(false) @map("accepts_supervision_requests")
+  /** מחיר לשעה בשקלים — מוצג כשההשגחה מאופשרת */
+  supervisionHourlyRate Decimal? @map("supervision_hourly_rate") @db.Decimal(10, 2)
   contactInfo  Json     @map("contact_info")
   socialLinks  Json     @map("social_links")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -99,6 +103,8 @@ model Product {
   description String      @db.Text
   /** תמונת כיסוי לדוגמה / קורסים וסדנאות — https בלבד */
   imageUrl    String?     @map("image_url") @db.VarChar(512)
+  /** מיקום, מועד, קישור זום, מקסימום משתתפים וכו׳ */
+  metadata    Json?       @map("metadata")
   price       Decimal     @db.Decimal(10, 2)
   memberPrice Decimal     @map("member_price") @db.Decimal(10, 2)
   active      Boolean     @default(true)
@@ -128,6 +134,8 @@ model HerbalArticle {
   therapistId String @map("therapist_id")
   title       String
   slug        String   @unique
+  /** קטגוריה לתצוגה באינדקס ובממשק הניהול */
+  category    String?  @db.VarChar(128)
   excerpt     String   @db.VarChar(500)
   body        String   @db.LongText
   /** תמונה לכרטיס אינדקס — https בלבד */

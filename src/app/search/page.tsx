@@ -50,7 +50,11 @@ export default async function SearchPage({ searchParams }: Props) {
     prisma.herbalArticle.findMany({
       where: {
         published: true,
-        OR: [{ title: { contains: query } }, { excerpt: { contains: query } }],
+        OR: [
+          { title: { contains: query } },
+          { excerpt: { contains: query } },
+          { category: { contains: query } },
+        ],
       },
       take: 20,
       include: { therapist: { select: { name: true } } },
