@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { HomeExploreGrid, type ExploreGridItem } from "@/components/home/HomeExploreGrid";
 import { HomeVisionCarousel, type VisionSlide } from "@/components/home/HomeVisionCarousel";
@@ -74,8 +72,6 @@ function clip(s: string, max: number): string {
 }
 
 export default async function HomePage() {
-  const session = await auth();
-
   const [therapists, products, articles] = await Promise.all([
     prisma.therapistProfile.findMany({
       include: { user: { select: { name: true, image: true } } },
@@ -134,54 +130,15 @@ export default async function HomePage() {
     });
   }
 
-  /** Order: therapists → marketplace → herbal (readable “catalog” flow) */
   const exploreItems = gridItems;
 
   return (
-    <div className="mx-auto max-w-6xl px-0 pb-14 pt-6 sm:px-4 sm:pb-16 sm:pt-8 md:px-6">
+    <div className="w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
       <HomeVisionCarousel slides={VISION_SLIDES} />
 
-      <div className="mt-10 flex flex-col items-stretch gap-3 px-4 sm:mt-12 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 md:px-0">
-        <Link href="/therapists" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
-          כל המטפלים
-        </Link>
-        <Link href="/marketplace" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
-          מרקט — הרצאות, סדנאות ומוצרים
-        </Link>
-        <Link href="/herbal-index" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
-          אינדקס צמחים
-        </Link>
-      </div>
-
-      <div className="px-4 md:px-0">
+      <div className="mt-10 sm:mt-12">
         <HomeExploreGrid items={exploreItems} />
       </div>
-
-      <section className="mx-4 mt-14 rounded-3xl border border-herbal-100/90 bg-white/80 p-8 text-center shadow-glass backdrop-blur-sm sm:mx-0 sm:mt-16 sm:p-10">
-        <h2 className="font-display text-2xl font-bold text-gradient-herbal sm:text-3xl">התחלו עכשיו</h2>
-        <p className="mx-auto mt-3 max-w-lg text-slate-600">
-          {session?.user
-            ? `שלום, ${session.user.name}. עברו לאזור האישי.`
-            : "הירשמו כמטפל או כלקוח כדי לגשת לכלים המלאים."}
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          {session?.user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white btn-shimmer"
-            >
-              אזור אישי
-            </Link>
-          ) : (
-            <Link
-              href="/auth/register"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-full px-10 py-3 text-base font-semibold text-white btn-shimmer"
-            >
-              הרשמה
-            </Link>
-          )}
-        </div>
-      </section>
     </div>
   );
 }

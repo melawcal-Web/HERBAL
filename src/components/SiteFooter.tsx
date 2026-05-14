@@ -14,8 +14,8 @@ function deployLabel() {
 
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 mt-auto px-3 pb-6 pt-8 sm:px-4">
-      <div className="glass-panel mx-auto max-w-6xl px-4 py-8 text-center text-sm text-slate-600 animate-fade-in sm:py-10">
+    <footer className="relative z-10 mt-auto w-full pb-6 pt-8">
+      <div className="glass-panel w-full px-4 py-8 text-center text-sm text-slate-600 transition-opacity duration-500 ease-out animate-fade-in sm:py-10">
         <p className="inline-block font-display text-base font-semibold text-gradient-herbal sm:text-lg">
           The Center for Herbal Therapists · המרכז למטפלים בצמחי מרפא
         </p>

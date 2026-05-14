@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 export type VisionSlide = {
   id: string;
@@ -9,6 +9,11 @@ export type VisionSlide = {
   body: string;
   /** Optional cover image (https) */
   imageUrl?: string | null;
+};
+
+const sidePadStyle: CSSProperties = {
+  minWidth: "max(6px, calc((100cqw - min(90cqw, 560px)) / 2))",
+  scrollSnapAlign: "none",
 };
 
 export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
@@ -57,7 +62,6 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
     return () => window.clearInterval(id);
   }, [n, reducedMotion]);
 
-  /** מרכז את השקופית הראשונה בטעינה כדי שלא תידחף לצד */
   useEffect(() => {
     if (n < 1) return;
     const id = window.setTimeout(() => {
@@ -93,13 +97,13 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
 
   return (
     <section
-      className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2"
+      className="relative w-full max-w-full [container-type:inline-size]"
       aria-label="הקדמה — חזון המרכז"
     >
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[var(--herbal-bg)] to-transparent sm:w-20" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[var(--herbal-bg)] to-transparent sm:w-20" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--herbal-bg)] to-transparent sm:w-16" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[var(--herbal-bg)] to-transparent sm:w-16" />
 
-      <div className="mb-5 px-4 text-center sm:mb-7 sm:px-8">
+      <div className="mb-5 px-1 text-center sm:mb-7 sm:px-2">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-herbal-600">המרכז למטפלים בצמחי מרפא</p>
         <h1 className="mt-2 font-display text-3xl font-bold text-herbal-900 sm:text-4xl md:text-[2.6rem]">חזון, ערכים ומה מחכה לכם כאן</h1>
         <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
@@ -111,7 +115,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
         <button
           type="button"
           onClick={() => prev()}
-          className="absolute right-1 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-white/90 text-xl text-herbal-800 shadow-md backdrop-blur-sm transition hover:bg-white sm:flex"
+          className="absolute right-0 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-white/90 text-xl text-herbal-800 shadow-md backdrop-blur-sm transition-colors duration-200 ease-out hover:bg-white sm:flex"
           aria-label="שקופית קודמת"
         >
           ›
@@ -119,7 +123,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
         <button
           type="button"
           onClick={() => next()}
-          className="absolute left-1 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-white/90 text-xl text-herbal-800 shadow-md backdrop-blur-sm transition hover:bg-white sm:flex"
+          className="absolute left-0 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-white/90 text-xl text-herbal-800 shadow-md backdrop-blur-sm transition-colors duration-200 ease-out hover:bg-white sm:flex"
           aria-label="שקופית הבאה"
         >
           ‹
@@ -128,24 +132,18 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
         <div
           ref={scrollerRef}
           dir="ltr"
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-0 pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6"
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6"
           style={{
-            scrollPaddingInline: "max(6px, calc(50vw - min(45vw, 280px)))",
+            scrollPaddingInline: "max(6px, calc((100cqw - min(90cqw, 560px)) / 2))",
           }}
         >
-          <div
-            aria-hidden
-            className="shrink-0 snap-none"
-            style={{
-              minWidth: "max(6px, calc(50vw - min(45vw, 280px)))",
-              scrollSnapAlign: "none",
-            }}
-          />
+          <div aria-hidden className="shrink-0 snap-none" style={sidePadStyle} />
           {slides.map((s, i) => (
             <article
               key={s.id}
               data-vision-slide={i}
-              className="relative h-[min(52vh,480px)] min-h-[400px] w-[min(90vw,560px)] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md sm:h-[min(48vh,440px)] sm:min-h-[420px] sm:rounded-[2rem]"
+              className="relative h-[min(52vh,480px)] min-h-[400px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md sm:min-h-[420px] sm:rounded-[2rem]"
+              style={{ width: "min(90cqw, 560px)" }}
             >
               {s.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -178,14 +176,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
               </div>
             </article>
           ))}
-          <div
-            aria-hidden
-            className="shrink-0 snap-none"
-            style={{
-              minWidth: "max(6px, calc(50vw - min(45vw, 280px)))",
-              scrollSnapAlign: "none",
-            }}
-          />
+          <div aria-hidden className="shrink-0 snap-none" style={sidePadStyle} />
         </div>
       </div>
 
@@ -196,7 +187,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
               key={s.id}
               type="button"
               onClick={() => scrollToIndex(idx)}
-              className={`h-2 rounded-full transition-all ${
+              className={`h-2 rounded-full transition-all duration-300 ease-out motion-reduce:transition-none ${
                 idx === index ? "w-9 bg-herbal-600" : "w-2 bg-herbal-200 hover:bg-herbal-400"
               }`}
               aria-label={`שקופית ${idx + 1}`}

@@ -31,12 +31,16 @@ export default async function RootLayout({
 
   return (
     <html lang="he" dir="rtl">
-      <body className={`${notoHebrew.variable} relative flex min-h-screen flex-col font-sans`}>
+      <body
+        className={`${notoHebrew.variable} relative flex min-h-screen flex-col overflow-x-hidden font-sans`}
+      >
         <AmbientBackground />
         <Providers>
-          <SiteHeader session={session} />
-          <main className="relative z-10 flex-1">{children}</main>
-          <SiteFooter />
+          <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col px-3 sm:px-5">
+            <SiteHeader session={session} />
+            <main className="relative flex-1 transition-opacity duration-300 ease-out">{children}</main>
+            <SiteFooter />
+          </div>
         </Providers>
       </body>
     </html>

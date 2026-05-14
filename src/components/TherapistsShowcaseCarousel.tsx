@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 export type TherapistShowcaseItem = {
   slug: string;
@@ -25,8 +25,11 @@ function centerNorm(root: DOMRect, slide: DOMRect): number {
 
 type SlideVisual = { parallaxX: number };
 
-/** Half of card width: min(41vw, 200px) for w = min(82vw, 400px) */
-const SCROLL_SIDE_PAD = "max(6px, calc(50vw - min(41vw, 200px)))";
+/** Spacers use container width (cqw) so boxed layout does not overflow viewport */
+const SCROLL_SIDE_PAD_STYLE: CSSProperties = {
+  minWidth: "max(6px, calc((100cqw - min(82cqw, 400px)) / 2))",
+  scrollSnapAlign: "none",
+};
 
 export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcaseItem[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -235,7 +238,10 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
   }
 
   return (
-    <section className="flex min-h-[calc(100dvh-5.5rem)] flex-col" aria-label="מדריך מטפלים — תצוגת קרוסלה">
+    <section
+      className="flex min-h-[calc(100dvh-5.5rem)] flex-col [container-type:inline-size]"
+      aria-label="מדריך מטפלים — תצוגת קרוסלה"
+    >
       <header className="shrink-0 px-4 pb-2 pt-4 text-center sm:px-8 sm:pb-4">
         <h1 className="font-display text-3xl font-bold text-herbal-900 sm:text-4xl">מטפלים רשומים</h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 sm:text-base">
@@ -254,21 +260,18 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
         className="showcase-scroll flex min-h-0 flex-1 cursor-grab touch-pan-x items-center gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0 pb-10 pt-2 [-webkit-overflow-scrolling:touch] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-500 focus-visible:ring-offset-2 sm:gap-8 sm:pb-14"
         style={{
           scrollSnapType: "x mandatory",
-          scrollPaddingInline: SCROLL_SIDE_PAD,
+          scrollPaddingInline: "max(6px, calc((100cqw - min(82cqw, 400px)) / 2))",
         }}
       >
-        <div
-          aria-hidden
-          className="shrink-0 snap-none"
-          style={{ minWidth: SCROLL_SIDE_PAD, scrollSnapAlign: "none" }}
-        />
+        <div aria-hidden className="shrink-0 snap-none" style={SCROLL_SIDE_PAD_STYLE} />
         {items.map((t, i) => {
           const v = visuals[i] ?? { parallaxX: 0 };
           return (
             <article
               key={t.slug}
               data-showcase-card={i}
-              className="w-[min(82vw,400px)] shrink-0 snap-center"
+              className="shrink-0 snap-center"
+              style={{ width: "min(82cqw, 400px)" }}
             >
               <Link
                 href={`/t/${t.slug}`}
@@ -309,11 +312,7 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
             </article>
           );
         })}
-        <div
-          aria-hidden
-          className="shrink-0 snap-none"
-          style={{ minWidth: SCROLL_SIDE_PAD, scrollSnapAlign: "none" }}
-        />
+        <div aria-hidden className="shrink-0 snap-none" style={SCROLL_SIDE_PAD_STYLE} />
       </div>
 
       {n > 1 && (
@@ -330,7 +329,7 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
                 });
                 setActiveIndex(idx);
               }}
-              className={`h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none ${
                 idx === activeIndex ? "w-9 bg-herbal-600" : "w-2 bg-herbal-200 hover:bg-herbal-400"
               }`}
               aria-label={`מטפל ${idx + 1}`}

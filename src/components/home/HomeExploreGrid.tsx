@@ -49,13 +49,13 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   }, [filter]);
 
   return (
-    <section className="mt-14 sm:mt-20" aria-labelledby="explore-grid-heading">
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-        <div className="text-center sm:text-right">
+    <section className="mt-10 sm:mt-12" aria-labelledby="explore-grid-heading">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8">
+        <div className="text-center">
           <h2 id="explore-grid-heading" className="font-display text-2xl font-bold text-herbal-900 sm:text-3xl">
             מה יש במרכז
           </h2>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
             מטפלים, מרקט (הרצאות, סדנאות ומוצרים), ומאמרים באינדקס הצמחים — כרטיסים בגודל אחיד.
           </p>
         </div>
@@ -64,7 +64,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
       <div
         role="tablist"
         aria-label="סינון תוכן"
-        className="mb-6 flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:justify-center sm:overflow-visible md:justify-end"
+        className="mb-6 flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]"
       >
         {tabs.map((t) => {
           const active = filter === t.id;
@@ -75,7 +75,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
               role="tab"
               aria-selected={active}
               onClick={() => setFilterAnimated(t.id)}
-              className={`min-h-[44px] shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 ${
+              className={`min-h-[44px] shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                 active
                   ? "scale-100 bg-herbal-600 text-white shadow-md shadow-herbal-600/25"
                   : "scale-100 border border-herbal-200/90 bg-white/80 text-herbal-900 hover:border-herbal-300 hover:bg-white"
@@ -89,7 +89,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
 
       <div
         key={filter}
-        className={`grid grid-cols-2 gap-3 transition-opacity duration-300 ease-out sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 ${
+        className={`grid grid-cols-2 gap-3 transition-opacity duration-500 ease-out motion-reduce:transition-none sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 ${
           fade ? "opacity-100" : "opacity-0"
         }`}
         style={{ transitionProperty: "opacity" }}
@@ -98,7 +98,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
           <Link
             key={item.id}
             href={item.href}
-            className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-herbal-100/90 bg-white/90 shadow-glass transition duration-300 ease-out hover:-translate-y-1 hover:border-herbal-200 hover:shadow-lift motion-reduce:transition-none"
+            className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-herbal-100/90 bg-white/90 shadow-glass transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none hover:-translate-y-1 hover:border-herbal-200 hover:shadow-lift"
           >
             <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-herbal-50">
               {item.imageUrl ? (
