@@ -1,0 +1,34 @@
+# Golden Rules (HERBAL)
+
+Follow these rules for every task unless the user explicitly overrides them.
+
+## 1. Preservation
+
+- Do **not** change existing UI layouts, spacing contracts, color palette (light green / white herbal theme), typography rhythm, or core business logic unless the user **explicitly** asks for that change.
+- Prefer additive, isolated changes. When in doubt, ask before altering shared behavior.
+
+## 2. Modular Code
+
+- Split new work into **small, reusable components** (one clear responsibility per file).
+- Avoid long monolithic files: extract hooks, subcomponents, and server actions into dedicated modules when a file grows hard to scan or reuse.
+- Match existing import patterns, naming, and folder structure in the repo.
+
+## 3. Safety First
+
+- Before editing a **core** file (layout, auth, Prisma client, global CSS, middleware), **trace usages** (grep / read callers) and confirm the change won’t break dependents.
+- Run typecheck/lint on touched paths when practical. Do not remove error handling or types just to silence warnings without a safe fix.
+
+## 4. Admin Protection
+
+- Keep **admin-only** logic under `src/app/admin/`, server actions clearly scoped, and secrets/API keys **server-side only**.
+- Do not import admin-only modules into public pages or shared client bundles. Public routes must not depend on admin UI state.
+
+## 5. Design System — “Modern Herbal”
+
+- Preserve **soft** motion (respect `prefers-reduced-motion`), centered **max-width** layout (~1320–1400px shell), and restrained shadows/glass panels consistent with the current site.
+- **Therapist / hero imagery:** keep the established **B&W (grayscale + subtle contrast)** treatment where those patterns already apply; don’t introduce clashing filters or neon palettes.
+
+## General
+
+- Obey the user’s explicit scope: no drive-by refactors, no unrelated files, no new markdown/docs unless requested.
+- If a requested change conflicts with these rules, follow the **user’s latest explicit instruction** and note the tradeoff briefly.

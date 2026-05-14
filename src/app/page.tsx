@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import { getVisionSlides } from "@/lib/site-config";
-import { HomeExploreGrid, type ExploreGridItem } from "@/components/home/HomeExploreGrid";
+import { type ExploreGridItem } from "@/components/home/HomeExploreGrid";
+import { HomePortfolioCarousel } from "@/components/home/HomePortfolioCarousel";
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
 import type { ProductType } from "@prisma/client";
 
@@ -108,7 +109,7 @@ export default async function HomePage() {
       <HomeVisionCarousel slides={visionSlides} />
 
       <div className="mt-6 sm:mt-8">
-        <HomeExploreGrid items={gridItems} />
+        <HomePortfolioCarousel items={gridItems} />
       </div>
     </div>
   );

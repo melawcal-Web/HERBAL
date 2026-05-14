@@ -30,7 +30,16 @@ function placeholderGradient(seed: string) {
   return `linear-gradient(135deg, hsl(${hue} 35% 88%) 0%, hsl(${hue} 28% 78%) 100%)`;
 }
 
-function ExploreCardImage({ imageUrl, placeholderSeed }: { imageUrl: string | null; placeholderSeed: string }) {
+export function ExploreCardImage({
+  imageUrl,
+  placeholderSeed,
+  variant = "default",
+}: {
+  imageUrl: string | null;
+  placeholderSeed: string;
+  /** מטפלים: שחור־לבן עדין לפי שפת העיצוב */
+  variant?: "default" | "therapist";
+}) {
   const [broken, setBroken] = useState(false);
   const showImg = Boolean(imageUrl) && !broken;
 
@@ -46,12 +55,17 @@ function ExploreCardImage({ imageUrl, placeholderSeed }: { imageUrl: string | nu
     );
   }
 
+  const imgTone =
+    variant === "therapist"
+      ? "therapist-photo-bw h-full w-full object-cover contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
+      : "h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]";
+
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={imageUrl!}
       alt=""
-      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+      className={imgTone}
       draggable={false}
       onError={() => setBroken(true)}
     />
@@ -122,7 +136,11 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
             className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-herbal-100/90 bg-white/90 shadow-glass transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none hover:-translate-y-1 hover:border-herbal-200 hover:shadow-lift"
           >
             <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-herbal-50">
-              <ExploreCardImage imageUrl={item.imageUrl} placeholderSeed={item.id} />
+              <ExploreCardImage
+                imageUrl={item.imageUrl}
+                placeholderSeed={item.id}
+                variant={item.category === "therapists" ? "therapist" : "default"}
+              />
               <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-herbal-800 shadow-sm backdrop-blur-sm sm:text-[11px]">
                 {item.badge}
               </div>

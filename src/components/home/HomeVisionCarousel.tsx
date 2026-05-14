@@ -74,7 +74,7 @@ function instantJumpToLoopIndex(root: HTMLElement, loopIndex: number) {
   root.style.scrollSnapType = prevSnap || "";
 }
 
-function VisionSlideCover({ imageUrl }: { imageUrl: string }) {
+function VisionSlideCover({ imageUrl, isFocused }: { imageUrl: string; isFocused: boolean }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
@@ -86,20 +86,24 @@ function VisionSlideCover({ imageUrl }: { imageUrl: string }) {
     <img
       src={imageUrl}
       alt=""
-      className="therapist-photo-bw absolute inset-0 z-[1] h-full w-full object-cover contrast-[1.06]"
+      className={`absolute inset-0 z-[1] h-full w-full object-cover transition-[filter,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+        isFocused ? "grayscale-0 opacity-100" : "grayscale contrast-[1.06] opacity-[0.92]"
+      }`}
       onError={() => setFailed(true)}
     />
   );
 }
 
-function VisionSlideCard({ slide, loopIndex }: { slide: VisionSlide; loopIndex: number }) {
+function VisionSlideCard({ slide, loopIndex, isFocused }: { slide: VisionSlide; loopIndex: number; isFocused: boolean }) {
   const from = slide.gradientFrom;
   const to = slide.gradientTo;
   const hasSoftBg = Boolean(from && to);
   return (
     <article
       data-loop-index={loopIndex}
-      className="relative h-[min(52vh,480px)] min-h-[400px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:min-h-[420px] sm:rounded-[2rem]"
+      className={`relative h-[min(52vh,480px)] min-h-[400px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md transition-[transform,box-shadow,filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:min-h-[420px] sm:rounded-[2rem] ${
+        isFocused ? "ring-2 ring-herbal-400/50 shadow-lift" : "ring-1 ring-white/70"
+      }`}
       style={{ width: "min(90cqw, 560px)" }}
     >
       {hasSoftBg && (
@@ -110,7 +114,7 @@ function VisionSlideCard({ slide, loopIndex }: { slide: VisionSlide; loopIndex: 
         />
       )}
       {slide.imageUrl ? (
-        <VisionSlideCover imageUrl={slide.imageUrl} />
+        <VisionSlideCover imageUrl={slide.imageUrl} isFocused={isFocused} />
       ) : (
         <div className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_30%_20%,rgba(74,146,80,0.22),transparent_55%),linear-gradient(160deg,rgba(255,255,255,0.95),rgba(227,242,228,0.88))]" />
       )}
@@ -144,6 +148,7 @@ function VisionSlideCard({ slide, loopIndex }: { slide: VisionSlide; loopIndex: 
 export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [realIndex, setRealIndex] = useState(() => (slides.length <= 1 ? 0 : Math.floor((slides.length - 1) / 2)));
+  const [focusedLoopIndex, setFocusedLoopIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const jumpLock = useRef(false);
 
@@ -168,6 +173,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
     jumpLock.current = true;
     instantJumpToLoopIndex(root, midDom);
     setRealIndex(midReal);
+    setFocusedLoopIndex(n <= 1 ? 0 : midDom);
     requestAnimationFrame(() => {
       jumpLock.current = false;
     });
@@ -183,6 +189,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
       setRealIndex(n - 1);
       requestAnimationFrame(() => {
         jumpLock.current = false;
+        setFocusedLoopIndex(getCenteredLoopIndex(root));
       });
       return;
     }
@@ -192,24 +199,42 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
       setRealIndex(0);
       requestAnimationFrame(() => {
         jumpLock.current = false;
+        setFocusedLoopIndex(getCenteredLoopIndex(root));
       });
       return;
     }
-    if (li >= 1 && li <= n) setRealIndex(li - 1);
+    if (li >= 1 && li <= n) {
+      setRealIndex(li - 1);
+      setFocusedLoopIndex(li);
+    }
   }, [n]);
 
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root || n <= 1) return;
     let t: number | undefined;
+    let raf = 0;
+    const syncFocus = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (jumpLock.current) return;
+        setFocusedLoopIndex(getCenteredLoopIndex(root));
+      });
+    };
     const onScroll = () => {
+      syncFocus();
       if (t !== undefined) window.clearTimeout(t);
       t = window.setTimeout(() => settle(), 140);
     };
+    const onEnd = () => {
+      syncFocus();
+      settle();
+    };
     root.addEventListener("scroll", onScroll, { passive: true });
-    const onEnd = () => settle();
     root.addEventListener("scrollend", onEnd);
+    syncFocus();
     return () => {
+      cancelAnimationFrame(raf);
       root.removeEventListener("scroll", onScroll);
       root.removeEventListener("scrollend", onEnd);
       if (t !== undefined) window.clearTimeout(t);
@@ -285,7 +310,12 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
           >
             <div aria-hidden className="shrink-0 snap-none" style={sidePadStyle} />
             {loop.map((item) => (
-              <VisionSlideCard key={item.key} slide={item.slide} loopIndex={item.loopIndex} />
+              <VisionSlideCard
+                key={item.key}
+                slide={item.slide}
+                loopIndex={item.loopIndex}
+                isFocused={n <= 1 || item.loopIndex === focusedLoopIndex}
+              />
             ))}
             <div aria-hidden className="shrink-0 snap-none" style={sidePadStyle} />
           </div>
