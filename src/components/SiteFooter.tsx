@@ -30,14 +30,8 @@ export function SiteFooter() {
           <Link href="/marketplace" className="link-pill min-h-[44px] inline-flex items-center">
             Marketplace
           </Link>
-          <Link href="/auth/register" className="link-pill min-h-[44px] inline-flex items-center">
+          <Link href="/auth" className="link-pill min-h-[44px] inline-flex items-center">
             Join
-          </Link>
-          <Link
-            href="/admin"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-amber-300/80 bg-gradient-to-br from-amber-50 to-amber-100/90 px-4 text-amber-950 shadow-sm backdrop-blur-sm transition hover:scale-[1.02] hover:shadow-md"
-          >
-            כניסה לניהול
           </Link>
         </div>
         <p className="mt-8 text-xs text-slate-500" title="נקבע בזמן בילד האחרון ב-Vercel">

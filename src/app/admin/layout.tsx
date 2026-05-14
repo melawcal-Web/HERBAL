@@ -1,16 +1,19 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { AdminNav } from "@/components/AdminNav";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin?callbackUrl=/admin/log");
+  }
+  if (session.user.role !== "admin") {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <div
-        className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-right text-sm text-amber-950"
-        role="status"
-      >
-        <strong>מצב ניהול פתוח</strong> — ללא התחברות (לבקשתכם לשלב זה). לפני שימוש ציבורי: להחזיר הגנת מנהל ב־middleware ובדפים.
-      </div>
-
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold text-herbal-900 sm:text-3xl">מרכז ניהול</h1>
         <Link href="/" className="text-sm font-medium text-herbal-700 underline-offset-4 hover:underline">

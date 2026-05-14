@@ -1,12 +1,26 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import type { UserRole } from "@prisma/client";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
 
+const googleId = process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID;
+const googleSecret = process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   providers: [
+    ...(googleId && googleSecret
+      ? [
+          Google({
+            clientId: googleId,
+            clientSecret: googleSecret,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -34,4 +48,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        await prisma.user.upsert({
+          where: { email: user.email },
+          update: {
+            name: user.name ?? undefined,
+            image: user.image ?? undefined,
+          },
+          create: {
+            email: user.email,
+            name: user.name ?? "משתמש/ת",
+            image: user.image ?? null,
+            passwordHash: null,
+            role: "client",
+          },
+        });
+      }
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user?.email) {
+        const row = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, role: true },
+        });
+        if (row) {
+          token.id = row.id;
+          token.role = row.role;
+          return token;
+        }
+      }
+      if (user) {
+        token.id = user.id;
+        token.role = ((user as { role?: UserRole }).role ?? "client") as UserRole;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.id as string) ?? session.user.id;
+        session.user.role = (token.role as UserRole) ?? "client";
+      }
+      return session;
+    },
+  },
 });

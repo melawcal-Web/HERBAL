@@ -7,6 +7,7 @@ const tabs = [
   { href: "/admin/log", label: "לוג" },
   { href: "/admin/links", label: "קישורים" },
   { href: "/admin/content", label: "ניהול תוכן (Content)" },
+  { href: "/admin/products", label: "מוצרים" },
 ];
 
 export function AdminNav() {

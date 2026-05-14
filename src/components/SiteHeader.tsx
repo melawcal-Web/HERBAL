@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Session } from "next-auth";
 import { signOutAction } from "@/app/actions/auth";
+import { HeaderSearch } from "@/components/HeaderSearch";
 
 const menuLinks = [
   { href: "/therapists", label: "מטפלים" },
@@ -50,26 +51,51 @@ export function SiteHeader({ session, siteTitle }: { session: Session | null; si
     };
   }, [open]);
 
+  const displayName = session?.user?.name?.trim() || session?.user?.email?.trim() || null;
+
   return (
     <header className="sticky top-0 z-50 pt-3 sm:pt-4">
-      <div className="glass-panel-strong flex items-center justify-between gap-4 rounded-2xl px-4 py-3 shadow-glass transition-shadow duration-300 ease-out sm:px-5 sm:py-3.5">
+      <div className="glass-panel-strong flex flex-wrap items-center justify-between gap-2 rounded-2xl px-3 py-2.5 shadow-glass transition-shadow duration-300 ease-out sm:gap-3 sm:px-5 sm:py-3.5">
         <Link
           href="/"
-          className="min-w-0 flex-1 font-display text-base font-bold leading-snug text-gradient-herbal transition-opacity duration-200 hover:opacity-90 sm:text-lg"
+          className="min-w-0 shrink font-display text-base font-bold leading-snug text-gradient-herbal transition-opacity duration-200 hover:opacity-90 sm:text-lg"
           onClick={() => setOpen(false)}
         >
           {siteTitle}
         </Link>
-        <button
-          type="button"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-herbal-200/80 bg-white/80 text-herbal-900 shadow-sm transition-colors duration-200 hover:border-herbal-300 hover:bg-white motion-reduce:transition-none"
-          aria-expanded={open}
-          aria-controls="site-nav-drawer"
-          aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"}
-          onClick={() => setOpen((o) => !o)}
-        >
-          <HamburgerIcon open={open} />
-        </button>
+
+        <div className="order-3 flex min-w-0 flex-[1_1_100%] items-center justify-end gap-2 sm:order-none sm:flex-[1_1_auto] sm:justify-center">
+          <HeaderSearch />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          {session?.user ? (
+            <Link
+              href="/dashboard"
+              className="max-w-[10rem] truncate text-sm font-semibold text-herbal-900 underline-offset-4 transition hover:underline sm:max-w-[14rem]"
+              title={displayName ?? "לוח בקרה"}
+            >
+              {displayName ?? "לוח בקרה"}
+            </Link>
+          ) : (
+            <Link
+              href="/auth"
+              className="rounded-full border border-herbal-600 bg-herbal-600 px-3 py-2 text-xs font-bold tracking-wide text-white shadow-sm transition hover:bg-herbal-700 sm:px-4 sm:text-sm"
+            >
+              LOG IN
+            </Link>
+          )}
+          <button
+            type="button"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-herbal-200/80 bg-white/80 text-herbal-900 shadow-sm transition-colors duration-200 hover:border-herbal-300 hover:bg-white motion-reduce:transition-none"
+            aria-expanded={open}
+            aria-controls="site-nav-drawer"
+            aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <HamburgerIcon open={open} />
+          </button>
+        </div>
       </div>
 
       <div
@@ -131,18 +157,11 @@ export function SiteHeader({ session, siteTitle }: { session: Session | null; si
           ) : (
             <>
               <Link
-                href="/auth/signin"
+                href="/auth"
                 className="min-h-[48px] rounded-xl px-3 py-3 text-base font-medium text-herbal-900 transition-colors duration-200 hover:bg-herbal-50"
                 onClick={() => setOpen(false)}
               >
-                כניסה
-              </Link>
-              <Link
-                href="/auth/register"
-                className="min-h-[48px] rounded-xl px-3 py-3 text-base font-semibold text-herbal-700 transition-colors duration-200 hover:bg-herbal-50"
-                onClick={() => setOpen(false)}
-              >
-                הרשמה
+                כניסה / הרשמה
               </Link>
             </>
           )}
@@ -151,4 +170,3 @@ export function SiteHeader({ session, siteTitle }: { session: Session | null; si
     </header>
   );
 }
-

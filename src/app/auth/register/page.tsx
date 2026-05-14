@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -35,7 +37,17 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="font-display text-2xl text-herbal-900">הרשמה מאובטחת</h1>
       <p className="mt-2 text-slate-600">בחרו תפקיד: לקוח לגלישה במטפלים ובאינדקס, או מטפל לכלי EMR.</p>
-      <form onSubmit={onSubmit} className="mt-8 space-y-4">
+      <div className="mt-8 space-y-3">
+        <GoogleSignInButton callbackUrl="/dashboard" />
+      </div>
+
+      <div className="my-8 flex items-center gap-3">
+        <span className="h-px flex-1 bg-herbal-200" aria-hidden />
+        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-slate-500">או הרשמה באימייל</span>
+        <span className="h-px flex-1 bg-herbal-200" aria-hidden />
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="text-sm font-medium text-slate-700">שם מלא</label>
           <input
@@ -98,6 +110,15 @@ export default function RegisterPage() {
           {loading ? "נרשמים…" : "צור חשבון"}
         </button>
       </form>
+      <p className="mt-8 text-center text-sm text-slate-600">
+        <Link href="/auth/signin" className="font-semibold text-herbal-800 underline-offset-4 hover:underline">
+          כבר רשומים? כניסה
+        </Link>
+        {" · "}
+        <Link href="/auth" className="text-herbal-700 underline-offset-4 hover:underline">
+          דף כניסה והרשמה
+        </Link>
+      </p>
     </div>
   );
 }
