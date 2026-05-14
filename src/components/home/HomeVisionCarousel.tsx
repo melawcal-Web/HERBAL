@@ -201,9 +201,9 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root || n <= 1) return;
-    let t: ReturnType<typeof setTimeout> | undefined;
+    let t: number | undefined;
     const onScroll = () => {
-      if (t) window.clearTimeout(t);
+      if (t !== undefined) window.clearTimeout(t);
       t = window.setTimeout(() => settle(), 140);
     };
     root.addEventListener("scroll", onScroll, { passive: true });
@@ -212,7 +212,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
     return () => {
       root.removeEventListener("scroll", onScroll);
       root.removeEventListener("scrollend", onEnd);
-      if (t) window.clearTimeout(t);
+      if (t !== undefined) window.clearTimeout(t);
     };
   }, [n, settle, slideSig]);
 
