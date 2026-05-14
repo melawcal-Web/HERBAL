@@ -76,6 +76,18 @@ body {
     background: rgba(74, 146, 80, 0.45);
   }
 
+  /** קרוסלת חזון בדף הבית: גלילה/גרירה — בלי פס גלילה גלוי */
+  .hero-vision-hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hero-vision-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
   .therapist-photo-bw {
     filter: grayscale(100%) contrast(1.08);
   }

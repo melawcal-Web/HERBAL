@@ -142,7 +142,7 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
         <div
           ref={scrollerRef}
           dir="ltr"
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6"
+          className="hero-vision-hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6"
           style={{
             scrollPaddingInline: "max(6px, calc((100cqw - min(90cqw, 560px)) / 2))",
           }}
