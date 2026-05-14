@@ -107,7 +107,7 @@ export default async function HomePage() {
     <div className="w-full max-w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
       <HomeVisionCarousel slides={visionSlides} />
 
-      <div className="mt-8 sm:mt-10">
+      <div className="mt-4 sm:mt-6">
         <HomeExploreGrid items={gridItems} />
       </div>
     </div>

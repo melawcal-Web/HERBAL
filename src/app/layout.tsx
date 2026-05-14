@@ -37,7 +37,7 @@ export default async function RootLayout({
       >
         <AmbientBackground />
         <Providers>
-          <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col px-3 sm:px-5">
+          <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1320px] flex-col px-3 sm:px-5">
             <SiteHeader session={session} siteTitle={siteTitle} />
             <main className="relative flex-1 transition-opacity duration-300 ease-out">{children}</main>
             <SiteFooter />

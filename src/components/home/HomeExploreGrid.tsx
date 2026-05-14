@@ -77,7 +77,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   }, [filter]);
 
   return (
-    <section className="mt-6 sm:mt-8" aria-labelledby="explore-tabs-label">
+    <section className="mt-0 w-full max-w-full" aria-labelledby="explore-tabs-label">
       <h2 id="explore-tabs-label" className="sr-only">
         סינון תוכן — מטפלים, מרקט ואינדקס צמחים
       </h2>
