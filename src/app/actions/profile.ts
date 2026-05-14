@@ -32,7 +32,10 @@ export async function updateTherapistProfile(input: {
     throw new Error("כתובת הדף (slug) תפוסה");
   }
 
-  const prev = await prisma.therapistProfile.findUnique({ where: { userId: session.user.id } });
+  const prev = await prisma.therapistProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { slug: true, id: true },
+  });
 
   await prisma.therapistProfile.update({
     where: { userId: session.user.id },
@@ -64,7 +67,15 @@ export async function updateTherapistProfile(input: {
     metadata: { fromSlug: prev?.slug, toSlug: input.slug },
   });
 
+  const nextProfile = await prisma.therapistProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { slug: true, id: true },
+  });
+
   revalidatePath("/dashboard/profile");
+  revalidatePath("/therapists");
   if (prev?.slug) revalidatePath(`/t/${prev.slug}`);
-  revalidatePath(`/t/${input.slug}`);
+  if (prev?.id) revalidatePath(`/therapists/${prev.id}`);
+  if (nextProfile?.slug) revalidatePath(`/t/${nextProfile.slug}`);
+  if (nextProfile?.id) revalidatePath(`/therapists/${nextProfile.id}`);
 }

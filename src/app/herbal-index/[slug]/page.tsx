@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,7 +20,7 @@ export default async function HerbalArticlePage({ params }: Props) {
   const article = await prisma.herbalArticle.findUnique({
     where: { slug, published: true },
     include: {
-      therapist: { select: { name: true, therapistProfile: { select: { slug: true } } } },
+      therapist: { select: { name: true, therapistProfile: { select: { slug: true, id: true } } } },
     },
   });
   if (!article) notFound();
@@ -28,7 +29,7 @@ export default async function HerbalArticlePage({ params }: Props) {
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <p className="text-sm text-sage">
         {article.therapist.therapistProfile ? (
-          <Link href={`/t/${article.therapist.therapistProfile.slug}`} className="underline">
+          <Link href={therapistPublicHref(article.therapist.therapistProfile.id)} className="underline">
             {article.therapist.name}
           </Link>
         ) : (

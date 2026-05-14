@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 export type TherapistShowcaseItem = {
+  id: string;
   slug: string;
   name: string;
   image: string | null;
@@ -42,7 +44,7 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
 
   const n = items.length;
 
-  const slugKey = items.map((x) => x.slug).join("|");
+  const slugKey = items.map((x) => x.id).join("|");
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -270,13 +272,13 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
           const v = visuals[i] ?? { parallaxX: 0 };
           return (
             <article
-              key={t.slug}
+              key={t.id}
               data-showcase-card={i}
               className="shrink-0 snap-center"
               style={{ width: "min(82cqw, 400px)" }}
             >
               <Link
-                href={`/t/${t.slug}`}
+                href={therapistPublicHref(t.id)}
                 onClick={onLinkClick}
                 className="group block h-[clamp(440px,min(64vh,620px),620px)] w-full overflow-hidden rounded-[1.75rem] border border-white/20 bg-herbal-900/30 shadow-[0_28px_56px_-18px_rgba(36,63,39,0.45)] ring-1 ring-black/10 transition-shadow duration-500 hover:shadow-[0_36px_72px_-20px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-400 focus-visible:ring-offset-4 sm:rounded-[2rem]"
               >
@@ -321,7 +323,7 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
         <div className="flex justify-center gap-2 pb-2">
           {items.map((item, idx) => (
             <button
-              key={item.slug}
+              key={item.id}
               type="button"
               onClick={() => {
                 scrollRef.current?.querySelector<HTMLElement>(`[data-showcase-card="${idx}"]`)?.scrollIntoView({

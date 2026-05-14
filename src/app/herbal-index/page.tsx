@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 export const metadata = {
   title: "אינדקס צמחים",
@@ -9,7 +10,7 @@ export default async function HerbalIndexPage() {
   const articles = await prisma.herbalArticle.findMany({
     where: { published: true },
     include: {
-      therapist: { select: { name: true, therapistProfile: { select: { slug: true } } } },
+      therapist: { select: { name: true, therapistProfile: { select: { slug: true, id: true } } } },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -31,7 +32,7 @@ export default async function HerbalIndexPage() {
               <p className="mt-3 text-sm text-sage">
                 מטפל/ת:{" "}
                 {a.therapist.therapistProfile ? (
-                  <Link className="underline" href={`/t/${a.therapist.therapistProfile.slug}`}>
+                  <Link className="underline" href={therapistPublicHref(a.therapist.therapistProfile.id)}>
                     {a.therapist.name}
                   </Link>
                 ) : (

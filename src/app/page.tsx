@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import { getHomeHeroCopy, getVisionSlides } from "@/lib/site-config";
+import { therapistPublicHref } from "@/lib/therapist-public";
 import { type ExploreGridItem } from "@/components/home/HomeExploreGrid";
 import { HomePortfolioCarousel } from "@/components/home/HomePortfolioCarousel";
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
@@ -75,7 +76,7 @@ export default async function HomePage() {
       category: "therapists",
       title: p.user.name,
       subtitle: clip(spec || p.bio, 120),
-      href: `/t/${p.slug}`,
+      href: therapistPublicHref(p.id),
       imageUrl: gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists")),
       badge: "מטפל",
     });

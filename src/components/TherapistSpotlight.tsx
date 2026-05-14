@@ -3,8 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 export type SpotlightTherapist = {
+  id: string;
   slug: string;
   name: string;
   image: string | null;
@@ -145,9 +147,9 @@ export function TherapistSpotlight({ therapists }: { therapists: SpotlightTherap
         >
           {therapists.map((t, i) => (
             <Link
-              key={t.slug}
+              key={t.id}
               data-slide-index={i}
-              href={`/t/${t.slug}`}
+              href={therapistPublicHref(t.id)}
               className="group relative h-[min(68vh,620px)] w-[min(92vw,780px)] shrink-0 snap-center overflow-hidden rounded-[2rem] border border-white/25 bg-herbal-900/20 shadow-[0_24px_48px_-12px_rgba(36,63,39,0.35)] ring-1 ring-black/10 transition duration-500 hover:-translate-y-1 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.45)] hover:ring-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-herbal-500"
             >
               {t.image ? (
@@ -194,7 +196,7 @@ export function TherapistSpotlight({ therapists }: { therapists: SpotlightTherap
         <div className="flex justify-center gap-2 pb-2">
           {therapists.map((item, idx) => (
             <button
-              key={item.slug}
+              key={item.id}
               type="button"
               onClick={() => scrollToIndex(idx)}
               className={`h-2.5 rounded-full transition-all ${

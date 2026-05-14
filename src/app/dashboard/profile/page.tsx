@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { assertTherapist } from "@/lib/formula";
+import { therapistPublicHref } from "@/lib/therapist-public";
 import { ProfileForm } from "./profile-form";
 
 export default async function TherapistProfilePage() {
@@ -29,7 +30,13 @@ export default async function TherapistProfilePage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-3xl text-herbal-900">פרופיל מטפל/ת</h1>
-      <p className="mt-2 text-slate-600">הדף הציבורי זמין בכתובת /t/{profile.slug}</p>
+      <p className="mt-2 text-slate-600">
+        הדף הציבורי:{" "}
+        <code className="rounded bg-herbal-50 px-1.5 py-0.5 text-sm" dir="ltr">
+          {therapistPublicHref(profile.id)}
+        </code>{" "}
+        (קישור ישן <code className="rounded bg-herbal-50 px-1.5 py-0.5 text-sm" dir="ltr">/t/{profile.slug}</code> מפנה לכאן)
+      </p>
       <div className="mt-8">
         <ProfileForm
           initial={{

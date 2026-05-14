@@ -15,6 +15,7 @@ export default async function TherapistsDirectoryPage() {
   });
 
   const items: TherapistShowcaseItem[] = therapists.map((t) => ({
+    id: t.id,
     slug: t.slug,
     name: t.user.name ?? "מטפל/ת",
     image: t.user.image,
