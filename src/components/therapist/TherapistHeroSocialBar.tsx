@@ -13,11 +13,10 @@ import {
   type ParsedSocialLinks,
 } from "@/lib/therapist-contact";
 
-function iconWrap(
-  href: string,
-  label: string,
-  children: React.ReactNode,
-) {
+const iconClass =
+  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/35 bg-black/40 text-white shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:bg-black/55 hover:border-white/50 motion-reduce:transition-none sm:h-11 sm:w-11";
+
+function iconWrap(href: string, label: string, children: React.ReactNode) {
   return (
     <a
       href={href}
@@ -25,7 +24,7 @@ function iconWrap(
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/50 text-white shadow-[0_2px_14px_rgba(0,0,0,0.55)] backdrop-blur-md transition hover:bg-black/65 hover:shadow-[0_4px_18px_rgba(0,0,0,0.65)] motion-reduce:transition-none"
+      className={iconClass}
     >
       {children}
     </a>
@@ -82,6 +81,10 @@ function IconMail({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Minimal white icon buttons overlaid on the hero photo.
+ * Phone is anchored to the visual bottom-left; other channels align to the end side.
+ */
 export function TherapistHeroSocialBar({
   contact,
   social,
@@ -96,21 +99,30 @@ export function TherapistHeroSocialBar({
   const fb = social.facebook ? buildFacebookHref(social.facebook) : null;
   const tt = social.tiktok ? buildTikTokHref(social.tiktok) : null;
 
-  const items: ReactNode[] = [];
-  if (tt) items.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />));
-  if (ig) items.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />));
-  if (fb) items.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />));
-  if (wa) items.push(iconWrap(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />));
-  if (phone) items.push(iconWrap(buildTelHref(phone), "טלפון", <IconPhone className="h-5 w-5" />));
+  const phoneNode = phone ? iconWrap(buildTelHref(phone), "טלפון", <IconPhone className="h-[1.1rem] w-[1.1rem] sm:h-5 sm:w-5" />) : null;
+
+  const rest: ReactNode[] = [];
+  if (tt) rest.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />));
+  if (ig) rest.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />));
+  if (fb) rest.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />));
+  if (wa) rest.push(iconWrap(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />));
   if (email && isProbablyValidEmail(email)) {
-    items.push(iconWrap(buildMailto(email), "אימייל", <IconMail className="h-5 w-5" />));
+    rest.push(iconWrap(buildMailto(email), "אימייל", <IconMail className="h-5 w-5" />));
   }
 
-  if (items.length === 0) return null;
+  if (!phoneNode && rest.length === 0) return null;
 
   return (
-    <div className="pointer-events-auto mb-5 flex flex-wrap justify-end gap-2 sm:mb-6">
-      {items}
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between px-4 pb-4 sm:px-6 sm:pb-5"
+      aria-label="יצירת קשר"
+    >
+      <div className="pointer-events-auto min-h-[2.5rem] min-w-[2.5rem]">{phoneNode}</div>
+      {rest.length > 0 ? (
+        <div className="pointer-events-auto flex flex-wrap justify-end gap-1.5 sm:gap-2">{rest}</div>
+      ) : (
+        <span className="min-w-[2.5rem]" />
+      )}
     </div>
   );
 }

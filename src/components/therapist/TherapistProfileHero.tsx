@@ -8,7 +8,7 @@ type Props = {
   imageUrl: string | null;
   fallbackLetter: string;
   therapistName: string;
-  /** אזור פעילות / מיקום קליני */
+  /** שם העיר בלבד */
   serviceCity: string | null;
   specialties: string[];
   contact: ParsedContactInfo;
@@ -16,8 +16,7 @@ type Props = {
 };
 
 /**
- * Hero: full-bleed photo (default B&W per design system) + optional color toggle.
- * High-contrast overlay: name, location, specialties.
+ * Hero: full-bleed photo (B&W default) + bottom band aligning title, name, city, tags, and overlay contact icons.
  */
 export function TherapistProfileHero({
   imageUrl,
@@ -61,41 +60,48 @@ export function TherapistProfileHero({
         </button>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-10 pt-24 text-right sm:px-10 sm:pb-12 sm:pt-32 md:px-12 md:pb-14">
-        <p
-          className="text-[10px] font-bold uppercase tracking-[0.32em] text-emerald-200/95 sm:text-[11px]"
-          style={{ textShadow: "0 2px 14px rgba(0,0,0,0.85)" }}
-        >
-          מטפל/ת צמחי מרפא
-        </p>
-        <h1
-          className="mt-3 font-display text-[clamp(2rem,6.5vw,3.75rem)] font-bold leading-[1.05] tracking-tight text-white md:text-[clamp(2.5rem,4.2vw,4.25rem)]"
-          style={{ textShadow: "0 4px 28px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,1)" }}
-        >
-          {therapistName}
-        </h1>
-        {serviceCity ? (
-          <p
-            className="mt-3 text-base font-semibold text-white/95 sm:text-lg"
-            style={{ textShadow: "0 2px 16px rgba(0,0,0,0.85)" }}
-          >
-            אזור עבודה · {serviceCity}
-          </p>
-        ) : null}
-        {specialties.length > 0 ? (
-          <ul className="mt-5 flex max-w-3xl flex-wrap justify-end gap-2 sm:mt-6 sm:gap-2.5">
-            {specialties.map((s) => (
-              <li
-                key={s}
-                className="rounded-full border border-white/35 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm"
-                style={{ textShadow: "0 1px 8px rgba(0,0,0,0.75)" }}
+      <TherapistHeroSocialBar contact={contact} social={social} />
+
+      {/* Bottom band: identity + pills share one horizontal visual region; icons sit on lowest row */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-[4.25rem] pt-24 text-right sm:px-8 sm:pb-[4.5rem] sm:pt-28 md:px-12 md:pb-24 md:pt-32">
+        <div className="mx-auto flex w-full max-w-5xl flex-col items-stretch gap-5 md:flex-row md:items-end md:justify-between md:gap-10">
+          <div className="md:max-w-[58%]">
+            <p
+              className="text-[11px] font-medium tracking-[0.18em] text-white/88 sm:text-xs"
+              style={{ textShadow: "0 2px 14px rgba(0,0,0,0.85)" }}
+            >
+              מטפל/ת בצמחי מרפא
+            </p>
+            <h1
+              className="mt-2 font-display text-[clamp(2.15rem,6.2vw,3.85rem)] font-bold leading-[1.04] tracking-tight text-white md:text-[clamp(2.45rem,3.8vw,4.1rem)]"
+              style={{ textShadow: "0 4px 28px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,1)" }}
+            >
+              {therapistName}
+            </h1>
+            {serviceCity ? (
+              <p
+                className="mt-2 text-lg font-semibold text-white/95 sm:text-xl"
+                style={{ textShadow: "0 2px 16px rgba(0,0,0,0.85)" }}
               >
-                {s}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <TherapistHeroSocialBar contact={contact} social={social} />
+                {serviceCity}
+              </p>
+            ) : null}
+          </div>
+
+          {specialties.length > 0 ? (
+            <ul className="flex flex-wrap justify-center gap-2 md:max-w-[42%] md:justify-end md:pb-1">
+              {specialties.map((s) => (
+                <li
+                  key={s}
+                  className="rounded-full border border-white/40 bg-white/12 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm"
+                  style={{ textShadow: "0 1px 10px rgba(0,0,0,0.75)" }}
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
     </div>
   );

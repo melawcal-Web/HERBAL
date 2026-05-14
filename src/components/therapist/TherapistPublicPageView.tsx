@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { HerbalArticle, TherapistProfile, User } from "@prisma/client";
 import { CommunityBanner } from "@/components/CommunityBanner";
-import { TherapistProfileContact } from "@/components/TherapistProfileContact";
 import { TherapistProfileHero } from "@/components/therapist/TherapistProfileHero";
 import { parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
 
@@ -25,7 +24,6 @@ export function TherapistPublicPageView({
   const social = parseSocialLinks(profile.socialLinks);
   const specs = specialtyList(profile.specialty1, profile.specialty2, profile.specialty3);
   const city = contact.city?.trim() || null;
-  const clinical = profile.clinicalExperience?.trim();
 
   return (
     <>
@@ -44,31 +42,13 @@ export function TherapistPublicPageView({
 
         <div className="mx-auto max-w-3xl space-y-14 px-4 py-14 sm:space-y-16 sm:px-6 sm:py-16 md:py-20">
           <section aria-labelledby="about-heading">
-            <p className={sectionLabel}>אודותיי</p>
+            <p className={sectionLabel}>ביוגרפיה</p>
             <h2 id="about-heading" className="sr-only">
-              אודות {profile.user.name}
+              ביוגרפיה — {profile.user.name}
             </h2>
             <p className="mt-5 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">
               {profile.bio}
             </p>
-          </section>
-
-          {clinical ? (
-            <section aria-labelledby="clinical-heading">
-              <p className={sectionLabel}>ניסיון קליני והשכלה</p>
-              <h2 id="clinical-heading" className="sr-only">
-                ניסיון מקצועי
-              </h2>
-              <div className="mt-5 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{clinical}</div>
-            </section>
-          ) : null}
-
-          <section aria-labelledby="contact-heading" className="border-t border-neutral-200/90 pt-12">
-            <p id="contact-heading" className={sectionLabel}>
-              פרטי התקשרות
-            </p>
-            <h2 className="sr-only">יצירת קשר</h2>
-            <TherapistProfileContact contact={contact} social={social} appearance="minimal" />
           </section>
 
           <section className="border-t border-neutral-200/90 pt-12" aria-labelledby="articles-heading">

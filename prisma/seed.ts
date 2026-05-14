@@ -6,26 +6,47 @@ const prisma = new PrismaClient();
 
 const U = "auto=format&fit=crop&w=1600&q=85";
 
-/** High-quality Unsplash portraits & scenes for demo therapists */
+/** Fallback Unsplash URLs when `UNSPLASH_ACCESS_KEY` is unset or the API fails */
 const IMG_RONIT = `https://images.unsplash.com/photo-1551836022-d5d88e9218df?${U}`;
 const IMG_SHIRA = `https://images.unsplash.com/photo-1573496359142-b8d87734a5a?${U}`;
 const IMG_MICHAEL = `https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?${U}`;
 const IMG_YAEL = `https://images.unsplash.com/photo-1594824476967-48c8b964273f?${U}`;
-const IMG_DAN = `https://images.unsplash.com/photo-1582750433449-648ed127bb54?${U}`;
+const IMG_ERAN = `https://images.unsplash.com/photo-1582750433449-648ed127bb54?${U}`;
 
-/** Courses & workshops placeholder visuals */
 const IMG_ZOOM = `https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?${U}`;
 const IMG_WORKSHOP = `https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?${U}`;
 const IMG_SUPERVISION = `https://images.unsplash.com/photo-1522071820081-009f0129c71c?${U}`;
 const IMG_SHELF = `https://images.unsplash.com/photo-1470058869958-2a77ade41c02?${U}`;
 const IMG_ZOOM2 = `https://images.unsplash.com/photo-1515378791036-0648a3c77a02?${U}`;
 
-/** Herbal index — botanical / spice photography (Unsplash) */
-const COVER_CURCUMA = `https://images.unsplash.com/photo-1578662996442-48f60103fc96?${U}`;
-const COVER_ASHWAGANDHA = `https://images.unsplash.com/photo-1608571423902-eed4ae3ffa5a?${U}`;
-const COVER_SAGE = `https://images.unsplash.com/photo-1464226184884-fa280b87c399?${U}`;
-const COVER_GINKGO = `https://images.unsplash.com/photo-1470058869958-2a77ade41c02?${U}`;
-const COVER_ROSEMARY = `https://images.unsplash.com/photo-1509440159596-0249088772ff?${U}`;
+const FB_CHAMOMILE = `https://images.unsplash.com/photo-1587049633316-d646a567487c?${U}`;
+const FB_LAVENDER = `https://images.unsplash.com/photo-1498579687545-d5a4fffb0ce9?${U}`;
+const FB_MINT = `https://images.unsplash.com/photo-1620706857358-5c1c9caeb6a8?${U}`;
+const FB_OATS = `https://images.unsplash.com/photo-1517686469429-8bdb88b9a906?${U}`;
+const FB_HYSSOP = `https://images.unsplash.com/photo-1592417814088-3b2be6b3c6ff?${U}`;
+
+async function unsplashImage(
+  query: string,
+  fallback: string,
+  orientation?: "portrait" | "landscape",
+): Promise<string> {
+  const key = process.env.UNSPLASH_ACCESS_KEY?.trim();
+  if (!key) return fallback;
+  try {
+    const qs = new URLSearchParams({ query });
+    if (orientation) qs.set("orientation", orientation);
+    const res = await fetch(`https://api.unsplash.com/photos/random?${qs}`, {
+      headers: { Authorization: `Client-ID ${key}` },
+    });
+    if (!res.ok) return fallback;
+    const data = (await res.json()) as { urls?: { raw?: string; regular?: string } };
+    const base = data.urls?.raw ?? data.urls?.regular;
+    if (!base) return fallback;
+    return base.includes("?") ? `${base}&w=1600&q=85&fit=crop&auto=format` : `${base}?w=1600&q=85&fit=crop&auto=format`;
+  } catch {
+    return fallback;
+  }
+}
 
 async function ensureProduct(data: {
   type: ProductType;
@@ -47,50 +68,84 @@ async function main() {
   /** Fresh demo catalog for קורסים וסדנאות (avoid duplicate rows when titles change) */
   await prisma.product.deleteMany({});
 
+  const [
+    imgRonit,
+    imgShira,
+    imgMichael,
+    imgYael,
+    imgEran,
+    covChamomile,
+    covLavender,
+    covMint,
+    covOats,
+    covHyssop,
+    imgWorkshop,
+    imgZoom,
+    imgAnxiety,
+    imgSupervision,
+    imgDigest,
+  ] = await Promise.all([
+    unsplashImage("professional woman clinical portrait herbal medicine", IMG_RONIT, "portrait"),
+    unsplashImage("woman therapist portrait natural light studio", IMG_SHIRA, "portrait"),
+    unsplashImage("male doctor portrait professional headshot", IMG_MICHAEL, "portrait"),
+    unsplashImage("woman wellness portrait soft professional", IMG_YAEL, "portrait"),
+    unsplashImage("young man professional portrait outdoor", IMG_ERAN, "portrait"),
+    unsplashImage("chamomile flowers botanical close up", FB_CHAMOMILE, "landscape"),
+    unsplashImage("lavender field purple flowers botanical", FB_LAVENDER, "landscape"),
+    unsplashImage("fresh mint leaves green macro", FB_MINT, "landscape"),
+    unsplashImage("oat grains porridge healthy botanical", FB_OATS, "landscape"),
+    unsplashImage("oregano herbs fresh green botanical", FB_HYSSOP, "landscape"),
+    unsplashImage("herbal workshop mortar pestle plants", IMG_WORKSHOP, "landscape"),
+    unsplashImage("online zoom learning laptop workshop", IMG_ZOOM, "landscape"),
+    unsplashImage("meditation calm tea herbs workshop", IMG_ZOOM2, "landscape"),
+    unsplashImage("team supervision meeting professional", IMG_SUPERVISION, "landscape"),
+    unsplashImage("digestive health herbs kitchen shelf", IMG_SHELF, "landscape"),
+  ]);
+
   await ensureProduct({
     type: ProductType.workshop,
-    title: "סדנת רוקחות טבעית — טינקטורות ומשחות ביתיות",
+    title: "סדנת מסחטות ומשחות — רוקחות טבעית למטפלים",
     description:
-      "יום עיון מעשי למטפלים ולחובבי צמחי מרפא: בחירת חומרי גלם, יחסי מסחיטה, אלכוהול ושמני בסיס, תיוג ואחסון בטוח. כולל חוברת דיגיטלית ותבניות לתיעוד מקצועי.",
-    price: 520,
-    memberPrice: 440,
-    imageUrl: IMG_WORKSHOP,
+      "מפגש ידיים מסודר: בחירת חומרי גלם, יחסי חילוץ, אלכוהול ושמני בסיס, תיוג ואחסון בטוח. כולל תבניות תיעוד ודגשים משפטיים לעבודה מקצועית.",
+    price: 540,
+    memberPrice: 460,
+    imageUrl: imgWorkshop,
   });
   await ensureProduct({
     type: ProductType.zoom,
-    title: "קורס זום — ניקוי רעלים צמחי: עקרונות ופרוטוקול בטוח",
+    title: "זום מקצועי — ליווי צמחי בגיל מבוגר ובטיחות תרופתית",
     description:
-      "ארבעה מפגשים מקוונים: הבחנה בין תמיכה עיכולית לבין טרנדים; צמחי מרה וכליה; שילוב עם תזונה; מתי להפנות לרופא/ה. מתאים למטפלים מוסמכים.",
-    price: 360,
-    memberPrice: 295,
-    imageUrl: IMG_ZOOM,
+      "ארבעה מפגשים: מיפוי תרופות נפוצות, נקודות הפסקה, תיעוד בקליניקה, ושיחה עם רופא/ת משפחה. מיועד למטפלים מוסמכים בצמחי מרפא.",
+    price: 380,
+    memberPrice: 310,
+    imageUrl: imgZoom,
   });
   await ensureProduct({
     type: ProductType.workshop,
-    title: "סדנת צמחי מרפא לחרדה קלה ולמערכת עצבים",
+    title: "סדנת חרדה קלה — חליטות, ריח, וכלים לבית",
     description:
-      "מפגש חווייתי לקבוצות קטנות: חליטות, הדגמות ריח, ותרגילי רוגע. דגש על בטיחות, מינונים עדינים, ותיעוד לקוח. כולל ערכת טעימות לדוגמה.",
-    price: 410,
-    memberPrice: 350,
-    imageUrl: IMG_ZOOM2,
+      "קבוצה קטנה, קצב רגוע: הדגמות בטוחות, טעימות מבוקרות, ותרגילי רוגע. מתאים גם למדריכי הורים ולמטפלים המחפשים חוויה מקצועית.",
+    price: 425,
+    memberPrice: 365,
+    imageUrl: imgAnxiety,
   });
   await ensureProduct({
     type: ProductType.supervision,
-    title: "השגחה חודשית — פוריות משלימה וליווי צמחי מותאם",
+    title: "השגחה קבוצתית — פוריות, מחזור וליווי צמחי עדין",
     description:
-      "מעגל מקצועי צמוד למטפלים העוסקים בליווי נשי: ניסוח שאלות לרופאות, תיעוד, וצמחים בשלבי מחזור שונים. מוגבל ל־10 משתתפים.",
-    price: 260,
-    memberPrice: 220,
-    imageUrl: IMG_SUPERVISION,
+      "מעגל חודשי למטפלים העוסקים בנשים: ניסוח שאלות לרופאות, תיעוד, וצמחים בשלבים שונים של החיים. עד 10 משתתפים.",
+    price: 275,
+    memberPrice: 235,
+    imageUrl: imgSupervision,
   });
   await ensureProduct({
     type: ProductType.zoom,
-    title: "זום מקצועי — עיכול ומיקרוביום: מהמעבדה לקליניקה",
+    title: "זום — מיקרוביום ועיכול: מהמחקר לפרקטיקה",
     description:
-      "שעה ורבע של תוכן מרוכז: צמחי מרה, ריכוז בטיחות, ושיחה על קריאה ביקורתית של מחקרים. מתאים למטפלים בצמחי מרפא ובתזונה.",
-    price: 110,
-    memberPrice: 89,
-    imageUrl: IMG_SHELF,
+      "שעה וחצי מרוכזת: צמחי מרה, סיבים תזונתיים, וקריאה ביקורתית של מאמרים. כולל שאלות ותשובות וחומרי עזר דיגיטליים.",
+    price: 118,
+    memberPrice: 95,
+    imageUrl: imgDigest,
   });
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
   const adminPassword = process.env.ADMIN_PASSWORD ?? "ChangeMe123!";
@@ -118,7 +173,7 @@ async function main() {
       role: "therapist",
       passwordHash: thHash,
       name: "ד״ר רונית אלון",
-      image: IMG_RONIT,
+      image: imgRonit,
     },
     create: {
       email: demoTherapistEmail,
@@ -126,7 +181,7 @@ async function main() {
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: IMG_RONIT,
+      image: imgRonit,
     },
   });
 
@@ -134,16 +189,15 @@ async function main() {
     where: { userId: therapistUser.id },
     update: {
       slug: "ronit-alon",
-      bio: "אני מאמינה בליווי רגיש ובמדויק: כל מטופל מגיע עם סיפור גוף–נפש משלו. בקליניקה משלבת צמחי מרפא מודרניים עם תזונה רכה והדרכה פרקטית לשינה, עיכול ואנרגיה. העבודה מתחילה מהקשבה, ממשיכה בהסברים ברורים, ונשענת על תיעוד מסודר כדי שתדעו בדיוק מה קורה בכל שלב.",
+      bio: "מטפלת בצמחי מרפא עם למעלה מ־15 שנות ניסיון קליני במרפאות ובבית חולים. אני מלווה בגישה שקטה ומדויקת — עיכול, חרדה קלה וליווי נשי — תוך שילוב תזונה רכה, שינה, והסברים ברורים שמאפשרים לכם להבין את הגוף ולא רק את הנוסחה.",
       clinicalExperience:
-        "דוקטורט בבריאות הציבור, התמחות בצמחי מרפא קליניים (מכללה אירופאית מוכרת). למעלה מ־15 שנות עבודה במרפאות פרטיות ובית חולים ציבורי — ליווי לפני ואחרי ניתוחים, תמיכה אונקולוגית משלימה, והדרכת צוותים רפואיים.\n" +
-        "מרצה ומנחה סדנאות למטפלים בנושאי בטיחות, אינטראקציות תרופתיות, ותקשורת עם רופאים משפחה.",
-      specialty1: "עיכול ומערכת מיקרוביום",
-      specialty2: "חרדה ורוגע עצבי",
-      specialty3: "פוריות וליווי נשי",
+        "דוקטורט בבריאות הציבור; התמחות בצמחי מרפא קליניים. הרצאות וסדנאות למטפלים בנושאי בטיחות ואינטראקציות תרופתיות.",
+      specialty1: "עיכול",
+      specialty2: "חרדה",
+      specialty3: "פוריות",
       contactInfo: {
         phone: "+972-52-100-1001",
-        city: "תל אביב והמרכז",
+        city: "רמת גן",
         whatsapp: "972521001001",
         email: "ronit.clinic@herbal-demo.il",
       },
@@ -157,16 +211,15 @@ async function main() {
     create: {
       userId: therapistUser.id,
       slug: "ronit-alon",
-      bio: "אני מאמינה בליווי רגיש ובמדויק: כל מטופל מגיע עם סיפור גוף–נפש משלו. בקליניקה משלבת צמחי מרפא מודרניים עם תזונה רכה והדרכה פרקטית לשינה, עיכול ואנרגיה. העבודה מתחילה מהקשבה, ממשיכה בהסברים ברורים, ונשענת על תיעוד מסודר כדי שתדעו בדיוק מה קורה בכל שלב.",
+      bio: "מטפלת בצמחי מרפא עם למעלה מ־15 שנות ניסיון קליני במרפאות ובבית חולים. אני מלווה בגישה שקטה ומדויקת — עיכול, חרדה קלה וליווי נשי — תוך שילוב תזונה רכה, שינה, והסברים ברורים שמאפשרים לכם להבין את הגוף ולא רק את הנוסחה.",
       clinicalExperience:
-        "דוקטורט בבריאות הציבור, התמחות בצמחי מרפא קליניים (מכללה אירופאית מוכרת). למעלה מ־15 שנות עבודה במרפאות פרטיות ובית חולים ציבורי — ליווי לפני ואחרי ניתוחים, תמיכה אונקולוגית משלימה, והדרכת צוותים רפואיים.\n" +
-        "מרצה ומנחה סדנאות למטפלים בנושאי בטיחות, אינטראקציות תרופתיות, ותקשורת עם רופאים משפחה.",
-      specialty1: "עיכול ומערכת מיקרוביום",
-      specialty2: "חרדה ורוגע עצבי",
-      specialty3: "פוריות וליווי נשי",
+        "דוקטורט בבריאות הציבור; התמחות בצמחי מרפא קליניים. הרצאות וסדנאות למטפלים בנושאי בטיחות ואינטראקציות תרופתיות.",
+      specialty1: "עיכול",
+      specialty2: "חרדה",
+      specialty3: "פוריות",
       contactInfo: {
         phone: "+972-52-100-1001",
-        city: "תל אביב והמרכז",
+        city: "רמת גן",
         whatsapp: "972521001001",
         email: "ronit.clinic@herbal-demo.il",
       },
@@ -185,7 +238,7 @@ async function main() {
       name: "שירה לוי",
       role: "therapist",
       passwordHash: thHash,
-      image: IMG_SHIRA,
+      image: imgShira,
     },
     create: {
       email: "shira.demo@example.com",
@@ -193,7 +246,7 @@ async function main() {
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: IMG_SHIRA,
+      image: imgShira,
     },
   });
 
@@ -201,16 +254,15 @@ async function main() {
     where: { userId: shira.id },
     update: {
       slug: "shira-levi-herbs",
-      bio: "הגעתי לצמחי מרפא דרך עולם העיצוב והרוח — ומצאתי כאן שפה מדויקת לגוף. אני אוהבת לעבוד לאט: תהליכי עור, רגישות עצבית, ושגרה שמכבדת גם את המטבח וגם את הקליניקה. בקבוצות קטנות אנחנו נוגעים, מריחים, מתעדים — ויוצאים עם כלים לבית.",
+      bio: "מעל עשר שנות ליווי בקליניקה ובקבוצות קטנות — עם דגש על עור רגיש, שינה, וסדנאות חווייתיות שמחברות בין צמח לבית. אני מאמינה בקצב איטי, בהסברים נקיים, ובתיעוד שמכבד אתכם ואת הרופאים המטפלים.",
       clinicalExperience:
-        "תעודת מטפלת בצמחי מרפא (ארבע שנות לימודים אקדמיים), השלמות בדרמטולוגיה צמחית ובטיחות שימוש חיצוני.\n" +
-        "מעל עשר שנות ניסיון בקליניקה פרטית, בליווי קבוצות קטנות ובהרצאות אורח במרכזי יוגה ובתי ספר להורים.",
-      specialty1: "עיכול רגיש ודלקות עור קלות",
-      specialty2: "חרדה קלה ושינה",
-      specialty3: "סדנאות חווייתיות לצמחים",
+        "תעודת מטפלת בצמחי מרפא; השלמות בדרמטולוגיה צמחית ובטיחות שימוש חיצוני.",
+      specialty1: "עור רגיש",
+      specialty2: "שינה",
+      specialty3: "סדנאות",
       contactInfo: {
         phone: "+972-54-200-2002",
-        city: "חיפה והצפון",
+        city: "חיפה",
         whatsapp: "972542002002",
         email: "shira.herbs@herbal-demo.il",
       },
@@ -224,16 +276,15 @@ async function main() {
     create: {
       userId: shira.id,
       slug: "shira-levi-herbs",
-      bio: "הגעתי לצמחי מרפא דרך עולם העיצוב והרוח — ומצאתי כאן שפה מדויקת לגוף. אני אוהבת לעבוד לאט: תהליכי עור, רגישות עצבית, ושגרה שמכבדת גם את המטבח וגם את הקליניקה. בקבוצות קטנות אנחנו נוגעים, מריחים, מתעדים — ויוצאים עם כלים לבית.",
+      bio: "מעל עשר שנות ליווי בקליניקה ובקבוצות קטנות — עם דגש על עור רגיש, שינה, וסדנאות חווייתיות שמחברות בין צמח לבית. אני מאמינה בקצב איטי, בהסברים נקיים, ובתיעוד שמכבד אתכם ואת הרופאים המטפלים.",
       clinicalExperience:
-        "תעודת מטפלת בצמחי מרפא (ארבע שנות לימודים אקדמיים), השלמות בדרמטולוגיה צמחית ובטיחות שימוש חיצוני.\n" +
-        "מעל עשר שנות ניסיון בקליניקה פרטית, בליווי קבוצות קטנות ובהרצאות אורח במרכזי יוגה ובתי ספר להורים.",
-      specialty1: "עיכול רגיש ודלקות עור קלות",
-      specialty2: "חרדה קלה ושינה",
-      specialty3: "סדנאות חווייתיות לצמחים",
+        "תעודת מטפלת בצמחי מרפא; השלמות בדרמטולוגיה צמחית ובטיחות שימוש חיצוני.",
+      specialty1: "עור רגיש",
+      specialty2: "שינה",
+      specialty3: "סדנאות",
       contactInfo: {
         phone: "+972-54-200-2002",
-        city: "חיפה והצפון",
+        city: "חיפה",
         whatsapp: "972542002002",
         email: "shira.herbs@herbal-demo.il",
       },
@@ -252,7 +303,7 @@ async function main() {
       name: "מיכאל ברק",
       role: "therapist",
       passwordHash: thHash,
-      image: IMG_MICHAEL,
+      image: imgMichael,
     },
     create: {
       email: "michael.demo@example.com",
@@ -260,7 +311,7 @@ async function main() {
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: IMG_MICHAEL,
+      image: imgMichael,
     },
   });
 
@@ -268,16 +319,15 @@ async function main() {
     where: { userId: michael.id },
     update: {
       slug: "michael-barak-clinical",
-      bio: "אחרי שנים ברפואה משלימה הבנתי כמה כוח יש בצמח פשוט כשמשתמשים בו נכון. אני מלווה מבוגרים ומתבגרים בתסמינים של שינה, חרדה קלה ומערכת נשימה — תמיד בשיתוף עם הרופא המטפל כשצריך.",
+      bio: "מטפל בצמחי מרפא עם יותר מ־12 שנות ניסיון בקופות חולים ובמרפאה פרטית. אני מתמקד במערכת נשימה, בחיסון בעונות מעבר, ובחרדה קלה — תמיד עם גבול ברור בין תמיכה צמחית לבין טיפול רפואי.",
       clinicalExperience:
-        "הסמכה בצמחי מרפא קליניים, השלמות בפיזיולוגיה של מערכת הנשימה והחיסון.\n" +
-        "יותר מ־12 שנות ניסיון בקופות חולים קהילתיות, במרפאה פרטית ובצוותי טיפול משלים בבית חולים.",
-      specialty1: "חרדה קלה ומערכת עצבים",
-      specialty2: "שינה ונשימה",
-      specialty3: "חיסון ותמיכה בעונות מעבר",
+        "הסמכה בצמחי מרפא קליניים; השלמות בפיזיולוגיה של מערכת הנשימה והחיסון.",
+      specialty1: "נשימה",
+      specialty2: "חיסון",
+      specialty3: "חרדה",
       contactInfo: {
         phone: "+972-50-300-3003",
-        city: "ירושלים והסביבה",
+        city: "ירושלים",
         whatsapp: "972503003003",
         email: "michael.clinic@herbal-demo.il",
       },
@@ -291,16 +341,15 @@ async function main() {
     create: {
       userId: michael.id,
       slug: "michael-barak-clinical",
-      bio: "אחרי שנים ברפואה משלימה הבנתי כמה כוח יש בצמח פשוט כשמשתמשים בו נכון. אני מלווה מבוגרים ומתבגרים בתסמינים של שינה, חרדה קלה ומערכת נשימה — תמיד בשיתוף עם הרופא המטפל כשצריך.",
+      bio: "מטפל בצמחי מרפא עם יותר מ־12 שנות ניסיון בקופות חולים ובמרפאה פרטית. אני מתמקד במערכת נשימה, בחיסון בעונות מעבר, ובחרדה קלה — תמיד עם גבול ברור בין תמיכה צמחית לבין טיפול רפואי.",
       clinicalExperience:
-        "הסמכה בצמחי מרפא קליניים, השלמות בפיזיולוגיה של מערכת הנשימה והחיסון.\n" +
-        "יותר מ־12 שנות ניסיון בקופות חולים קהילתיות, במרפאה פרטית ובצוותי טיפול משלים בבית חולים.",
-      specialty1: "חרדה קלה ומערכת עצבים",
-      specialty2: "שינה ונשימה",
-      specialty3: "חיסון ותמיכה בעונות מעבר",
+        "הסמכה בצמחי מרפא קליניים; השלמות בפיזיולוגיה של מערכת הנשימה והחיסון.",
+      specialty1: "נשימה",
+      specialty2: "חיסון",
+      specialty3: "חרדה",
       contactInfo: {
         phone: "+972-50-300-3003",
-        city: "ירושלים והסביבה",
+        city: "ירושלים",
         whatsapp: "972503003003",
         email: "michael.clinic@herbal-demo.il",
       },
@@ -319,7 +368,7 @@ async function main() {
       name: "יעל כהן",
       role: "therapist",
       passwordHash: thHash,
-      image: IMG_YAEL,
+      image: imgYael,
     },
     create: {
       email: "yael.demo@example.com",
@@ -327,7 +376,7 @@ async function main() {
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: IMG_YAEL,
+      image: imgYael,
     },
   });
 
@@ -335,16 +384,15 @@ async function main() {
     where: { userId: yael.id },
     update: {
       slug: "yael-cohen-herbal",
-      bio: "ליווי נשים דורש דיוק, עדינות ולוח זמנים ברור. אני מסבירה מה בטוח ומה דורש התייעצות רפואית, ובוחרת יחד איתכן צמחים שמתאימים לשלב החיים שלכן — מחזור, הריון, הנקה או גיל ביניים.",
+      bio: "מעל 11 שנות ליווי נשים בקליניקה — מחזור, פוריות, הריון והנקה — עם שפה צמחית עדינה ומדויקת. אני שמה דגש על הסברים שמבהירים מתי חובה להתייעץ עם רופאה, ועל תיעוד שמשרת אתכן לאורך זמן.",
       clinicalExperience:
-        "מטפלת מוסמכת בצמחי מרפא; התמחות מעשית בגינקולוגיה צמחית, בהנקה ובליווי נשי לאורך חיים.\n" +
-        "מעל 11 שנות ניסיון קליני; שיתופי פעולה עם מיילדות ויועצות הנקה והרצאות למדריכות הורים.",
-      specialty1: "פוריות ומחזור",
-      specialty2: "הריון, לידה והנקה",
-      specialty3: "גיל ביניים ואיזון הורמונלי",
+        "מטפלת מוסמכת בצמחי מרפא; התמחות מעשית בגינקולוגיה צמחית ובהנקה.",
+      specialty1: "פוריות",
+      specialty2: "הריון",
+      specialty3: "הנקה",
       contactInfo: {
         phone: "+972-52-400-4004",
-        city: "רעננה והשרון",
+        city: "רעננה",
         whatsapp: "972524004004",
         email: "yael.womens.herbs@herbal-demo.il",
       },
@@ -358,16 +406,15 @@ async function main() {
     create: {
       userId: yael.id,
       slug: "yael-cohen-herbal",
-      bio: "ליווי נשים דורש דיוק, עדינות ולוח זמנים ברור. אני מסבירה מה בטוח ומה דורש התייעצות רפואית, ובוחרת יחד איתכן צמחים שמתאימים לשלב החיים שלכן — מחזור, הריון, הנקה או גיל ביניים.",
+      bio: "מעל 11 שנות ליווי נשים בקליניקה — מחזור, פוריות, הריון והנקה — עם שפה צמחית עדינה ומדויקת. אני שמה דגש על הסברים שמבהירים מתי חובה להתייעץ עם רופאה, ועל תיעוד שמשרת אתכן לאורך זמן.",
       clinicalExperience:
-        "מטפלת מוסמכת בצמחי מרפא; התמחות מעשית בגינקולוגיה צמחית, בהנקה ובליווי נשי לאורך חיים.\n" +
-        "מעל 11 שנות ניסיון קליני; שיתופי פעולה עם מיילדות ויועצות הנקה והרצאות למדריכות הורים.",
-      specialty1: "פוריות ומחזור",
-      specialty2: "הריון, לידה והנקה",
-      specialty3: "גיל ביניים ואיזון הורמונלי",
+        "מטפלת מוסמכת בצמחי מרפא; התמחות מעשית בגינקולוגיה צמחית ובהנקה.",
+      specialty1: "פוריות",
+      specialty2: "הריון",
+      specialty3: "הנקה",
       contactInfo: {
         phone: "+972-52-400-4004",
-        city: "רעננה והשרון",
+        city: "רעננה",
         whatsapp: "972524004004",
         email: "yael.womens.herbs@herbal-demo.il",
       },
@@ -380,69 +427,67 @@ async function main() {
     },
   });
 
-  const dan = await prisma.user.upsert({
+  const eran = await prisma.user.upsert({
     where: { email: "dan.demo@example.com" },
     update: {
-      name: "דן רוזן",
+      name: "ערן כהן",
       role: "therapist",
       passwordHash: thHash,
-      image: IMG_DAN,
+      image: imgEran,
     },
     create: {
       email: "dan.demo@example.com",
-      name: "דן רוזן",
+      name: "ערן כהן",
       passwordHash: thHash,
       role: "therapist",
       subStatus: "active",
-      image: IMG_DAN,
+      image: imgEran,
     },
   });
 
   await prisma.therapistProfile.upsert({
-    where: { userId: dan.id },
+    where: { userId: eran.id },
     update: {
-      slug: "dan-rosen-formulas",
-      bio: "אני נהנה לפתור 'חידות' עיכול: מה מחמם מדי, מה מייבש, ואיך משלבים צמחים בלי להעמיס. המטופלים שלי מקבלים הסברים על הלוגיקה מאחורי הנוסחה — כדי שתבינו את הגוף, לא רק את הבקבוק.",
+      slug: "eran-cohen-herbal",
+      bio: "מטפל בצמחי מרפא עם למעלה מ־13 שנות ניסיון בקליניקה ובליווי משפחות. אני מתמחה בילדים, במערכת נשימה, ובעיכול — עם שפה מקצועית שמחברת בין רגישות לבין גבולות ברורים מול הרפואה הקונבנציונלית.",
       clinicalExperience:
-        "הסמכה בצמחי מרפא; קורסים מתקדמים בפרמקולוגיה וביוכימיה של צמחים.\n" +
-        "מעל 13 שנות ניסיון במעבדות קטנות, בקליניקה פרטית ובליווי ספורטאים חובבים.",
-      specialty1: "עיכול, נפחת ומיקרוביום",
-      specialty2: "אנרגיה וסיבולת בספורט חובבני",
-      specialty3: "פורמולות קליניות מותאמות אישית",
+        "הסמכה בצמחי מרפא; קורסים מתקדמים בפרמקולוגיה צמחית וביוכימיה של צמחים.",
+      specialty1: "ילדים",
+      specialty2: "נשימה",
+      specialty3: "עיכול",
       contactInfo: {
         phone: "+972-54-500-5005",
-        city: "באר שבע והנגב",
+        city: "נס ציונה",
         whatsapp: "972545005005",
-        email: "dan.digest@herbal-demo.il",
+        email: "eran.herbs@herbal-demo.il",
       },
       socialLinks: {
-        website: "https://example.com/dan-formulas",
-        instagram: "dan.herbal.lab",
-        facebook: "DanHerbalFormulas",
-        tiktok: "dan.herbs.lab",
+        website: "https://example.com/eran-herbs",
+        instagram: "eran.herbal.lab",
+        facebook: "EranHerbalDemo",
+        tiktok: "eran.herbs.lab",
       },
     },
     create: {
-      userId: dan.id,
-      slug: "dan-rosen-formulas",
-      bio: "אני נהנה לפתור 'חידות' עיכול: מה מחמם מדי, מה מייבש, ואיך משלבים צמחים בלי להעמיס. המטופלים שלי מקבלים הסברים על הלוגיקה מאחורי הנוסחה — כדי שתבינו את הגוף, לא רק את הבקבוק.",
+      userId: eran.id,
+      slug: "eran-cohen-herbal",
+      bio: "מטפל בצמחי מרפא עם למעלה מ־13 שנות ניסיון בקליניקה ובליווי משפחות. אני מתמחה בילדים, במערכת נשימה, ובעיכול — עם שפה מקצועית שמחברת בין רגישות לבין גבולות ברורים מול הרפואה הקונבנציונלית.",
       clinicalExperience:
-        "הסמכה בצמחי מרפא; קורסים מתקדמים בפרמקולוגיה וביוכימיה של צמחים.\n" +
-        "מעל 13 שנות ניסיון במעבדות קטנות, בקליניקה פרטית ובליווי ספורטאים חובבים.",
-      specialty1: "עיכול, נפחת ומיקרוביום",
-      specialty2: "אנרגיה וסיבולת בספורט חובבני",
-      specialty3: "פורמולות קליניות מותאמות אישית",
+        "הסמכה בצמחי מרפא; קורסים מתקדמים בפרמקולוגיה צמחית וביוכימיה של צמחים.",
+      specialty1: "ילדים",
+      specialty2: "נשימה",
+      specialty3: "עיכול",
       contactInfo: {
         phone: "+972-54-500-5005",
-        city: "באר שבע והנגב",
+        city: "נס ציונה",
         whatsapp: "972545005005",
-        email: "dan.digest@herbal-demo.il",
+        email: "eran.herbs@herbal-demo.il",
       },
       socialLinks: {
-        website: "https://example.com/dan-formulas",
-        instagram: "dan.herbal.lab",
-        facebook: "DanHerbalFormulas",
-        tiktok: "dan.herbs.lab",
+        website: "https://example.com/eran-herbs",
+        instagram: "eran.herbal.lab",
+        facebook: "EranHerbalDemo",
+        tiktok: "eran.herbs.lab",
       },
     },
   });
@@ -457,29 +502,29 @@ async function main() {
   await prisma.herbalArticle.upsert({
     where: { slug: "mallow-soothing" },
     update: {
-      title: "כורכום (Curcuma longa) — שימושים תומכים ונקודות בטיחות קליניות",
+      title: "קמומיל רפואי (Matricaria chamomilla) — רוגע עיכולי ושימוש חיצוני זהיר",
       excerpt:
-        "סקירה מקצועית לכורכום ולקורקומין: שימושים מסורתיים בעיכול ובדלקות, תרומה מדעית נבחרת, והפרדה בין תוסף תזונה לבין ליווי רפואי פעיל.",
+        "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
-        "הכורכום הוא צמח מרכזי במטבחים ובמרפאות צמחים ברחבי העולם. במאמר נפרט על חלקי הצמח, על הבדלים בין אבקה לריכוזים סטנדרטיים, ועל שאלות נפוצות של מטופלים.\n\n" +
-        "נדגיש את חשיבות ההתאמה האישית, את הצורך בהפסקות טיפוליות לפני הליכים רפואיים, ואת הערנות לאינטראקציות תרופתיות אפשריות.\n\n" +
+        "הקמומיל הוא צמח מוכר במטבח ובקליניקה. במאמר נפרט על הבדלים בין זנים, על איכות חומר הגלם, ועל דרכי הכנה בטוחות.\n\n" +
+        "נדגיש תיעוד, מעקב אחר תופעות לוואי, והפניה לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
         "המאמר מיועד למטפלים מוסמכים ולציבור מבין כהשראה מקצועית בלבד." +
         articleDisclaimer,
-      coverImageUrl: COVER_CURCUMA,
+      coverImageUrl: covChamomile,
       published: true,
     },
     create: {
       therapistId: therapistUser.id,
-      title: "כורכום (Curcuma longa) — שימושים תומכים ונקודות בטיחות קליניות",
+      title: "קמומיל רפואי (Matricaria chamomilla) — רוגע עיכולי ושימוש חיצוני זהיר",
       slug: "mallow-soothing",
       excerpt:
-        "סקירה מקצועית לכורכום ולקורקומין: שימושים מסורתיים בעיכול ובדלקות, תרומה מדעית נבחרת, והפרדה בין תוסף תזונה לבין ליווי רפואי פעיל.",
+        "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
-        "הכורכום הוא צמח מרכזי במטבחים ובמרפאות צמחים ברחבי העולם. במאמר נפרט על חלקי הצמח, על הבדלים בין אבקה לריכוזים סטנדרטיים, ועל שאלות נפוצות של מטופלים.\n\n" +
-        "נדגיש את חשיבות ההתאמה האישית, את הצורך בהפסקות טיפוליות לפני הליכים רפואיים, ואת הערנות לאינטראקציות תרופתיות אפשריות.\n\n" +
+        "הקמומיל הוא צמח מוכר במטבח ובקליניקה. במאמר נפרט על הבדלים בין זנים, על איכות חומר הגלם, ועל דרכי הכנה בטוחות.\n\n" +
+        "נדגיש תיעוד, מעקב אחר תופעות לוואי, והפניה לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
         "המאמר מיועד למטפלים מוסמכים ולציבור מבין כהשראה מקצועית בלבד." +
         articleDisclaimer,
-      coverImageUrl: COVER_CURCUMA,
+      coverImageUrl: covChamomile,
       published: true,
     },
   });
@@ -487,27 +532,27 @@ async function main() {
   await prisma.herbalArticle.upsert({
     where: { slug: "chamomile-gentle-demo" },
     update: {
-      title: "אשוגנדה (Withania somnifera) — עמידות, שינה והתאמה למטפלים",
+      title: "לבנדר רפואי (Lavandula angustifolia) — רוגע, שינה ושמן אתרי בטוח",
       excerpt:
-        "מבט מקצועי על אשוגנדה במסורת האיורוודה ובפרקטיקה המודרנית: מתי לשקול שילוב, איך לדבר עם מטופלים על ציפיות, ומה חשוב לתעד בקליניקה.",
+        "מבט מקצועי על לבנדר: שימושים בשינה קלה, ברוגע עצבי, ובשמן אתרי — כולל ריכוזים, רגישות עור, והנחיות זהירות לילדים ולבהריון.",
       body:
-        "אשוגנדה נחשבת לצמח 'מסגל' במסורת ההודית, ואצלנו היא נפוצה בשיחות על עומס, שינה ושחיקה. במאמר נבחן את ההבדל בין תמצית יבשה לטינקטורה, נדבר על רגישות בבחירת מינון, ונסביר מתי להפנות בהחלטות לרופא/ה.\n\n" +
-        "נכלול גם דוגמאות לשיחה אתית עם מטופלים ולסיכום מקצועי." +
+        "לבנדר הוא צמח ארומטי פופולרי. נבחן את ההבדל בין חליטה לשמן אתרי, נדבר על ריכוזים ובטיחות בעור, ונסביר מתי להימנע משימוש עצמאי.\n\n" +
+        "המאמר מדגיש שיחה אתית עם מטופלים ותיעוד מקצועי." +
         articleDisclaimer,
-      coverImageUrl: COVER_ASHWAGANDHA,
+      coverImageUrl: covLavender,
       published: true,
     },
     create: {
       therapistId: shira.id,
-      title: "אשוגנדה (Withania somnifera) — עמידות, שינה והתאמה למטפלים",
+      title: "לבנדר רפואי (Lavandula angustifolia) — רוגע, שינה ושמן אתרי בטוח",
       slug: "chamomile-gentle-demo",
       excerpt:
-        "מבט מקצועי על אשוגנדה במסורת האיורוודה ובפרקטיקה המודרנית: מתי לשקול שילוב, איך לדבר עם מטופלים על ציפיות, ומה חשוב לתעד בקליניקה.",
+        "מבט מקצועי על לבנדר: שימושים בשינה קלה, ברוגע עצבי, ובשמן אתרי — כולל ריכוזים, רגישות עור, והנחיות זהירות לילדים ולבהריון.",
       body:
-        "אשוגנדה נחשבת לצמח 'מסגל' במסורת ההודית, ואצלנו היא נפוצה בשיחות על עומס, שינה ושחיקה. במאמר נבחן את ההבדל בין תמצית יבשה לטינקטורה, נדבר על רגישות בבחירת מינון, ונסביר מתי להפנות בהחלטות לרופא/ה.\n\n" +
-        "נכלול גם דוגמאות לשיחה אתית עם מטופלים ולסיכום מקצועי." +
+        "לבנדר הוא צמח ארומטי פופולרי. נבחן את ההבדל בין חליטה לשמן אתרי, נדבר על ריכוזים ובטיחות בעור, ונסביר מתי להימנע משימוש עצמאי.\n\n" +
+        "המאמר מדגיש שיחה אתית עם מטופלים ותיעוד מקצועי." +
         articleDisclaimer,
-      coverImageUrl: COVER_ASHWAGANDHA,
+      coverImageUrl: covLavender,
       published: true,
     },
   });
@@ -515,27 +560,27 @@ async function main() {
   await prisma.herbalArticle.upsert({
     where: { slug: "ginger-warm-demo" },
     update: {
-      title: "מרווה משולשת (Salvia fruticosa) — ארומטיקה מקומית ושימושים מסורתיים",
+      title: "מנטה חריפה (Mentha × piperita) — עיכול, כאב ראש קל, ובטיחות מינון",
       excerpt:
-        "מרווה ארץ-ישראלית: שימושים בשתייה, בשמנים ארומטיים ובטיפוח, לצד הערות זהירות בהריון ובמצבי רגישות נוירולוגית.",
+        "מנטה כצמח מרפא: שימושים מסורתיים בעיכול, בכאבי ראש קלים, ובמערכת נשימה — לצד אזהרות בגסטריטיס רפלוקס, בהנקה, ובשילוב עם תרופות מסוימות.",
       body:
-        "המרווה המשולשת מוכרת מהגינה, מהמטבח ומהקליניקה. נסקור את הפרופיל הארומטי, את ההבדלים בין זנים קרובים, ואת דרכי ההכנה הבטוחות.\n\n" +
+        "המנטה החריפה נפוצה בחליטות ובטינקטורות. נסקור את הפרופיל הארומטי, את ההבדלים בין עלים טריים למיובשים, ואת דרכי ההכנה הבטוחות.\n\n" +
         "נדגיש את חשיבות האיכות והאחסון, ואת הצורך בהסבר ברור למטופלים על גבולות הידע הקליני." +
         articleDisclaimer,
-      coverImageUrl: COVER_SAGE,
+      coverImageUrl: covMint,
       published: true,
     },
     create: {
       therapistId: michael.id,
-      title: "מרווה משולשת (Salvia fruticosa) — ארומטיקה מקומית ושימושים מסורתיים",
+      title: "מנטה חריפה (Mentha × piperita) — עיכול, כאב ראש קל, ובטיחות מינון",
       slug: "ginger-warm-demo",
       excerpt:
-        "מרווה ארץ-ישראלית: שימושים בשתייה, בשמנים ארומטיים ובטיפוח, לצד הערות זהירות בהריון ובמצבי רגישות נוירולוגית.",
+        "מנטה כצמח מרפא: שימושים מסורתיים בעיכול, בכאבי ראש קלים, ובמערכת נשימה — לצד אזהרות בגסטריטיס רפלוקס, בהנקה, ובשילוב עם תרופות מסוימות.",
       body:
-        "המרווה המשולשת מוכרת מהגינה, מהמטבח ומהקליניקה. נסקור את הפרופיל הארומטי, את ההבדלים בין זנים קרובים, ואת דרכי ההכנה הבטוחות.\n\n" +
+        "המנטה החריפה נפוצה בחליטות ובטינקטורות. נסקור את הפרופיל הארומטי, את ההבדלים בין עלים טריים למיובשים, ואת דרכי ההכנה הבטוחות.\n\n" +
         "נדגיש את חשיבות האיכות והאחסון, ואת הצורך בהסבר ברור למטופלים על גבולות הידע הקליני." +
         articleDisclaimer,
-      coverImageUrl: COVER_SAGE,
+      coverImageUrl: covMint,
       published: true,
     },
   });
@@ -543,27 +588,27 @@ async function main() {
   await prisma.herbalArticle.upsert({
     where: { slug: "lemon-balm-calm-demo" },
     update: {
-      title: "גינקו בילובה — מבט צמחי מקצועי על שימושים ועל בטיחות",
+      title: "שיבולת שועל (Avena sativa) — תמיכה עדינה ברוגע ובמערכת עצבים",
       excerpt:
-        "Ginkgo biloba: רקע בוטני, שימושים מקובלים בתמיכה קוגניטיבית ובזרימה היקפית, וסקירה קצרה של אזהרות מרכזיות בתרופות נפוצות.",
+        "שיבולת שועל כצמח מרפא: שימושים מסורתיים ברוגע עצבי קל, בתמיכה בשינה, ובמסגרת ליווי תזונתי — עם דגש על איכות תכשיר ועל גבולות ההבטחה הקלינית.",
       body:
-        "עץ הגינקו הוא מהעתיקים בעולם הצמחים. במאמר נציג את המסגרת המקצועית לשיחה עם מטופלים: מה מוכח חלקית, מה שנוי במחלוקת, ואיך לשמור על גבול בריא בין תמיכה לבין טיפול רפואי.\n\n" +
+        "שיבולת השועל נתפסת לעיתים כ'מזון', אך גם כצמח מרפא בעדינות. במאמר נציג את המסגרת המקצועית לשיחה עם מטופלים: מה מקובל בשימוש, ואיך לשמור על גבול בריא.\n\n" +
         "נדגיש תיעוד, מעקב, והפניות כשמתעוררות תלונות חדשות." +
         articleDisclaimer,
-      coverImageUrl: COVER_GINKGO,
+      coverImageUrl: covOats,
       published: true,
     },
     create: {
       therapistId: yael.id,
-      title: "גינקו בילובה — מבט צמחי מקצועי על שימושים ועל בטיחות",
+      title: "שיבולת שועל (Avena sativa) — תמיכה עדינה ברוגע ובמערכת עצבים",
       slug: "lemon-balm-calm-demo",
       excerpt:
-        "Ginkgo biloba: רקע בוטני, שימושים מקובלים בתמיכה קוגניטיבית ובזרימה היקפית, וסקירה קצרה של אזהרות מרכזיות בתרופות נפוצות.",
+        "שיבולת שועל כצמח מרפא: שימושים מסורתיים ברוגע עצבי קל, בתמיכה בשינה, ובמסגרת ליווי תזונתי — עם דגש על איכות תכשיר ועל גבולות ההבטחה הקלינית.",
       body:
-        "עץ הגינקו הוא מהעתיקים בעולם הצמחים. במאמר נציג את המסגרת המקצועית לשיחה עם מטופלים: מה מוכח חלקית, מה שנוי במחלוקת, ואיך לשמור על גבול בריא בין תמיכה לבין טיפול רפואי.\n\n" +
+        "שיבולת השועל נתפסת לעיתים כ'מזון', אך גם כצמח מרפא בעדינות. במאמר נציג את המסגרת המקצועית לשיחה עם מטופלים: מה מקובל בשימוש, ואיך לשמור על גבול בריא.\n\n" +
         "נדגיש תיעוד, מעקב, והפניות כשמתעוררות תלונות חדשות." +
         articleDisclaimer,
-      coverImageUrl: COVER_GINKGO,
+      coverImageUrl: covOats,
       published: true,
     },
   });
@@ -571,27 +616,27 @@ async function main() {
   await prisma.herbalArticle.upsert({
     where: { slug: "nettle-nourish-demo" },
     update: {
-      title: "רוזמרין רפואי (Rosmarinus officinalis) — ארומה, עיכול ושימוש חיצוני זהיר",
+      title: "אזוב מצוי (Origanum syriacum) — ארומה חזקה, עיכול, ושימוש זהיר בשמן אתרי",
       excerpt:
-        "רוזמרין כצמח מרפא: חומרים פעילים, שימושים מסורתיים במערכת עיכול, והנחיות בטיחות לשימוש בשמנים אתריים ובמגע עם העור.",
+        "אזוב (זעתר בורא) כצמח מרפא: שימושים מסורתיים בעיכול, בארומה חזקה, ובשמן אתרי — כולל אזהרות לילדים, להריון, ולרגישות נשימתית.",
       body:
-        "רוזמרין הוא צמח חזק וריחני. נפרט על הבדלים בין חליטה לשמן אתרי, על ריכוזים ועל רגישות אפשרית בעור. נדון גם בשילובים במטבח הבריא ככלי להעשרת התזונה.\n\n" +
+        "האזוב המצוי הוא צמח מקומי וריחני. נפרט על הבדלים בין חליטה לשמן אתרי, על ריכוזים ועל רגישות אפשרית. נדון גם בשילובים במטבח הבריא ככלי להעשרת התזונה.\n\n" +
         "המאמר מדגיש עבודה מקצועית: הסבר, תיעוד, והימנעות מהבטחות יתר." +
         articleDisclaimer,
-      coverImageUrl: COVER_ROSEMARY,
+      coverImageUrl: covHyssop,
       published: true,
     },
     create: {
-      therapistId: dan.id,
-      title: "רוזמרין רפואי (Rosmarinus officinalis) — ארומה, עיכול ושימוש חיצוני זהיר",
+      therapistId: eran.id,
+      title: "אזוב מצוי (Origanum syriacum) — ארומה חזקה, עיכול, ושימוש זהיר בשמן אתרי",
       slug: "nettle-nourish-demo",
       excerpt:
-        "רוזמרין כצמח מרפא: חומרים פעילים, שימושים מסורתיים במערכת עיכול, והנחיות בטיחות לשימוש בשמנים אתריים ובמגע עם העור.",
+        "אזוב (זעתר בורא) כצמח מרפא: שימושים מסורתיים בעיכול, בארומה חזקה, ובשמן אתרי — כולל אזהרות לילדים, להריון, ולרגישות נשימתית.",
       body:
-        "רוזמרין הוא צמח חזק וריחני. נפרט על הבדלים בין חליטה לשמן אתרי, על ריכוזים ועל רגישות אפשרית בעור. נדון גם בשילובים במטבח הבריא ככלי להעשרת התזונה.\n\n" +
+        "האזוב המצוי הוא צמח מקומי וריחני. נפרט על הבדלים בין חליטה לשמן אתרי, על ריכוזים ועל רגישות אפשרית. נדון גם בשילובים במטבח הבריא ככלי להעשרת התזונה.\n\n" +
         "המאמר מדגיש עבודה מקצועית: הסבר, תיעוד, והימנעות מהבטחות יתר." +
         articleDisclaimer,
-      coverImageUrl: COVER_ROSEMARY,
+      coverImageUrl: covHyssop,
       published: true,
     },
   });
@@ -656,7 +701,7 @@ async function main() {
     "shira.demo@example.com",
     "michael.demo@example.com",
     "yael.demo@example.com",
-    "dan.demo@example.com",
+    "dan.demo@example.com (ערן כהן)",
     "Client:",
     demoClientEmail,
   );
