@@ -58,6 +58,24 @@ body {
 }
 
 @layer utilities {
+  .showcase-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(74, 146, 80, 0.45) transparent;
+  }
+
+  .showcase-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .showcase-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .showcase-scroll::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: rgba(74, 146, 80, 0.45);
+  }
+
   .therapist-photo-bw {
     filter: grayscale(100%) contrast(1.08);
   }

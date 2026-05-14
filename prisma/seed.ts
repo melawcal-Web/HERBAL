@@ -92,6 +92,17 @@ async function main() {
       specialty1: "תמציות וטינקטורות",
       specialty2: "תמיכה במערכת עיכול",
       specialty3: "נשים וילדים",
+      contactInfo: {
+        phone: "+972-52-0000000",
+        city: "תל אביב",
+        whatsapp: "972520000000",
+        email: "ronit.contact@example.com",
+      },
+      socialLinks: {
+        website: "https://example.com",
+        instagram: "",
+        facebook: "https://www.facebook.com/facebook",
+      },
     },
     create: {
       userId: therapistUser.id,
@@ -100,8 +111,17 @@ async function main() {
       specialty1: "תמציות וטינקטורות",
       specialty2: "תמיכה במערכת עיכול",
       specialty3: "נשים וילדים",
-      contactInfo: { phone: "+972-52-0000000", city: "תל אביב" },
-      socialLinks: { website: "https://example.com" },
+      contactInfo: {
+        phone: "+972-52-0000000",
+        city: "תל אביב",
+        whatsapp: "972520000000",
+        email: "ronit.contact@example.com",
+      },
+      socialLinks: {
+        website: "https://example.com",
+        instagram: "",
+        facebook: "https://www.facebook.com/facebook",
+      },
     },
   });
 
@@ -131,6 +151,8 @@ async function main() {
       specialty1: "עור ורגיעה",
       specialty2: "סדנאות צמחים",
       specialty3: "ליווי אישי",
+      contactInfo: { phone: "+972-54-0000000", city: "חיפה", whatsapp: "", email: "" },
+      socialLinks: { instagram: "@shira_herbs_demo", website: "https://example.org/shira", facebook: "" },
     },
     create: {
       userId: shira.id,
@@ -139,8 +161,8 @@ async function main() {
       specialty1: "עור ורגיעה",
       specialty2: "סדנאות צמחים",
       specialty3: "ליווי אישי",
-      contactInfo: { phone: "+972-54-0000000", city: "חיפה" },
-      socialLinks: { instagram: "@shira_herbs_demo" },
+      contactInfo: { phone: "+972-54-0000000", city: "חיפה", whatsapp: "", email: "" },
+      socialLinks: { instagram: "@shira_herbs_demo", website: "https://example.org/shira", facebook: "" },
     },
   });
 
@@ -170,6 +192,13 @@ async function main() {
       specialty1: "שינה ורוגע",
       specialty2: "נשימה וחיסון",
       specialty3: "תזונה צמחית",
+      contactInfo: {
+        phone: "+972-50-0000000",
+        city: "ירושלים",
+        whatsapp: "",
+        email: "michael.public@example.com",
+      },
+      socialLinks: { website: "", instagram: "", facebook: "" },
     },
     create: {
       userId: michael.id,
@@ -178,8 +207,13 @@ async function main() {
       specialty1: "שינה ורוגע",
       specialty2: "נשימה וחיסון",
       specialty3: "תזונה צמחית",
-      contactInfo: { phone: "+972-50-0000000", city: "ירושלים" },
-      socialLinks: {},
+      contactInfo: {
+        phone: "+972-50-0000000",
+        city: "ירושלים",
+        whatsapp: "",
+        email: "michael.public@example.com",
+      },
+      socialLinks: { website: "", instagram: "", facebook: "" },
     },
   });
 

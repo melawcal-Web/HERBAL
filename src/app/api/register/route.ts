@@ -46,8 +46,8 @@ export async function POST(req: Request) {
         specialty1: "מומחיות ראשונה",
         specialty2: "מומחיות שנייה",
         specialty3: "מומחיות שלישית",
-        contactInfo: { phone: "", city: "" },
-        socialLinks: { website: "" },
+        contactInfo: { phone: "", city: "", whatsapp: "", email: "" },
+        socialLinks: { website: "", instagram: "", facebook: "" },
       },
     });
   }

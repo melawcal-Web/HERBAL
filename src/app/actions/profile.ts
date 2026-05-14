@@ -14,7 +14,11 @@ export async function updateTherapistProfile(input: {
   specialty3: string;
   contactPhone: string;
   contactCity: string;
+  contactWhatsapp: string;
+  contactPublicEmail: string;
   website: string;
+  instagram: string;
+  facebook: string;
 }) {
   const session = await auth();
   if (!session?.user?.id || !assertTherapist(session.user.role)) {
@@ -38,8 +42,17 @@ export async function updateTherapistProfile(input: {
       specialty1: input.specialty1,
       specialty2: input.specialty2,
       specialty3: input.specialty3,
-      contactInfo: { phone: input.contactPhone, city: input.contactCity },
-      socialLinks: { website: input.website },
+      contactInfo: {
+        phone: input.contactPhone,
+        city: input.contactCity,
+        whatsapp: input.contactWhatsapp,
+        email: input.contactPublicEmail,
+      },
+      socialLinks: {
+        website: input.website,
+        instagram: input.instagram,
+        facebook: input.facebook,
+      },
     },
   });
 

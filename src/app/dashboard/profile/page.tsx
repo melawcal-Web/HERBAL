@@ -14,8 +14,17 @@ export default async function TherapistProfilePage() {
   });
   if (!profile) redirect("/dashboard");
 
-  const contact = profile.contactInfo as { phone?: string; city?: string };
-  const social = profile.socialLinks as { website?: string };
+  const contact = profile.contactInfo as {
+    phone?: string;
+    city?: string;
+    whatsapp?: string;
+    email?: string;
+  };
+  const social = profile.socialLinks as {
+    website?: string;
+    instagram?: string;
+    facebook?: string;
+  };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -31,7 +40,11 @@ export default async function TherapistProfilePage() {
             specialty3: profile.specialty3,
             contactPhone: contact.phone ?? "",
             contactCity: contact.city ?? "",
+            contactWhatsapp: contact.whatsapp ?? "",
+            contactPublicEmail: contact.email ?? "",
             website: social.website ?? "",
+            instagram: social.instagram ?? "",
+            facebook: social.facebook ?? "",
           }}
         />
       </div>

@@ -1,128 +1,185 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { TherapistSpotlight } from "@/components/TherapistSpotlight";
+import { HomeExploreGrid, type ExploreGridItem } from "@/components/home/HomeExploreGrid";
+import { HomeVisionCarousel, type VisionSlide } from "@/components/home/HomeVisionCarousel";
+import type { ProductType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-function rotateList<T>(items: T[], offset: number): T[] {
-  if (!items.length) return items;
-  const o = ((offset % items.length) + items.length) % items.length;
-  return [...items.slice(o), ...items.slice(0, o)];
+const UNSPLASH =
+  "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80";
+const UNSPLASH2 =
+  "https://images.unsplash.com/photo-1515378791036-0648a3c77a02?auto=format&fit=crop&w=1400&q=80";
+const UNSPLASH3 =
+  "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=1400&q=80";
+const UNSPLASH4 =
+  "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1400&q=80";
+
+const VISION_SLIDES: VisionSlide[] = [
+  {
+    id: "v1",
+    eyebrow: "המרכז למטפלים בצמחי מרפא",
+    title: "בית דיגיטלי למקצוע הצמחים",
+    body: "המרכז מחבר מטפלים, לקוחות וידע — מקום שבו אפשר ללמוד, לשתף, לנהל יומן קליני, ולגלות תוכן איכותי על צמחי מרפא.",
+    imageUrl: UNSPLASH,
+  },
+  {
+    id: "v2",
+    eyebrow: "ערכים",
+    title: "מקצועיות, שקיפות וקהילה",
+    body: "אנחנו מאמינים בליווי מבוסס מדע ומסורת, בכבוד הדדי בין מטפלים ללקוחות, ובכלים שמקלים על העבודה היומיומית בקליניקה.",
+    imageUrl: UNSPLASH2,
+  },
+  {
+    id: "v3",
+    eyebrow: "למטפלים",
+    title: "כלי עבודה במקום אחד",
+    body: "דפי נחיתה אישיים, EMR, תיעוד טיפולים, ומחשבון נוסחאות — כדי שתוכלו להתמקד במטופלים, לא בבירוקרטיה.",
+    imageUrl: UNSPLASH3,
+  },
+  {
+    id: "v4",
+    eyebrow: "לקהילה רחבה",
+    title: "שוק, מאמרים וצמיחה",
+    body: "מרקט עם הרצאות, סדנאות ומוצרים, לצד אינדקס צמחים עם מאמרים מקוריים ממטפלים רשומים — הכל עם ממשק נקי ונוח לנייד.",
+    imageUrl: UNSPLASH4,
+  },
+];
+
+function productTypeHebrew(t: ProductType): string {
+  switch (t) {
+    case "zoom":
+      return "זום";
+    case "workshop":
+      return "סדנה";
+    case "supervision":
+      return "השגחה";
+    case "shelf_product":
+      return "מוצר";
+    default:
+      return "מרקט";
+  }
+}
+
+function moneyShort(n: unknown): string {
+  const v = typeof n === "number" ? n : Number(n);
+  return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
+}
+
+function clip(s: string, max: number): string {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
 }
 
 export default async function HomePage() {
   const session = await auth();
 
-  const raw = await prisma.therapistProfile.findMany({
-    include: { user: { select: { name: true, image: true } } },
-    orderBy: { updatedAt: "desc" },
-  });
+  const [therapists, products, articles] = await Promise.all([
+    prisma.therapistProfile.findMany({
+      include: { user: { select: { name: true, image: true } } },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+    }),
+    prisma.product.findMany({
+      where: { active: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.herbalArticle.findMany({
+      where: { published: true },
+      include: { therapist: { select: { name: true } } },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+    }),
+  ]);
 
-  const spotlight = raw.map((p) => ({
-    slug: p.slug,
-    name: p.user.name,
-    image: p.user.image,
-    bio: p.bio,
-    specialty1: p.specialty1,
-    specialty2: p.specialty2,
-    specialty3: p.specialty3,
-  }));
+  const gridItems: ExploreGridItem[] = [];
 
-  const hourSlot = new Date().getUTCHours() + new Date().getUTCDate();
-  const therapistsForSlider = rotateList(spotlight, hourSlot);
+  for (const p of therapists) {
+    const spec = [p.specialty1, p.specialty2, p.specialty3].filter(Boolean).join(" · ");
+    gridItems.push({
+      id: `t-${p.id}`,
+      category: "therapists",
+      title: p.user.name,
+      subtitle: clip(spec || p.bio, 120),
+      href: `/t/${p.slug}`,
+      imageUrl: p.user.image,
+      badge: "מטפל",
+    });
+  }
 
-  const cards = [
-    {
-      title: "למטפלים",
-      body: "דפי נחיתה אישיים, כלי EMR, יומן טיפולים, והעלאת פתקים בכתב יד.",
-    },
-    {
-      title: "ללקוחות",
-      body: "הרשמה מאובטחת, חיפוש מטפלים, וקריאת מאמרים מקושרים לאינדקס הצמחים.",
-    },
-    {
-      title: "לניהול",
-      body: "לוח בקרה עם תמונת מצב, ביקורת פעילות, ומקום לאימות תשלומים.",
-    },
-  ];
+  for (const p of products) {
+    gridItems.push({
+      id: `p-${p.id}`,
+      category: "marketplace",
+      title: p.title,
+      subtitle: clip(`${productTypeHebrew(p.type)} · מ-${moneyShort(p.price)} — ${p.description}`, 140),
+      href: "/marketplace",
+      imageUrl: null,
+      badge: "מרקט",
+    });
+  }
+
+  for (const a of articles) {
+    gridItems.push({
+      id: `a-${a.id}`,
+      category: "herbal",
+      title: a.title,
+      subtitle: clip(`${a.excerpt} · ${a.therapist.name}`, 140),
+      href: `/herbal-index/${a.slug}`,
+      imageUrl: null,
+      badge: "צמחים",
+    });
+  }
+
+  /** Order: therapists → marketplace → herbal (readable “catalog” flow) */
+  const exploreItems = gridItems;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-      <section className="animate-slide-up text-center opacity-0 [animation-delay:80ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100">
-        <p className="inline-flex items-center gap-2 rounded-full border border-herbal-200/60 bg-white/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-herbal-700 shadow-sm backdrop-blur-sm sm:text-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          The Center for Herbal Therapists
+    <div className="mx-auto max-w-6xl px-0 pb-14 pt-6 sm:px-4 sm:pb-16 sm:pt-8 md:px-6">
+      <HomeVisionCarousel slides={VISION_SLIDES} />
+
+      <div className="mt-10 flex flex-col items-stretch gap-3 px-4 sm:mt-12 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 md:px-0">
+        <Link href="/therapists" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
+          כל המטפלים
+        </Link>
+        <Link href="/marketplace" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
+          מרקט — הרצאות, סדנאות ומוצרים
+        </Link>
+        <Link href="/herbal-index" className="link-pill inline-flex min-h-[48px] items-center justify-center text-center text-sm font-semibold">
+          אינדקס צמחים
+        </Link>
+      </div>
+
+      <div className="px-4 md:px-0">
+        <HomeExploreGrid items={exploreItems} />
+      </div>
+
+      <section className="mx-4 mt-14 rounded-3xl border border-herbal-100/90 bg-white/80 p-8 text-center shadow-glass backdrop-blur-sm sm:mx-0 sm:mt-16 sm:p-10">
+        <h2 className="font-display text-2xl font-bold text-gradient-herbal sm:text-3xl">התחלו עכשיו</h2>
+        <p className="mx-auto mt-3 max-w-lg text-slate-600">
+          {session?.user
+            ? `שלום, ${session.user.name}. עברו לאזור האישי.`
+            : "הירשמו כמטפל או כלקוח כדי לגשת לכלים המלאים."}
         </p>
-        <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-gradient-herbal sm:text-5xl md:text-6xl">
-          המרכז למטפלים בצמחי מרפא
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-          קהילה, שוק, ויומן טיפולים דיגיטלי עם מחשבון נוסחאות. מותאם לנייד, לוח ומחשב.
-        </p>
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
-          <Link
-            href="/marketplace"
-            className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center rounded-full px-10 py-3.5 text-base font-semibold btn-shimmer"
-          >
-            גלו את השוק
-          </Link>
-          <Link
-            href="/herbal-index"
-            className="glass-panel inline-flex min-h-[52px] min-w-[220px] items-center justify-center rounded-full border-herbal-200/90 px-10 py-3.5 text-base font-semibold text-herbal-800 transition hover:-translate-y-0.5 hover:shadow-lift"
-          >
-            אינדקס צמחים
-          </Link>
-        </div>
-      </section>
-
-      <section className="mt-12 opacity-0 animate-slide-up [animation-delay:200ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100 sm:mt-16">
-        <TherapistSpotlight therapists={therapistsForSlider} />
-      </section>
-
-      <section className="mt-12 grid gap-5 sm:grid-cols-3 sm:mt-16">
-        {cards.map((c, idx) => (
-          <article
-            key={c.title}
-            style={{ animationDelay: `${280 + idx * 90}ms` }}
-            className="glass-panel group p-6 opacity-0 shadow-glass animate-slide-up [animation-fill-mode:forwards] transition duration-500 hover:-translate-y-1 hover:border-herbal-200/90 hover:shadow-lift motion-reduce:opacity-100 motion-reduce:animate-none"
-          >
-            <div className="mb-3 h-1 w-12 rounded-full bg-gradient-to-l from-herbal-500 to-emerald-400 transition-all duration-500 group-hover:w-20" />
-            <h2 className="font-display text-xl font-bold text-herbal-900">{c.title}</h2>
-            <p className="mt-2 leading-relaxed text-slate-600">{c.body}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="mt-12 opacity-0 animate-slide-up [animation-delay:520ms] [animation-fill-mode:forwards] motion-reduce:animate-none motion-reduce:opacity-100 sm:mt-16">
-        <div className="relative glass-panel-strong overflow-hidden p-8 text-center sm:p-12">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(74,146,80,0.08),transparent_50%)]" />
-          <h2 className="relative font-display text-2xl font-bold text-gradient-herbal sm:text-3xl">התחלו עכשיו</h2>
-          <p className="relative mx-auto mt-3 max-w-lg text-slate-600">
-            {session?.user
-              ? `שלום, ${session.user.name}. עברו לאזור האישי.`
-              : "הירשמו כמטפל או כלקוח כדי לגשת לכלים המלאים."}
-          </p>
-          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-            {session?.user ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex min-h-[48px] items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white btn-shimmer"
-              >
-                אזור אישי
-              </Link>
-            ) : (
-              <Link
-                href="/auth/register"
-                className="inline-flex min-h-[48px] items-center justify-center rounded-full px-10 py-3 text-base font-semibold text-white btn-shimmer"
-              >
-                הרשמה
-              </Link>
-            )}
-          </div>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {session?.user ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white btn-shimmer"
+            >
+              אזור אישי
+            </Link>
+          ) : (
+            <Link
+              href="/auth/register"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-full px-10 py-3 text-base font-semibold text-white btn-shimmer"
+            >
+              הרשמה
+            </Link>
+          )}
         </div>
       </section>
     </div>

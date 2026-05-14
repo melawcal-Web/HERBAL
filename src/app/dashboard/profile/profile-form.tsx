@@ -12,7 +12,11 @@ type Initial = {
   specialty3: string;
   contactPhone: string;
   contactCity: string;
+  contactWhatsapp: string;
+  contactPublicEmail: string;
   website: string;
+  instagram: string;
+  facebook: string;
 };
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -36,7 +40,11 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           specialty3: form.specialty3,
           contactPhone: form.contactPhone,
           contactCity: form.contactCity,
+          contactWhatsapp: form.contactWhatsapp,
+          contactPublicEmail: form.contactPublicEmail,
           website: form.website,
+          instagram: form.instagram,
+          facebook: form.facebook,
         });
         setOk(true);
         router.refresh();
@@ -99,10 +107,53 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">אתר / רשת חברתית</label>
+        <label className="text-sm font-medium text-slate-700">מספר WhatsApp (לינק צ׳אט — ספרות בלבד מומלץ)</label>
         <input
           className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
           dir="ltr"
+          placeholder="972501234567"
+          value={form.contactWhatsapp}
+          onChange={(e) => setForm({ ...form, contactWhatsapp: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">אימייל ליצירת קשר (מוצג בדף הציבורי בלבד אם מולא)</label>
+        <input
+          type="email"
+          className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+          dir="ltr"
+          value={form.contactPublicEmail}
+          onChange={(e) => setForm({ ...form, contactPublicEmail: e.target.value })}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-slate-700">Instagram (שם משתמש או קישור מלא)</label>
+          <input
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+            dir="ltr"
+            placeholder="@username"
+            value={form.instagram}
+            onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700">Facebook (קישור לעמוד או שם עמוד)</label>
+          <input
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+            dir="ltr"
+            placeholder="https://facebook.com/..."
+            value={form.facebook}
+            onChange={(e) => setForm({ ...form, facebook: e.target.value })}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">אתר אישי (כתובת מלאה)</label>
+        <input
+          className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+          dir="ltr"
+          placeholder="https://..."
           value={form.website}
           onChange={(e) => setForm({ ...form, website: e.target.value })}
         />
