@@ -83,7 +83,9 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
 
   useEffect(() => {
     setVisuals(items.map(() => ({ parallaxX: 0 })));
-  }, [slugKey, items]);
+    // slugKey נגזר מ-items; לא מוסיפים את items כאן — הפניה חדשה בכל רנדר הייתה מאפסת את הקרוסלה
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slugKey]);
 
   /** Center first card on load / when list changes */
   useEffect(() => {
