@@ -57,9 +57,65 @@ function whenIso(d: string) {
   return new Date(d).toISOString();
 }
 
+/** פריטי קטלוג ישנים בלי `catalogKey` — ממפים לפי כותרת כדי למנוע כפילויות אחרי שדרוג */
+async function attachLegacyCatalogKeys(map: Record<string, string>) {
+  for (const [title, catalogKey] of Object.entries(map)) {
+    const row = await prisma.product.findFirst({
+      where: { catalogKey: null, title },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (row) await prisma.product.update({ where: { id: row.id }, data: { catalogKey } });
+  }
+}
+
+async function upsertCatalogProduct(
+  catalogKey: string,
+  data: {
+    type: ProductType;
+    title: string;
+    description: string;
+    price: number;
+    memberPrice: number;
+    imageUrl: string | null;
+    metadata?: Prisma.InputJsonValue;
+    active?: boolean;
+  },
+) {
+  await prisma.product.upsert({
+    where: { catalogKey },
+    create: {
+      catalogKey,
+      type: data.type,
+      title: data.title,
+      description: data.description,
+      price: new Prisma.Decimal(data.price),
+      memberPrice: new Prisma.Decimal(data.memberPrice),
+      imageUrl: data.imageUrl,
+      metadata: data.metadata ?? Prisma.JsonNull,
+      active: data.active ?? true,
+    },
+    update: {
+      type: data.type,
+      title: data.title,
+      description: data.description,
+      price: new Prisma.Decimal(data.price),
+      memberPrice: new Prisma.Decimal(data.memberPrice),
+      imageUrl: data.imageUrl,
+      metadata: data.metadata ?? Prisma.JsonNull,
+      active: data.active ?? true,
+    },
+  });
+}
+
 async function main() {
-  /** Fresh demo catalog for קורסים וסדנאות */
-  await prisma.product.deleteMany({});
+  await attachLegacyCatalogKeys({
+    "סדנת מסחטות ומשחות — רמת גן": "catalog-workshop-massages-rg",
+    "סדנת חליטות וארומה — חיפה": "catalog-workshop-teas-haifa",
+    "זום — בטיחות תרופתית וצמחים": "catalog-zoom-pharmacy-safety",
+    "זום — עיכול ומיקרוביום": "catalog-zoom-digest-microbiome",
+    "השגחה קבוצתית — פוריות ומחזור": "catalog-supervision-fertility-cycle",
+  });
 
   const [
     imgRonit,
@@ -93,155 +149,127 @@ async function main() {
     unsplashImage("digestive health herbs kitchen shelf", IMG_SHELF, "landscape"),
   ]);
 
-  const workshopSeeds: Array<{
-    title: string;
-    description: string;
-    price: number;
-    memberPrice: number;
-    imageUrl: string;
-    metadata: { location: string; startsAt: string; maxParticipants: number; courseDetails: string };
-  }> = [
-    {
-      title: "סדנת מסחטות ומשחות — רמת גן",
-      description: "קורס פרונטלי · רמת גן",
-      price: 540,
-      memberPrice: 460,
-      imageUrl: imgWorkshop,
-      metadata: {
-        location: "רמת גן",
-        startsAt: whenIso("2026-07-03T09:30"),
-        maxParticipants: 16,
-        courseDetails:
-          "יום מעשי עם ערכת חומרים: נלמד בסיסים של נוסחאות חיצוניות, בטיחות ריכוזים, סימון ותיעוד, והדגמות על עור תקין. מתאים למטפלים מוסמכים. כולל הפסקות וחומרי עזר לתרגול.",
-      },
-    },
-    {
-      title: "סדנת חליטות וארומה — חיפה",
-      description: "קורס פרונטלי · חיפה",
-      price: 410,
-      memberPrice: 350,
-      imageUrl: imgAnxiety,
-      metadata: {
-        location: "חיפה",
-        startsAt: whenIso("2026-07-18T17:00"),
-        maxParticipants: 12,
-        courseDetails:
-          "חלק תאורטי קצר וחלק מעבדה: חליטות, טמפרטורות, זמני השריה, ושילוב בטוח עם תרופות נפוצות — בהנחיית מדריך. מומלץ להביא מחברת סימון אישית.",
-      },
-    },
-  ];
+  const w1Starts = whenIso("2026-07-03T09:30");
+  const w2Starts = whenIso("2026-07-18T17:00");
+  const z1Starts = whenIso("2026-07-08T20:00");
+  const z2Starts = whenIso("2026-07-22T19:30");
+  const supStarts = whenIso("2026-07-11T08:30");
 
-  for (const w of workshopSeeds) {
-    const desc = `${w.description} · ${new Date(w.metadata.startsAt).toLocaleString("he-IL")}`;
-    await prisma.product.create({
-      data: {
-        type: ProductType.workshop,
-        title: w.title,
-        description: desc,
-        price: w.price,
-        memberPrice: w.memberPrice,
-        imageUrl: w.imageUrl,
-        metadata: w.metadata as Prisma.InputJsonValue,
-        active: true,
-      },
-    });
-  }
-
-  const zoomSeeds: Array<{
-    title: string;
-    price: number;
-    memberPrice: number;
-    imageUrl: string;
-    metadata: { zoomUrl: string; startsAt: string; maxParticipants: number; courseDetails: string };
-  }> = [
-    {
-      title: "זום — בטיחות תרופתית וצמחים",
-      price: 360,
-      memberPrice: 300,
-      imageUrl: imgZoom,
-      metadata: {
-        zoomUrl: "https://zoom.us/j/8001110001",
-        startsAt: whenIso("2026-07-08T20:00"),
-        maxParticipants: 40,
-        courseDetails:
-          "מפגש של שעה וחצי כולל שאלות ותשובות: נסקור מקרים טיפוסיים, מתי להפנות לרופא, ותיעוד מקצועי. הקלטה תישלח למשתתפים לשבוע.",
-      },
+  await upsertCatalogProduct("catalog-workshop-massages-rg", {
+    type: ProductType.workshop,
+    title: "סדנת מסחטות ומשחות — רמת גן",
+    description: `יום פרונטלי אחד, למטפלים מוסמכים · רמת גן · ${new Date(w1Starts).toLocaleString("he-IL")}`,
+    price: 540,
+    memberPrice: 460,
+    imageUrl: imgWorkshop,
+    metadata: {
+      location: "רמת גן",
+      startsAt: w1Starts,
+      maxParticipants: 16,
+      courseDetails:
+        "יום מעשי עם ערכת חומרים: נלמד בסיסים של נוסחאות חיצוניות, בטיחות ריכוזים, סימון ותיעוד, והדגמות על עור תקין. כולל הפסקות, תרגול מודרך, ודיון קצר על תיעוד במרפאה.",
     },
-    {
-      title: "זום — עיכול ומיקרוביום",
-      price: 118,
-      memberPrice: 95,
-      imageUrl: imgDigest,
-      metadata: {
-        zoomUrl: "https://zoom.us/j/8001110002",
-        startsAt: whenIso("2026-07-22T19:30"),
-        maxParticipants: 60,
-        courseDetails:
-          "מבוא מעודכן לצמחי עיכול נפוצים, גבולות טיפול, ושיח עם דיאטנית — חלק שני פתוח לשאלות מהקהל.",
-      },
+  });
+
+  await upsertCatalogProduct("catalog-workshop-teas-haifa", {
+    type: ProductType.workshop,
+    title: "סדנת חליטות וארומה — חיפה",
+    description: `מפגש פרונטלי עם מעבדה · חיפה · ${new Date(w2Starts).toLocaleString("he-IL")}`,
+    price: 410,
+    memberPrice: 350,
+    imageUrl: imgAnxiety,
+    metadata: {
+      location: "חיפה",
+      startsAt: w2Starts,
+      maxParticipants: 12,
+      courseDetails:
+        "חלק תאורטי קצר וחלק מעבדה: חליטות, טמפרטורות, זמני השריה, ושילוב זהיר לצד תרופות נפוצות — בהנחיית מדריך. מומלץ להביא מחברת סימון אישית.",
     },
-  ];
+  });
 
-  for (const z of zoomSeeds) {
-    const desc = `מפגש זום · ${new Date(z.metadata.startsAt).toLocaleString("he-IL")}`;
-    await prisma.product.create({
-      data: {
-        type: ProductType.zoom,
-        title: z.title,
-        description: desc,
-        price: z.price,
-        memberPrice: z.memberPrice,
-        imageUrl: z.imageUrl,
-        metadata: z.metadata as Prisma.InputJsonValue,
-        active: true,
-      },
-    });
-  }
-
-  const supervisionSeeds: Array<{
-    title: string;
-    price: number;
-    imageUrl: string;
-    metadata: { startsAt: string; maxParticipants: number; courseDetails: string };
-  }> = [
-    {
-      title: "השגחה קבוצתית — פוריות ומחזור",
-      price: 260,
-      imageUrl: imgSupervision,
-      metadata: {
-        startsAt: whenIso("2026-07-11T08:30"),
-        maxParticipants: 10,
-        courseDetails:
-          "מעגל השגחה קטן: כל משתתף מציג מקרה קצר (10 דק׳), דיון מובנה, וסיכום תובנות. נדרשת הרשמה מראש ושמירת חיסיון מקצועי.",
-      },
+  await upsertCatalogProduct("catalog-zoom-pharmacy-safety", {
+    type: ProductType.zoom,
+    title: "זום — בטיחות תרופתית וצמחים",
+    description: `מפגש מקוון · ${new Date(z1Starts).toLocaleString("he-IL")}`,
+    price: 360,
+    memberPrice: 300,
+    imageUrl: imgZoom,
+    metadata: {
+      zoomUrl: "https://zoom.us/j/8001110001",
+      startsAt: z1Starts,
+      maxParticipants: 40,
+      courseDetails:
+        "כשעה וחצי כולל שאלות ותשובות: מקרים טיפוסיים, מתי להפנות לרופא/ה או לרוקח/ית, ותיעוד מקצועי. הקלטה תישלח למשתתפים לשבוע.",
     },
-  ];
+  });
 
-  for (const s of supervisionSeeds) {
-    const desc = `השגחה מקצועית · ${new Date(s.metadata.startsAt).toLocaleString("he-IL")}`;
-    await prisma.product.create({
-      data: {
-        type: ProductType.supervision,
-        title: s.title,
-        description: desc,
-        price: s.price,
-        memberPrice: s.price,
-        imageUrl: s.imageUrl,
-        metadata: s.metadata as Prisma.InputJsonValue,
-        active: true,
-      },
-    });
-  }
+  await upsertCatalogProduct("catalog-zoom-digest-microbiome", {
+    type: ProductType.zoom,
+    title: "זום — עיכול ומיקרוביום",
+    description: `מפגש מקוון · ${new Date(z2Starts).toLocaleString("he-IL")}`,
+    price: 118,
+    memberPrice: 95,
+    imageUrl: imgDigest,
+    metadata: {
+      zoomUrl: "https://zoom.us/j/8001110002",
+      startsAt: z2Starts,
+      maxParticipants: 60,
+      courseDetails:
+        "מבוא מעודכן לצמחי עיכול נפוצים, גבולות טיפול, ושיח עם דיאטנית — חלק שני פתוח לשאלות מהקהל.",
+    },
+  });
+
+  await upsertCatalogProduct("catalog-supervision-fertility-cycle", {
+    type: ProductType.supervision,
+    title: "השגחה קבוצתית — פוריות ומחזור",
+    description: `מעגל השגחה · ${new Date(supStarts).toLocaleString("he-IL")}`,
+    price: 260,
+    memberPrice: 260,
+    imageUrl: imgSupervision,
+    metadata: {
+      startsAt: supStarts,
+      maxParticipants: 10,
+      courseDetails:
+        "מעגל קטן: כל משתתף/ת מציגים מקרה קצר (כ־10 דקות), דיון מובנה, וסיכום תובנות. נדרשת הרשמה מראש ושמירת חיסיון מקצועי.",
+    },
+  });
+
+  await upsertCatalogProduct("catalog-shelf-tea-assortment", {
+    type: ProductType.shelf_product,
+    title: "ערכת חליטות אישית — שישה צמחים נבחרים",
+    description: "אריזת מתנה + כרטיסי הסבר בעברית · איסוף מרמת גן או משלוח לפי אזור.",
+    price: 189,
+    memberPrice: 159,
+    imageUrl: covChamomile,
+    metadata: {
+      courseDetails:
+        "הצמחים ארוזים בנפרד לאחסון נכון. בכל כרטיס: שם לטיני, חלק בשימוש, הצעה בסיסית להכנה, ואזהרות כלליות. ניתן לבקש החלפת צמח בודד לפי רגישות — ציינו בהזמנה.",
+    },
+  });
+
+  await upsertCatalogProduct("catalog-shelf-ebook-formulas", {
+    type: ProductType.shelf_product,
+    title: "חוברת דיגיטלית — שתים־עשרה נוסחאות ביתיות בטוחות",
+    description: "PDF להורדה מיידית · פרק על בטיחות, תיעוד במרפאה, ושילוב זהיר לצד תרופות נפוצות.",
+    price: 79,
+    memberPrice: 59,
+    imageUrl: covMint,
+    metadata: {
+      courseDetails:
+        "שתים־עשרה נוסחאות לחליטה ולטיפוח עדין, עם הסבר קצר על כל צמח, מינוני התחלה, ומתי להפסיק ולפנות לרופא/ה. הרישיון אישי לרוכש/ת — אין העתקה.",
+    },
+  });
+
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
   const adminPassword = process.env.ADMIN_PASSWORD ?? "ChangeMe123!";
   const passwordHash = await hash(adminPassword, 12);
 
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
-    update: { role: "admin", passwordHash, name: "מנהל/ת מערכת" },
+    update: { role: "admin", passwordHash, name: "מנהל המערכת" },
     create: {
       email: adminEmail,
-      name: "מנהל/ת מערכת",
+      name: "מנהל המערכת",
       passwordHash,
       role: "admin",
       subStatus: "active",
@@ -791,7 +819,7 @@ async function main() {
   });
 
   const articleDisclaimer =
-    "\n\nהמאמר לצורכי הדגמה והשראה מקצועית בלבד — אינו מהווה ייעוץ רפואי או תחליף לחוות דעת רופא/ה.";
+    "\n\nמידע מקצועי כללי בלבד; אינו מהווה אבחון או טיפול אישי. בכל סימפטום, שינוי בתרופה או בהריון — יש להתייעץ עם רופא/ה או רוקח/ית.";
 
   await prisma.herbalArticle.upsert({
     where: { slug: "mallow-soothing" },
@@ -801,9 +829,10 @@ async function main() {
       excerpt:
         "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
-        "הקמומיל הוא צמח מוכר במטבח ובקליניקה. במאמר נפרט על הבדלים בין זנים, על איכות חומר הגלם, ועל דרכי הכנה בטוחות.\n\n" +
-        "נדגיש תיעוד, מעקב אחר תופעות לוואי, והפניה לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
-        "המאמר מיועד למטפלים מוסמכים ולציבור מבין כהשראה מקצועית בלבד." +
+        "קמומיל רפואי (Matricaria chamomilla) הוא אחד הצמחים הנפוצים ביותר במטבח ובמרפאה. הוא נחשב בעדינות יחסית, אך גם לו יש גבולות, רגישויות, ואינטראקציות שחשוב להכיר לפני המלצה למטופלים.\n\n" +
+        "בחלק הראשון של המאמר נפרט על הבדלים בין זנים ומקורות, על איכות חומר גלם (יבש מול טרי), ועל השפעה של אחסון על הפעילות הארומטית והפוליפנולית. נדגיש את חשיבות התיעוד במרפאה: מינון, תדירות, תגובות, והפניות לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
+        "בחלק השני נעסוק בשימושים פנימיים נפוצים (חליטה, תמציות) ובשימוש חיצוני זהיר — כולל אזהרות בהריון ובגיל צעיר, ורגישות ידועה למשפחת המורכבים. נסיים במסגרת אתית: מה מקובל להבטיח למטופל, ומה חייבים להשאיר מחוץ לשיחה.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים ולקוראים מקצועיים המחפשים מסגרת שפה אחידה עם הרפואה הקונבנציונלית." +
         articleDisclaimer,
       coverImageUrl: covChamomile,
       published: true,
@@ -816,9 +845,10 @@ async function main() {
       excerpt:
         "סקירה מקצועית לקמומיל: שימושים מסורתיים ברוגע עיכולי קל, תמיכה בשינה, ושימוש חיצוני בשיקום עור — לצד אזהרות הריון, אלרגיה לאסטים, ואינטראקציות תרופתיות אפשריות.",
       body:
-        "הקמומיל הוא צמח מוכר במטבח ובקליניקה. במאמר נפרט על הבדלים בין זנים, על איכות חומר הגלם, ועל דרכי הכנה בטוחות.\n\n" +
-        "נדגיש תיעוד, מעקב אחר תופעות לוואי, והפניה לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
-        "המאמר מיועד למטפלים מוסמכים ולציבור מבין כהשראה מקצועית בלבד." +
+        "קמומיל רפואי (Matricaria chamomilla) הוא אחד הצמחים הנפוצים ביותר במטבח ובמרפאה. הוא נחשב בעדינות יחסית, אך גם לו יש גבולות, רגישויות, ואינטראקציות שחשוב להכיר לפני המלצה למטופלים.\n\n" +
+        "בחלק הראשון של המאמר נפרט על הבדלים בין זנים ומקורות, על איכות חומר גלם (יבש מול טרי), ועל השפעה של אחסון על הפעילות הארומטית והפוליפנולית. נדגיש את חשיבות התיעוד במרפאה: מינון, תדירות, תגובות, והפניות לרופא/ה כשמדובר בתסמינים חדשים או מתמשכים.\n\n" +
+        "בחלק השני נעסוק בשימושים פנימיים נפוצים (חליטה, תמציות) ובשימוש חיצוני זהיר — כולל אזהרות בהריון ובגיל צעיר, ורגישות ידועה למשפחת המורכבים. נסיים במסגרת אתית: מה מקובל להבטיח למטופל, ומה חייבים להשאיר מחוץ לשיחה.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים ולקוראים מקצועיים המחפשים מסגרת שפה אחידה עם הרפואה הקונבנציונלית." +
         articleDisclaimer,
       coverImageUrl: covChamomile,
       published: true,
@@ -945,6 +975,74 @@ async function main() {
     },
   });
 
+  await prisma.herbalArticle.upsert({
+    where: { slug: "ashwagandha-stress-recovery" },
+    update: {
+      title: "וותניה נומניפרה (Ashwagandha) — עומס, שינה, והקשר לספורט",
+      category: "עצבים, שינה, ספורט",
+      excerpt:
+        "מבט קליני-צמחי על אשווגנדה: שימושים מסורתיים בתמיכה בעומס ובשינה, שיקולי בטיחות, תרופות נפוצות, והפרדה בין ציפייה ריאלית לבין הייפ שיווקי.",
+      body:
+        "וותניה נומניפרה, המוכרת לרוב כאשווגנדה, היא שורש שמקורו ברפואה האיורוודית ונחקרה בעשורים האחרונים בהקשרים שונים של מתח, שינה, וביצועים. במאמר זה ננסח שפה מקצועית למטפלים: מה אפשר לדון עליו במסגרת ליווי, ומה חייבים להשאיר מחוץ לשיחה.\n\n" +
+        "נפתח בהבחנה בין תכשירים שונים (אבקה, תמצית יבשה, טינקטורה) ולמה שווי מינון אינו טריוויאלי. נמשיך לנושאי בטיחות: הריון והנקה, מחלות אוטואימוניות, תרופות המשפיעות על המערכת העצבית, ולוח זמנים לפני ניתוחים. נדגיש תמיד מעקב אחרי תופעות לוואי והפניה לרופא/ה כשמופיעים סימנים חדשים.\n\n" +
+        "בהקשר ספורטי נדבר על גבולות: אין להציג את הצמח כתחליף לאבחון רפואי של עייפות כרונית, אנמיה, או הפרעות שינה משניות. נסיים בתיעוד במרפאה — מה לרשום, מה לשאול במפגש הבא, ואיך לשלב את השיחה עם דיאטנית או פסיכולוג/ית כשצריך.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים בצמחי מרפא." +
+        articleDisclaimer,
+      coverImageUrl: covOats,
+      published: true,
+    },
+    create: {
+      therapistId: noaGolan.id,
+      title: "וותניה נומניפרה (Ashwagandha) — עומס, שינה, והקשר לספורט",
+      slug: "ashwagandha-stress-recovery",
+      category: "עצבים, שינה, ספורט",
+      excerpt:
+        "מבט קליני-צמחי על אשווגנדה: שימושים מסורתיים בתמיכה בעומס ובשינה, שיקולי בטיחות, תרופות נפוצות, והפרדה בין ציפייה ריאלית לבין הייפ שיווקי.",
+      body:
+        "וותניה נומניפרה, המוכרת לרוב כאשווגנדה, היא שורש שמקורו ברפואה האיורוודית ונחקרה בעשורים האחרונים בהקשרים שונים של מתח, שינה, וביצועים. במאמר זה ננסח שפה מקצועית למטפלים: מה אפשר לדון עליו במסגרת ליווי, ומה חייבים להשאיר מחוץ לשיחה.\n\n" +
+        "נפתח בהבחנה בין תכשירים שונים (אבקה, תמצית יבשה, טינקטורה) ולמה שווי מינון אינו טריוויאלי. נמשיך לנושאי בטיחות: הריון והנקה, מחלות אוטואימוניות, תרופות המשפיעות על המערכת העצבית, ולוח זמנים לפני ניתוחים. נדגיש תמיד מעקב אחרי תופעות לוואי והפניה לרופא/ה כשמופיעים סימנים חדשים.\n\n" +
+        "בהקשר ספורטי נדבר על גבולות: אין להציג את הצמח כתחליף לאבחון רפואי של עייפות כרונית, אנמיה, או הפרעות שינה משניות. נסיים בתיעוד במרפאה — מה לרשום, מה לשאול במפגש הבא, ואיך לשלב את השיחה עם דיאטנית או פסיכולוג/ית כשצריך.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים בצמחי מרפא." +
+        articleDisclaimer,
+      coverImageUrl: covOats,
+      published: true,
+    },
+  });
+
+  await prisma.herbalArticle.upsert({
+    where: { slug: "calendula-skin-barrier" },
+    update: {
+      title: "קלנדולה רפואית (Calendula officinalis) — עור רגיש, מחסום, ושימוש חיצוני",
+      category: "עור וטיפוח קליני",
+      excerpt:
+        "קלנדולה כצמח לטיפוח עור: שימושים מסורתיים בשיקום עדין, בבחירת בסיסים (שמן, משחה), ובטיחות לצד אלרגיה לצמחי מורכבים או פצעים מזוהמים.",
+      body:
+        "הקלנדולה היא פרח מוכר בשדות ובגינות, ובמרפאות צמחי מרפא היא נפוצה כרכיב בשמנים, משחות, וטינקטורות חיצוניות. במאמר נפרק את השיקולים הקליניים: מתי שימוש חיצוני הגיוני כהשלמה לטיפול רפואי, ומתי הוא אסור או דורש הפניה מיידית.\n\n" +
+        "נדבר על איכות חומר גלם: יבש מול רטוב, ריכוז שמן, וסיכון לראקציה בעור דק או שבור. נפרט על רגישות צולבת למשפחת המורכבים, ועל ההבדל בין גירוי קל לבין דלקת הדורשת אנטיביוטיקה. נציע מסגרת לשיחה עם מטופלים: איך להסביר שקלנדולה אינה 'מרפאת הכל', ואיך לתעד המלצות.\n\n" +
+        "לבסוף ניגע בשילוב עם תרופות חיצוניות רוקחיות — איפה חובה לעצור ולשלוח לרוקח/ית או לרופא/ת עור.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים." +
+        articleDisclaimer,
+      coverImageUrl: covLavender,
+      published: true,
+    },
+    create: {
+      therapistId: danaErez.id,
+      title: "קלנדולה רפואית (Calendula officinalis) — עור רגיש, מחסום, ושימוש חיצוני",
+      slug: "calendula-skin-barrier",
+      category: "עור וטיפוח קליני",
+      excerpt:
+        "קלנדולה כצמח לטיפוח עור: שימושים מסורתיים בשיקום עדין, בבחירת בסיסים (שמן, משחה), ובטיחות לצד אלרגיה לצמחי מורכבים או פצעים מזוהמים.",
+      body:
+        "הקלנדולה היא פרח מוכר בשדות ובגינות, ובמרפאות צמחי מרפא היא נפוצה כרכיב בשמנים, משחות, וטינקטורות חיצוניות. במאמר נפרק את השיקולים הקליניים: מתי שימוש חיצוני הגיוני כהשלמה לטיפול רפואי, ומתי הוא אסור או דורש הפניה מיידית.\n\n" +
+        "נדבר על איכות חומר גלם: יבש מול רטוב, ריכוז שמן, וסיכון לראקציה בעור דק או שבור. נפרט על רגישות צולבת למשפחת המורכבים, ועל ההבדל בין גירוי קל לבין דלקת הדורשת אנטיביוטיקה. נציע מסגרת לשיחה עם מטופלים: איך להסביר שקלנדולה אינה 'מרפאת הכל', ואיך לתעד המלצות.\n\n" +
+        "לבסוף ניגע בשילוב עם תרופות חיצוניות רוקחיות — איפה חובה לעצור ולשלוח לרוקח/ית או לרופא/ת עור.\n\n" +
+        "המאמר מיועד למטפלים מוסמכים." +
+        articleDisclaimer,
+      coverImageUrl: covLavender,
+      published: true,
+    },
+  });
+
   const visionJson = JSON.parse(JSON.stringify(DEFAULT_VISION_SLIDES)) as Prisma.InputJsonValue;
 
   await prisma.siteConfig.upsert({
@@ -978,10 +1076,10 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: demoClientEmail },
-    update: { role: "client", passwordHash: clHash, name: "לקוח/ה לדוגמה" },
+    update: { role: "client", passwordHash: clHash, name: "מיכל אהרון" },
     create: {
       email: demoClientEmail,
-      name: "לקוח/ה לדוגמה",
+      name: "מיכל אהרון",
       passwordHash: clHash,
       role: "client",
     },
@@ -997,21 +1095,29 @@ async function main() {
   });
 
   // eslint-disable-next-line no-console
-  console.log(
-    "Seed complete. Admin:",
-    adminEmail,
-    "Therapists:",
-    demoTherapistEmail,
-    "shira.demo@example.com",
-    "michael.demo@example.com",
-    "yael.demo@example.com",
-    "dan.demo@example.com (ערן כהן)",
-    "noa.herbal.demo@example.com",
-    "amir.herbal.demo@example.com",
-    "dana.herbal.demo@example.com",
-    "Client:",
-    demoClientEmail,
-  );
+  console.log(`
+——————————————————————————————————————————————————
+  האתר מולא בתוכן התחלה (מוצרים, מטפלים, מאמרים, לקוח)
+  עכשיו: היכנסו לממשק הניהול, עברו על הכל וערכו או מחקו.
+
+  מנהל/ת
+    מייל: ${adminEmail}
+    סיסמה (ברירת מחדל): ${adminPassword}
+
+  מטפלים (כולל ד״ר רונית) — סיסמה אחת לכולם אם לא הגדרתם אחרת:
+    סיסמה: ${demoTherapistPassword}
+
+  לקוח להתנסות
+    מייל: ${demoClientEmail}
+    סיסמה: ${demoClientPassword}
+
+  מטפלים נוספים (אותה סיסמת מטפל): shira.demo@, michael.demo@,
+  yael.demo@, dan.demo@ (ערן כהן), noa.herbal.demo@, amir.herbal.demo@, dana.herbal.demo@
+
+  להריץ שוב אחרי עדכון קוד (מעדכן פריטים עם מפתח קטלוג; לא נוגע במה שיצרתם ידנית בלי מפתח):
+    npm run db:seed
+——————————————————————————————————————————————————
+`);
 }
 
 main()

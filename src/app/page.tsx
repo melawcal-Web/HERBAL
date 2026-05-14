@@ -18,7 +18,7 @@ function productTypeHebrew(t: ProductType): string {
     case "supervision":
       return "השגחה";
     case "shelf_product":
-      return "קורסים וסדנאות";
+      return "מוצר";
     default:
       return "קורסים וסדנאות";
   }

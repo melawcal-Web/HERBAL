@@ -121,6 +121,8 @@ model ClinicalLog {
 
 model Product {
   id          String      @id @default(cuid())
+  /** מפתח יציב לפריטי קטלוג מה־seed — מאפשר עדכון חוזר בלי למחוק מוצרים שיצרת ידנית */
+  catalogKey  String?     @unique @map("catalog_key") @db.VarChar(64)
   type        ProductType
   title       String
   description String      @db.Text
