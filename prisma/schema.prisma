@@ -193,6 +193,10 @@ model SiteConfig {
   githubUsername  String? @map("github_username") @db.VarChar(191)
   vercelUsername  String? @map("vercel_username") @db.VarChar(191)
   railwayUsername String? @map("railway_username") @db.VarChar(191)
+  /** שם משתמש ב-Unsplash (לתצוגה / תיעוד) */
+  unsplashUsername String? @map("unsplash_username") @db.VarChar(191)
+  /** מפתח Access של Unsplash — אם ריק, משתמשים ב-UNSPLASH_ACCESS_KEY מהסביבה */
+  unsplashAccessKey String? @map("unsplash_access_key") @db.VarChar(256)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

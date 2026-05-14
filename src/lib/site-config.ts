@@ -57,9 +57,25 @@ export async function getSiteServiceLabels() {
       github: row?.githubUsername ?? "",
       vercel: row?.vercelUsername ?? "",
       railway: row?.railwayUsername ?? "",
+      unsplashUsername: row?.unsplashUsername ?? "",
+      unsplashAccessKey: row?.unsplashAccessKey ?? "",
     };
   } catch {
-    return { github: "", vercel: "", railway: "" };
+    return { github: "", vercel: "", railway: "", unsplashUsername: "", unsplashAccessKey: "" };
+  }
+}
+
+/** מפתח Unsplash מהגדרות האתר (ללא משתנה סביבה). */
+export async function getUnsplashAccessKeyFromConfig(): Promise<string | null> {
+  try {
+    const row = await prisma.siteConfig.findUnique({
+      where: { id: "default" },
+      select: { unsplashAccessKey: true },
+    });
+    const k = row?.unsplashAccessKey?.trim();
+    return k?.length ? k : null;
+  } catch {
+    return null;
   }
 }
 

@@ -9,7 +9,8 @@ export default async function AdminLinksPage() {
       <div className="mb-8">
         <h2 className="font-display text-2xl text-herbal-900">קישורים לשירותים</h2>
         <p className="mt-1 text-slate-600">
-          קישורים מהירים ל-GitHub, Vercel ו-Railway, ומקום לרשום את שם המשתמש הרלוונטי (בלי סיסמאות — רק לזכירה).
+          קישורים מהירים ל-GitHub, Vercel, Railway ו-Unsplash, ומקום לרשום שמות משתמש ומפתח Access ל-Unsplash (או רק
+          תיעוד — עדיפות ל־UNSPLASH_ACCESS_KEY בשרת).
         </p>
       </div>
       <AdminLinksForm initial={initial} />

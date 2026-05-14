@@ -26,7 +26,11 @@ export async function updateSiteServiceUsernames(input: {
   githubUsername: string;
   vercelUsername: string;
   railwayUsername: string;
+  unsplashUsername: string;
+  unsplashAccessKey: string;
 }) {
+  const unsplashKeyTrim = input.unsplashAccessKey.trim();
+
   await prisma.siteConfig.upsert({
     where: { id: "default" },
     create: {
@@ -36,11 +40,15 @@ export async function updateSiteServiceUsernames(input: {
       githubUsername: input.githubUsername.trim() || null,
       vercelUsername: input.vercelUsername.trim() || null,
       railwayUsername: input.railwayUsername.trim() || null,
+      unsplashUsername: input.unsplashUsername.trim() || null,
+      unsplashAccessKey: unsplashKeyTrim.length > 0 ? unsplashKeyTrim : null,
     },
     update: {
       githubUsername: input.githubUsername.trim() || null,
       vercelUsername: input.vercelUsername.trim() || null,
       railwayUsername: input.railwayUsername.trim() || null,
+      unsplashUsername: input.unsplashUsername.trim() || null,
+      ...(unsplashKeyTrim.length > 0 ? { unsplashAccessKey: unsplashKeyTrim } : {}),
     },
   });
 
@@ -48,7 +56,7 @@ export async function updateSiteServiceUsernames(input: {
     action: "site_config.services",
     entityType: "SiteConfig",
     entityId: "default",
-    metadata: { keys: ["github", "vercel", "railway"] },
+    metadata: { keys: ["github", "vercel", "railway", "unsplash"] },
   });
 
   revalidatePath("/", "layout");

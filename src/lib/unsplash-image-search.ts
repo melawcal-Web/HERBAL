@@ -1,10 +1,12 @@
 import { translateHebrewToEnglish } from "@/lib/translate-he-en";
+import { getUnsplashAccessKeyFromConfig } from "@/lib/site-config";
 
 export type UnsplashHit = { id: string; thumb: string; full: string };
 
 /** Server-side Unsplash search (9 results). Caller must enforce auth. */
 export async function searchUnsplashFromHebrewQuery(qHebrew: string): Promise<{ queryEn: string; results: UnsplashHit[] }> {
-  const key = process.env.UNSPLASH_ACCESS_KEY?.trim();
+  const key =
+    process.env.UNSPLASH_ACCESS_KEY?.trim() || (await getUnsplashAccessKeyFromConfig())?.trim() || null;
   if (!key) {
     throw new Error("MISSING_UNSPLASH_KEY");
   }
