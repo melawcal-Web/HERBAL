@@ -33,6 +33,16 @@ function clip(s: string, max: number): string {
   return `${t.slice(0, max - 1)}…`;
 }
 
+/** רק כתובות https מלאות — נתיבים יחסיים / http / שבורות → נופלים ל-placeholder */
+function gridCardImageUrl(url: string | null | undefined, fallback: string): string {
+  const u = url?.trim();
+  if (!u) return fallback;
+  if (u.startsWith("//")) return `https:${u}`;
+  if (u.startsWith("https://")) return u;
+  if (u.startsWith("http://")) return `https://${u.slice(7)}`;
+  return fallback;
+}
+
 export default async function HomePage() {
   const [therapists, products, articles, visionSlides] = await Promise.all([
     prisma.therapistProfile.findMany({
@@ -64,7 +74,7 @@ export default async function HomePage() {
       title: p.user.name,
       subtitle: clip(spec || p.bio, 120),
       href: `/t/${p.slug}`,
-      imageUrl: p.user.image ?? pickDemoImage(`t-${p.id}`, "therapists"),
+      imageUrl: gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists")),
       badge: "מטפל",
     });
   }
@@ -97,7 +107,7 @@ export default async function HomePage() {
     <div className="w-full max-w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
       <HomeVisionCarousel slides={visionSlides} />
 
-      <div className="mt-6 sm:mt-8">
+      <div className="mt-8 sm:mt-10">
         <HomeExploreGrid items={gridItems} />
       </div>
     </div>

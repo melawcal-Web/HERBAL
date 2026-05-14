@@ -30,6 +30,34 @@ function placeholderGradient(seed: string) {
   return `linear-gradient(135deg, hsl(${hue} 35% 88%) 0%, hsl(${hue} 28% 78%) 100%)`;
 }
 
+function ExploreCardImage({ imageUrl, placeholderSeed }: { imageUrl: string | null; placeholderSeed: string }) {
+  const [broken, setBroken] = useState(false);
+  const showImg = Boolean(imageUrl) && !broken;
+
+  if (!showImg) {
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center text-4xl text-herbal-700/35"
+        style={{ background: placeholderGradient(placeholderSeed) }}
+        aria-hidden
+      >
+        🌿
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={imageUrl!}
+      alt=""
+      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+      draggable={false}
+      onError={() => setBroken(true)}
+    />
+  );
+}
+
 export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   const [filter, setFilter] = useState<ExploreCategory>("all");
   const [fade, setFade] = useState(true);
@@ -94,23 +122,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
             className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-herbal-100/90 bg-white/90 shadow-glass transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none hover:-translate-y-1 hover:border-herbal-200 hover:shadow-lift"
           >
             <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-herbal-50">
-              {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.imageUrl}
-                  alt=""
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                  draggable={false}
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center text-4xl text-herbal-700/35"
-                  style={{ background: placeholderGradient(item.id) }}
-                  aria-hidden
-                >
-                  🌿
-                </div>
-              )}
+              <ExploreCardImage imageUrl={item.imageUrl} placeholderSeed={item.id} />
               <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-herbal-800 shadow-sm backdrop-blur-sm sm:text-[11px]">
                 {item.badge}
               </div>
