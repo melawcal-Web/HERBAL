@@ -1,5 +1,6 @@
-import { PrismaClient, ProductType } from "@prisma/client";
+import { PrismaClient, ProductType, type Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { DEFAULT_SITE_TITLE, DEFAULT_VISION_SLIDES } from "../src/lib/home-vision";
 
 const prisma = new PrismaClient();
 
@@ -9,41 +10,61 @@ const IMG_SHIRA =
   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a?auto=format&fit=crop&w=800&q=80";
 const IMG_MICHAEL =
   "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=800&q=80";
+const IMG_YAEL =
+  "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=800&q=80";
+const IMG_DAN =
+  "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=800&q=80";
+
+const productSeeds: {
+  type: ProductType;
+  title: string;
+  description: string;
+  price: number;
+  memberPrice: number;
+}[] = [
+  {
+    type: ProductType.zoom,
+    title: "מפגש זום — תזונה צמחית",
+    description: "שעה של שאלות ותשובות עם מטפל/ת בכיר/ה.",
+    price: 120,
+    memberPrice: 90,
+  },
+  {
+    type: ProductType.workshop,
+    title: "סדנת הכנת תמציות",
+    description: "יום עיון פרקטי במעבדה.",
+    price: 450,
+    memberPrice: 380,
+  },
+  {
+    type: ProductType.supervision,
+    title: "השגחה מקצועית חודשית",
+    description: "מפגש קבוצתי למטפלים רשומים.",
+    price: 200,
+    memberPrice: 160,
+  },
+  {
+    type: ProductType.shelf_product,
+    title: "ערכת צמחי מרפא לבית",
+    description: "מוצר פיזי לדוגמה.",
+    price: 180,
+    memberPrice: 150,
+  },
+  {
+    type: ProductType.zoom,
+    title: "סשן זום — נשימה ורוגע",
+    description: "מפגש קצר להכוונה מעשית ובטיחות בשימוש בצמחים.",
+    price: 95,
+    memberPrice: 75,
+  },
+];
 
 async function main() {
-  if ((await prisma.product.count()) === 0) {
-    await prisma.product.createMany({
-      data: [
-        {
-          type: ProductType.zoom,
-          title: "מפגש זום — תזונה צמחית",
-          description: "שעה של שאלות ותשובות עם מטפל/ת בכיר/ה.",
-          price: 120,
-          memberPrice: 90,
-        },
-        {
-          type: ProductType.workshop,
-          title: "סדנת הכנת תמציות",
-          description: "יום עיון פרקטי במעבדה.",
-          price: 450,
-          memberPrice: 380,
-        },
-        {
-          type: ProductType.supervision,
-          title: "השגחה מקצועית חודשית",
-          description: "מפגש קבוצתי למטפלים רשומים.",
-          price: 200,
-          memberPrice: 160,
-        },
-        {
-          type: ProductType.shelf_product,
-          title: "ערכת צמחי מרפא לבית",
-          description: "מוצר פיזי לדוגמה.",
-          price: 180,
-          memberPrice: 150,
-        },
-      ],
-    });
+  for (const p of productSeeds) {
+    const exists = await prisma.product.findFirst({ where: { title: p.title } });
+    if (!exists) {
+      await prisma.product.create({ data: p });
+    }
   }
 
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
@@ -217,6 +238,88 @@ async function main() {
     },
   });
 
+  const yael = await prisma.user.upsert({
+    where: { email: "yael.demo@example.com" },
+    update: {
+      name: "יעל כהן",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_YAEL,
+    },
+    create: {
+      email: "yael.demo@example.com",
+      name: "יעל כהן",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_YAEL,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: yael.id },
+    update: {
+      slug: "yael-cohen-herbal",
+      bio: "מטפלת המתמחה בצמחי מרפא לנשים בגילאים שונים — מחזור, הריון והנקה בליווי מדויק ועדין.",
+      specialty1: "בריאות האישה",
+      specialty2: "הריון והנקה",
+      specialty3: "תמציות בטוחות",
+      contactInfo: { phone: "+972-52-1111111", city: "רעננה", whatsapp: "", email: "yael.demo@example.com" },
+      socialLinks: { website: "https://example.org/yael", instagram: "", facebook: "" },
+    },
+    create: {
+      userId: yael.id,
+      slug: "yael-cohen-herbal",
+      bio: "מטפלת המתמחה בצמחי מרפא לנשים בגילאים שונים — מחזור, הריון והנקה בליווי מדויק ועדין.",
+      specialty1: "בריאות האישה",
+      specialty2: "הריון והנקה",
+      specialty3: "תמציות בטוחות",
+      contactInfo: { phone: "+972-52-1111111", city: "רעננה", whatsapp: "", email: "yael.demo@example.com" },
+      socialLinks: { website: "https://example.org/yael", instagram: "", facebook: "" },
+    },
+  });
+
+  const dan = await prisma.user.upsert({
+    where: { email: "dan.demo@example.com" },
+    update: {
+      name: "דן רוזן",
+      role: "therapist",
+      passwordHash: thHash,
+      image: IMG_DAN,
+    },
+    create: {
+      email: "dan.demo@example.com",
+      name: "דן רוזן",
+      passwordHash: thHash,
+      role: "therapist",
+      subStatus: "active",
+      image: IMG_DAN,
+    },
+  });
+
+  await prisma.therapistProfile.upsert({
+    where: { userId: dan.id },
+    update: {
+      slug: "dan-rosen-formulas",
+      bio: "מטפל בצמחי מרפא עם ניסיון בפורמולות לעיכול, אנרגיה וחיסון — שילוב מדעי ומעשי.",
+      specialty1: "פורמולות קליניות",
+      specialty2: "עיכול ומיקרוביום",
+      specialty3: "אנרגיה יומיומית",
+      contactInfo: { phone: "+972-54-2222222", city: "באר שבע", whatsapp: "", email: "" },
+      socialLinks: { website: "", instagram: "@dan_herbs_demo", facebook: "" },
+    },
+    create: {
+      userId: dan.id,
+      slug: "dan-rosen-formulas",
+      bio: "מטפל בצמחי מרפא עם ניסיון בפורמולות לעיכול, אנרגיה וחיסון — שילוב מדעי ומעשי.",
+      specialty1: "פורמולות קליניות",
+      specialty2: "עיכול ומיקרוביום",
+      specialty3: "אנרגיה יומיומית",
+      contactInfo: { phone: "+972-54-2222222", city: "באר שבע", whatsapp: "", email: "" },
+      socialLinks: { website: "", instagram: "@dan_herbs_demo", facebook: "" },
+    },
+  });
+
   const profile = await prisma.therapistProfile.findUniqueOrThrow({
     where: { userId: therapistUser.id },
   });
@@ -235,6 +338,85 @@ async function main() {
       published: true,
     },
   });
+
+  await prisma.herbalArticle.upsert({
+    where: { slug: "chamomile-gentle-demo" },
+    update: {},
+    create: {
+      therapistId: therapistUser.id,
+      title: "קמומיל — עדינות לשגרה",
+      slug: "chamomile-gentle-demo",
+      excerpt: "מבט מקוצר על שימושים מוכרים ובטיחות בסיסית.",
+      body: "Matricaria recutita — טקסט הדגמה בלבד. אין זה ייעוץ רפואי.",
+      published: true,
+    },
+  });
+
+  await prisma.herbalArticle.upsert({
+    where: { slug: "ginger-warm-demo" },
+    update: {},
+    create: {
+      therapistId: therapistUser.id,
+      title: "זנגביל — חום ותמיכה בעיכול",
+      slug: "ginger-warm-demo",
+      excerpt: "רקע צמחי ושימושים נפוצים במטבח ובקליניקה.",
+      body: "Zingiber officinale — טקסט הדגמה בלבד. אין זה ייעוץ רפואי.",
+      published: true,
+    },
+  });
+
+  await prisma.herbalArticle.upsert({
+    where: { slug: "lemon-balm-calm-demo" },
+    update: {},
+    create: {
+      therapistId: therapistUser.id,
+      title: "מליסה רפואית — רוגע קל",
+      slug: "lemon-balm-calm-demo",
+      excerpt: "צמח מוכר לשעות ערב ולשגרה עמוסה.",
+      body: "Melissa officinalis — טקסט הדגמה בלבד. אין זה ייעוץ רפואי.",
+      published: true,
+    },
+  });
+
+  await prisma.herbalArticle.upsert({
+    where: { slug: "nettle-nourish-demo" },
+    update: {},
+    create: {
+      therapistId: therapistUser.id,
+      title: "סרפד — תזונה צמחית עשירה",
+      slug: "nettle-nourish-demo",
+      excerpt: "מאמר מקוצר על ערכים תזונתיים ושימושים מסורתיים.",
+      body: "Urtica dioica — טקסט הדגמה בלבד. אין זה ייעוץ רפואי.",
+      published: true,
+    },
+  });
+
+  const visionJson = JSON.parse(JSON.stringify(DEFAULT_VISION_SLIDES)) as Prisma.InputJsonValue;
+
+  await prisma.siteConfig.upsert({
+    where: { id: "default" },
+    create: {
+      id: "default",
+      heroSlides: [],
+      siteTitle: DEFAULT_SITE_TITLE,
+      visionSlides: visionJson,
+    },
+    update: {},
+  });
+
+  const existingCfg = await prisma.siteConfig.findUnique({ where: { id: "default" } });
+  if (existingCfg?.siteTitle == null) {
+    await prisma.siteConfig.update({
+      where: { id: "default" },
+      data: { siteTitle: DEFAULT_SITE_TITLE },
+    });
+  }
+  if (existingCfg?.visionSlides == null) {
+    await prisma.siteConfig.update({
+      where: { id: "default" },
+      data: { visionSlides: visionJson },
+    });
+  }
 
   const demoClientEmail = process.env.DEMO_CLIENT_EMAIL ?? "client@example.com";
   const demoClientPassword = process.env.DEMO_CLIENT_PASSWORD ?? "Client123!";
@@ -268,6 +450,8 @@ async function main() {
     demoTherapistEmail,
     "shira.demo@example.com",
     "michael.demo@example.com",
+    "yael.demo@example.com",
+    "dan.demo@example.com",
     "Client:",
     demoClientEmail,
   );

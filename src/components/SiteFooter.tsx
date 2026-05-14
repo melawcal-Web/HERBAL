@@ -7,6 +7,7 @@ function deployLabel() {
   const when = new Date(iso).toLocaleString("he-IL", {
     dateStyle: "short",
     timeStyle: "short",
+    timeZone: "Asia/Jerusalem",
   });
   const shortSha = sha && sha.length >= 7 ? sha.slice(0, 7) : null;
   return shortSha ? `${when} · קומיט ${shortSha}` : when;

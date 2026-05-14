@@ -1,49 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { pickDemoImage } from "@/lib/demo-placeholders";
+import { getVisionSlides } from "@/lib/site-config";
 import { HomeExploreGrid, type ExploreGridItem } from "@/components/home/HomeExploreGrid";
-import { HomeVisionCarousel, type VisionSlide } from "@/components/home/HomeVisionCarousel";
+import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
 import type { ProductType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
-
-const UNSPLASH =
-  "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80";
-const UNSPLASH2 =
-  "https://images.unsplash.com/photo-1515378791036-0648a3c77a02?auto=format&fit=crop&w=1400&q=80";
-const UNSPLASH3 =
-  "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=1400&q=80";
-const UNSPLASH4 =
-  "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1400&q=80";
-
-const VISION_SLIDES: VisionSlide[] = [
-  {
-    id: "v1",
-    eyebrow: "המרכז למטפלים בצמחי מרפא",
-    title: "בית דיגיטלי למקצוע הצמחים",
-    body: "המרכז מחבר מטפלים, לקוחות וידע — מקום שבו אפשר ללמוד, לשתף, לנהל יומן קליני, ולגלות תוכן איכותי על צמחי מרפא.",
-    imageUrl: UNSPLASH,
-  },
-  {
-    id: "v2",
-    eyebrow: "ערכים",
-    title: "מקצועיות, שקיפות וקהילה",
-    body: "אנחנו מאמינים בליווי מבוסס מדע ומסורת, בכבוד הדדי בין מטפלים ללקוחות, ובכלים שמקלים על העבודה היומיומית בקליניקה.",
-    imageUrl: UNSPLASH2,
-  },
-  {
-    id: "v3",
-    eyebrow: "למטפלים",
-    title: "כלי עבודה במקום אחד",
-    body: "דפי נחיתה אישיים, EMR, תיעוד טיפולים, ומחשבון נוסחאות — כדי שתוכלו להתמקד במטופלים, לא בבירוקרטיה.",
-    imageUrl: UNSPLASH3,
-  },
-  {
-    id: "v4",
-    eyebrow: "לקהילה רחבה",
-    title: "שוק, מאמרים וצמיחה",
-    body: "מרקט עם הרצאות, סדנאות ומוצרים, לצד אינדקס צמחים עם מאמרים מקוריים ממטפלים רשומים — הכל עם ממשק נקי ונוח לנייד.",
-    imageUrl: UNSPLASH4,
-  },
-];
 
 function productTypeHebrew(t: ProductType): string {
   switch (t) {
@@ -72,23 +34,24 @@ function clip(s: string, max: number): string {
 }
 
 export default async function HomePage() {
-  const [therapists, products, articles] = await Promise.all([
+  const [therapists, products, articles, visionSlides] = await Promise.all([
     prisma.therapistProfile.findMany({
       include: { user: { select: { name: true, image: true } } },
       orderBy: { updatedAt: "desc" },
-      take: 10,
+      take: 5,
     }),
     prisma.product.findMany({
       where: { active: true },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 5,
     }),
     prisma.herbalArticle.findMany({
       where: { published: true },
       include: { therapist: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
-      take: 10,
+      take: 5,
     }),
+    getVisionSlides(),
   ]);
 
   const gridItems: ExploreGridItem[] = [];
@@ -101,7 +64,7 @@ export default async function HomePage() {
       title: p.user.name,
       subtitle: clip(spec || p.bio, 120),
       href: `/t/${p.slug}`,
-      imageUrl: p.user.image,
+      imageUrl: p.user.image ?? pickDemoImage(`t-${p.id}`, "therapists"),
       badge: "מטפל",
     });
   }
@@ -113,7 +76,7 @@ export default async function HomePage() {
       title: p.title,
       subtitle: clip(`${productTypeHebrew(p.type)} · מ-${moneyShort(p.price)} — ${p.description}`, 140),
       href: "/marketplace",
-      imageUrl: null,
+      imageUrl: pickDemoImage(`p-${p.id}`, "marketplace"),
       badge: "מרקט",
     });
   }
@@ -125,19 +88,17 @@ export default async function HomePage() {
       title: a.title,
       subtitle: clip(`${a.excerpt} · ${a.therapist.name}`, 140),
       href: `/herbal-index/${a.slug}`,
-      imageUrl: null,
+      imageUrl: pickDemoImage(`a-${a.id}`, "herbal"),
       badge: "צמחים",
     });
   }
 
-  const exploreItems = gridItems;
-
   return (
-    <div className="w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
-      <HomeVisionCarousel slides={VISION_SLIDES} />
+    <div className="w-full max-w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
+      <HomeVisionCarousel slides={visionSlides} />
 
-      <div className="mt-10 sm:mt-12">
-        <HomeExploreGrid items={exploreItems} />
+      <div className="mt-6 sm:mt-8">
+        <HomeExploreGrid items={gridItems} />
       </div>
     </div>
   );

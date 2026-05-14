@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_SITE_TITLE, parseVisionSlides } from "@/lib/home-vision";
+import type { VisionSlide } from "@/lib/home-vision";
 
 export type HeroSlide = { imageUrl: string; caption: string };
+export type { VisionSlide } from "@/lib/home-vision";
 
 const FALLBACK_SLIDES: HeroSlide[] = [
   {
@@ -50,5 +53,24 @@ export async function getSiteServiceLabels() {
     };
   } catch {
     return { github: "", vercel: "", railway: "" };
+  }
+}
+
+export async function getSiteTitle(): Promise<string> {
+  try {
+    const row = await prisma.siteConfig.findUnique({ where: { id: "default" } });
+    const t = row?.siteTitle?.trim();
+    return t?.length ? t : DEFAULT_SITE_TITLE;
+  } catch {
+    return DEFAULT_SITE_TITLE;
+  }
+}
+
+export async function getVisionSlides(): Promise<VisionSlide[]> {
+  try {
+    const row = await prisma.siteConfig.findUnique({ where: { id: "default" } });
+    return parseVisionSlides(row?.visionSlides ?? null);
+  } catch {
+    return parseVisionSlides(null);
   }
 }

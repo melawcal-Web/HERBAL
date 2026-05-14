@@ -49,17 +49,10 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   }, [filter]);
 
   return (
-    <section className="mt-10 sm:mt-12" aria-labelledby="explore-grid-heading">
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8">
-        <div className="text-center">
-          <h2 id="explore-grid-heading" className="font-display text-2xl font-bold text-herbal-900 sm:text-3xl">
-            מה יש במרכז
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-            מטפלים, מרקט (הרצאות, סדנאות ומוצרים), ומאמרים באינדקס הצמחים — כרטיסים בגודל אחיד.
-          </p>
-        </div>
-      </div>
+    <section className="mt-6 sm:mt-8" aria-labelledby="explore-tabs-label">
+      <h2 id="explore-tabs-label" className="sr-only">
+        סינון תוכן — מטפלים, מרקט ואינדקס צמחים
+      </h2>
 
       <div
         role="tablist"

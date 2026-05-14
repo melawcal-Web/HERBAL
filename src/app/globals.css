@@ -83,4 +83,25 @@ body {
   .text-gradient-herbal {
     @apply bg-gradient-to-bl from-herbal-900 via-emerald-800 to-herbal-600 bg-clip-text text-transparent;
   }
+
+  @keyframes herbal-hero-ambient-shift {
+    0%,
+    100% {
+      opacity: 0.26;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      opacity: 0.48;
+      transform: translate3d(3%, -2%, 0) scale(1.04);
+    }
+  }
+
+  .home-hero-ambient::before {
+    content: "";
+    position: absolute;
+    inset: -25%;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 28% 18%, rgba(255, 255, 255, 0.52), transparent 58%);
+    animation: herbal-hero-ambient-shift 16s ease-in-out infinite;
+  }
 }

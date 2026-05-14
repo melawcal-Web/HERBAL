@@ -33,7 +33,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SiteHeader({ session }: { session: Session | null }) {
+export function SiteHeader({ session, siteTitle }: { session: Session | null; siteTitle: string }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export function SiteHeader({ session }: { session: Session | null }) {
           className="min-w-0 flex-1 font-display text-base font-bold leading-snug text-gradient-herbal transition-opacity duration-200 hover:opacity-90 sm:text-lg"
           onClick={() => setOpen(false)}
         >
-          המרכז למטפלים בצמחי מרפא
+          {siteTitle}
         </Link>
         <button
           type="button"

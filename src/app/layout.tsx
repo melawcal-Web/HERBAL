@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_Hebrew } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/auth";
+import { getSiteTitle } from "@/lib/site-config";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Providers } from "@/app/providers";
@@ -27,7 +28,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const [session, siteTitle] = await Promise.all([auth(), getSiteTitle()]);
 
   return (
     <html lang="he" dir="rtl">
@@ -37,7 +38,7 @@ export default async function RootLayout({
         <AmbientBackground />
         <Providers>
           <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col px-3 sm:px-5">
-            <SiteHeader session={session} />
+            <SiteHeader session={session} siteTitle={siteTitle} />
             <main className="relative flex-1 transition-opacity duration-300 ease-out">{children}</main>
             <SiteFooter />
           </div>

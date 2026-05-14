@@ -140,6 +140,11 @@ model SiteConfig {
 
   heroSlides Json @map("hero_slides")
 
+  /** Main title shown in header / branding */
+  siteTitle    String? @map("site_title") @db.VarChar(255)
+  /** Homepage vision carousel (JSON array) */
+  visionSlides Json?   @map("vision_slides")
+
   githubUsername  String? @map("github_username") @db.VarChar(191)
   vercelUsername  String? @map("vercel_username") @db.VarChar(191)
   railwayUsername String? @map("railway_username") @db.VarChar(191)
