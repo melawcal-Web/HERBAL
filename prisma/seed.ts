@@ -96,7 +96,7 @@ async function main() {
     price: number;
     memberPrice: number;
     imageUrl: string;
-    metadata: { location: string; startsAt: string; maxParticipants: number };
+    metadata: { location: string; startsAt: string; maxParticipants: number; courseDetails: string };
   }> = [
     {
       title: "סדנת מסחטות ומשחות — רמת גן",
@@ -104,7 +104,13 @@ async function main() {
       price: 540,
       memberPrice: 460,
       imageUrl: imgWorkshop,
-      metadata: { location: "רמת גן", startsAt: whenIso("2026-07-03T09:30"), maxParticipants: 16 },
+      metadata: {
+        location: "רמת גן",
+        startsAt: whenIso("2026-07-03T09:30"),
+        maxParticipants: 16,
+        courseDetails:
+          "יום מעשי עם ערכת חומרים: נלמד בסיסים של נוסחאות חיצוניות, בטיחות ריכוזים, סימון ותיעוד, והדגמות על עור תקין. מתאים למטפלים מוסמכים. כולל הפסקות וחומרי עזר לתרגול.",
+      },
     },
     {
       title: "סדנת חליטות וארומה — חיפה",
@@ -112,31 +118,13 @@ async function main() {
       price: 410,
       memberPrice: 350,
       imageUrl: imgAnxiety,
-      metadata: { location: "חיפה", startsAt: whenIso("2026-07-18T17:00"), maxParticipants: 12 },
-    },
-    {
-      title: "יום עיון רוקחות טבעית — ירושלים",
-      description: "קורס פרונטלי · ירושלים",
-      price: 590,
-      memberPrice: 500,
-      imageUrl: imgDigest,
-      metadata: { location: "ירושלים", startsAt: whenIso("2026-08-01T09:00"), maxParticipants: 20 },
-    },
-    {
-      title: "סדנת עור רגיש וצמחים — רעננה",
-      description: "קורס פרונטלי · רעננה",
-      price: 480,
-      memberPrice: 410,
-      imageUrl: imgWorkshop,
-      metadata: { location: "רעננה", startsAt: whenIso("2026-08-12T18:30"), maxParticipants: 10 },
-    },
-    {
-      title: "מעבדת נוסחאות ביתיות — נס ציונה",
-      description: "קורס פרונטלי · נס ציונה",
-      price: 520,
-      memberPrice: 440,
-      imageUrl: imgAnxiety,
-      metadata: { location: "נס ציונה", startsAt: whenIso("2026-09-05T10:00"), maxParticipants: 14 },
+      metadata: {
+        location: "חיפה",
+        startsAt: whenIso("2026-07-18T17:00"),
+        maxParticipants: 12,
+        courseDetails:
+          "חלק תאורטי קצר וחלק מעבדה: חליטות, טמפרטורות, זמני השריה, ושילוב בטוח עם תרופות נפוצות — בהנחיית מדריך. מומלץ להביא מחברת סימון אישית.",
+      },
     },
   ];
 
@@ -161,7 +149,7 @@ async function main() {
     price: number;
     memberPrice: number;
     imageUrl: string;
-    metadata: { zoomUrl: string; startsAt: string; maxParticipants: number };
+    metadata: { zoomUrl: string; startsAt: string; maxParticipants: number; courseDetails: string };
   }> = [
     {
       title: "זום — בטיחות תרופתית וצמחים",
@@ -172,6 +160,8 @@ async function main() {
         zoomUrl: "https://zoom.us/j/8001110001",
         startsAt: whenIso("2026-07-08T20:00"),
         maxParticipants: 40,
+        courseDetails:
+          "מפגש של שעה וחצי כולל שאלות ותשובות: נסקור מקרים טיפוסיים, מתי להפנות לרופא, ותיעוד מקצועי. הקלטה תישלח למשתתפים לשבוע.",
       },
     },
     {
@@ -183,39 +173,8 @@ async function main() {
         zoomUrl: "https://zoom.us/j/8001110002",
         startsAt: whenIso("2026-07-22T19:30"),
         maxParticipants: 60,
-      },
-    },
-    {
-      title: "זום — חרדה קלה וצמחי הרגעה",
-      price: 140,
-      memberPrice: 115,
-      imageUrl: imgZoom,
-      metadata: {
-        zoomUrl: "https://zoom.us/j/8001110003",
-        startsAt: whenIso("2026-08-04T20:15"),
-        maxParticipants: 35,
-      },
-    },
-    {
-      title: "זום — פוריות משלימה — שאלות למומחים",
-      price: 220,
-      memberPrice: 185,
-      imageUrl: imgZoom,
-      metadata: {
-        zoomUrl: "https://zoom.us/j/8001110004",
-        startsAt: whenIso("2026-08-20T19:00"),
-        maxParticipants: 25,
-      },
-    },
-    {
-      title: "זום — תיעוד קליני ואתיקה",
-      price: 95,
-      memberPrice: 79,
-      imageUrl: imgDigest,
-      metadata: {
-        zoomUrl: "https://zoom.us/j/8001110005",
-        startsAt: whenIso("2026-09-02T18:00"),
-        maxParticipants: 50,
+        courseDetails:
+          "מבוא מעודכן לצמחי עיכול נפוצים, גבולות טיפול, ושיח עם דיאטנית — חלק שני פתוח לשאלות מהקהל.",
       },
     },
   ];
@@ -240,37 +199,18 @@ async function main() {
     title: string;
     price: number;
     imageUrl: string;
-    metadata: { startsAt: string; maxParticipants: number };
+    metadata: { startsAt: string; maxParticipants: number; courseDetails: string };
   }> = [
     {
       title: "השגחה קבוצתית — פוריות ומחזור",
       price: 260,
       imageUrl: imgSupervision,
-      metadata: { startsAt: whenIso("2026-07-11T08:30"), maxParticipants: 10 },
-    },
-    {
-      title: "השגחה — עבודה עם מתבגרים",
-      price: 240,
-      imageUrl: imgSupervision,
-      metadata: { startsAt: whenIso("2026-07-25T08:30"), maxParticipants: 8 },
-    },
-    {
-      title: "השגחה — אינטראקציות תרופתיות",
-      price: 280,
-      imageUrl: imgSupervision,
-      metadata: { startsAt: whenIso("2026-08-08T08:30"), maxParticipants: 12 },
-    },
-    {
-      title: "השגחה — תסקיר מקרה קליני",
-      price: 200,
-      imageUrl: imgSupervision,
-      metadata: { startsAt: whenIso("2026-08-29T08:30"), maxParticipants: 6 },
-    },
-    {
-      title: "השגחה — פתיחת קליניקה חדשה",
-      price: 310,
-      imageUrl: imgSupervision,
-      metadata: { startsAt: whenIso("2026-09-14T08:30"), maxParticipants: 10 },
+      metadata: {
+        startsAt: whenIso("2026-07-11T08:30"),
+        maxParticipants: 10,
+        courseDetails:
+          "מעגל השגחה קטן: כל משתתף מציג מקרה קצר (10 דק׳), דיון מובנה, וסיכום תובנות. נדרשת הרשמה מראש ושמירת חיסיון מקצועי.",
+      },
     },
   ];
 

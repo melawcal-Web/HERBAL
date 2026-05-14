@@ -305,6 +305,7 @@ function CourseForm({
   const [memberPrice, setMemberPrice] = useState("");
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
+  const [courseDetails, setCourseDetails] = useState("");
 
   return (
     <form
@@ -323,6 +324,7 @@ function CourseForm({
                 memberPrice: Number(memberPrice),
                 maxParticipants: Number(maxP),
                 imageUrl: img,
+                courseDetails: courseDetails.trim() || undefined,
               });
               onDone("הקורס נוסף לקורסים וסדנאות.");
             } catch (er) {
@@ -366,6 +368,15 @@ function CourseForm({
         <label className="text-sm font-medium text-slate-700">משתתפים מקסימליים</label>
         <input required type="number" min="1" className={fieldClass()} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
       </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">פירוט על הקורס (אופציונלי)</label>
+        <textarea
+          className={`${fieldClass()} min-h-[100px]`}
+          value={courseDetails}
+          onChange={(e) => setCourseDetails(e.target.value)}
+          placeholder="מה לומדים, למי מתאים, חומרים, משך…"
+        />
+      </div>
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button
         type="submit"
@@ -396,6 +407,7 @@ function ZoomForm({
   const [memberPrice, setMemberPrice] = useState("");
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
+  const [courseDetails, setCourseDetails] = useState("");
 
   return (
     <form
@@ -414,6 +426,7 @@ function ZoomForm({
                 memberPrice: Number(memberPrice),
                 maxParticipants: Number(maxP),
                 imageUrl: img,
+                courseDetails: courseDetails.trim() || undefined,
               });
               onDone("מפגש הזום נוסף.");
             } catch (er) {
@@ -457,6 +470,15 @@ function ZoomForm({
         <label className="text-sm font-medium text-slate-700">משתתפים מקסימליים</label>
         <input required type="number" min="1" className={fieldClass()} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
       </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">פירוט על המפגש (אופציונלי)</label>
+        <textarea
+          className={`${fieldClass()} min-h-[100px]`}
+          value={courseDetails}
+          onChange={(e) => setCourseDetails(e.target.value)}
+          placeholder="מבנה המפגש, חומרים, דרישות מקדימות…"
+        />
+      </div>
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button
         type="submit"
@@ -485,6 +507,7 @@ function SupervisionForm({
   const [price, setPrice] = useState("");
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
+  const [courseDetails, setCourseDetails] = useState("");
 
   return (
     <form
@@ -501,6 +524,7 @@ function SupervisionForm({
                 price: Number(price),
                 maxParticipants: Number(maxP),
                 imageUrl: img,
+                courseDetails: courseDetails.trim() || undefined,
               });
               onDone("מפגש ההשגחה נוסף.");
             } catch (er) {
@@ -527,6 +551,15 @@ function SupervisionForm({
           <label className="text-sm font-medium text-slate-700">משתתפים מקסימליים</label>
           <input required type="number" min="1" className={fieldClass()} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
         </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">פירוט על ההשגחה (אופציונלי)</label>
+        <textarea
+          className={`${fieldClass()} min-h-[100px]`}
+          value={courseDetails}
+          onChange={(e) => setCourseDetails(e.target.value)}
+          placeholder="מטרות, שאלות לדיון, הכנה…"
+        />
       </div>
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button

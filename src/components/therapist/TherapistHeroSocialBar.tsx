@@ -114,9 +114,9 @@ export function TherapistHeroSocialBar({
 
   return (
     <div
-      className={`flex flex-nowrap items-center justify-center gap-2 overflow-x-auto py-1 [-webkit-overflow-scrolling:touch] ${className}`}
+      className={`flex flex-nowrap items-center gap-2 overflow-x-auto py-1 [-webkit-overflow-scrolling:touch] ${className}`}
       aria-label="יצירת קשר"
-      style={{ textAlign: "center" }}
+      dir="ltr"
     >
       {items}
     </div>

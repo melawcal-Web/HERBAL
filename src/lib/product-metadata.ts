@@ -7,6 +7,8 @@ export type ProductMetadata = {
   startsAt?: string;
   maxParticipants?: number;
   zoomUrl?: string;
+  /** פירוט ארוך על הקורס / המפגש — מוצג בדף קורסים וסדנאות */
+  courseDetails?: string;
 };
 
 export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): ProductMetadata {
@@ -19,5 +21,6 @@ export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): 
     out.maxParticipants = o.maxParticipants;
   }
   if (typeof o.zoomUrl === "string") out.zoomUrl = o.zoomUrl;
+  if (typeof o.courseDetails === "string" && o.courseDetails.trim()) out.courseDetails = o.courseDetails.trim();
   return out;
 }

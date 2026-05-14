@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { TherapistProfile, User } from "@prisma/client";
 import { TherapistProfileHero } from "@/components/therapist/TherapistProfileHero";
 import { parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
+import { pickDemoImage } from "@/lib/demo-placeholders";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -37,6 +38,10 @@ export function TherapistPublicPageView({
   const city = contact.city?.trim() || null;
   const publicTherapistTitle = profile.publicTherapistTitle === "male" ? "male" : "female";
 
+  const rawImg = profile.user.image?.trim();
+  const heroCoverUrl =
+    rawImg?.startsWith("https://") ? rawImg : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
+
   const showSupervision =
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
 
@@ -44,8 +49,7 @@ export function TherapistPublicPageView({
     <article className="mx-auto w-full max-w-[1320px] px-0 pb-12 pt-0 sm:px-4 sm:pb-16 md:px-6" dir="rtl">
       <header className="overflow-hidden rounded-none shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:shadow-xl">
         <TherapistProfileHero
-          imageUrl={profile.user.image}
-          fallbackLetter={profile.user.name.slice(0, 1)}
+          heroCoverUrl={heroCoverUrl}
           therapistName={profile.user.name}
           serviceCity={city}
           specialties={specs}

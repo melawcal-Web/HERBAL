@@ -101,6 +101,7 @@ export async function createAdminFrontalCourse(input: {
   memberPrice: number;
   maxParticipants: number;
   imageUrl: string;
+  courseDetails?: string;
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -111,6 +112,7 @@ export async function createAdminFrontalCourse(input: {
     memberPrice: z.number().positive(),
     maxParticipants: z.number().int().positive().max(500),
     imageUrl: httpsUrl,
+    courseDetails: z.string().max(8000).optional(),
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -125,6 +127,7 @@ export async function createAdminFrontalCourse(input: {
     location: p.data.location,
     startsAt: starts.toISOString(),
     maxParticipants: p.data.maxParticipants,
+    ...(p.data.courseDetails?.trim() ? { courseDetails: p.data.courseDetails.trim() } : {}),
   };
 
   const description = `קורס פרונטלי · ${p.data.location} · ${starts.toLocaleString("he-IL")}`;
@@ -162,6 +165,7 @@ export async function createAdminZoomSession(input: {
   memberPrice: number;
   maxParticipants: number;
   imageUrl: string;
+  courseDetails?: string;
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -172,6 +176,7 @@ export async function createAdminZoomSession(input: {
     memberPrice: z.number().positive(),
     maxParticipants: z.number().int().positive().max(500),
     imageUrl: httpsUrl,
+    courseDetails: z.string().max(8000).optional(),
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -186,6 +191,7 @@ export async function createAdminZoomSession(input: {
     zoomUrl: p.data.zoomUrl,
     startsAt: starts.toISOString(),
     maxParticipants: p.data.maxParticipants,
+    ...(p.data.courseDetails?.trim() ? { courseDetails: p.data.courseDetails.trim() } : {}),
   };
 
   const description = `מפגש זום · ${starts.toLocaleString("he-IL")}`;
@@ -221,6 +227,7 @@ export async function createAdminSupervisionSession(input: {
   price: number;
   maxParticipants: number;
   imageUrl: string;
+  courseDetails?: string;
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -229,6 +236,7 @@ export async function createAdminSupervisionSession(input: {
     price: z.number().positive(),
     maxParticipants: z.number().int().positive().max(200),
     imageUrl: httpsUrl,
+    courseDetails: z.string().max(8000).optional(),
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -242,6 +250,7 @@ export async function createAdminSupervisionSession(input: {
   const metadata = {
     startsAt: starts.toISOString(),
     maxParticipants: p.data.maxParticipants,
+    ...(p.data.courseDetails?.trim() ? { courseDetails: p.data.courseDetails.trim() } : {}),
   };
 
   const description = `השגחה מקצועית · ${starts.toLocaleString("he-IL")}`;

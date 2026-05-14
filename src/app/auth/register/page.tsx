@@ -41,7 +41,7 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="font-display text-2xl text-herbal-900">הרשמה מאובטחת</h1>
       <p className="mt-2 text-slate-600">
-        בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ית, או מתעניין/ת — גלישה בקהילה ובאינדקס.
+        בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ת, או חבר קהילה — גלישה בקהילה ובאינדקס.
       </p>
       <div className="mt-8 space-y-3">
         <GoogleSignInButton callbackUrl="/dashboard" />
@@ -96,7 +96,7 @@ export default function RegisterPage() {
           </label>
           <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
             <input type="radio" name="persona" checked={persona === "interested"} onChange={() => setPersona("interested")} />
-            מתעניין/ת
+            חבר קהילה
           </label>
         </fieldset>
         {persona === "therapist" ? (

@@ -55,6 +55,12 @@ export default async function MarketplacePage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-sage">{typeHebrew(p.type)}</p>
               <h2 className="mt-2 text-xl font-semibold text-herbal-900">{p.title}</h2>
               <p className="mt-2 flex-1 text-slate-600">{p.description}</p>
+              {meta.courseDetails ? (
+                <div className="mt-3 rounded-xl border border-herbal-100 bg-herbal-50/50 p-3 text-sm leading-relaxed text-slate-700">
+                  <p className="text-xs font-bold uppercase tracking-wide text-herbal-800/90">פירוט</p>
+                  <p className="mt-2 whitespace-pre-wrap">{meta.courseDetails}</p>
+                </div>
+              ) : null}
               {when || meta.location || meta.zoomUrl || meta.maxParticipants != null ? (
                 <ul className="mt-3 space-y-1 text-sm text-slate-600">
                   {when ? <li>מועד: {when}</li> : null}
