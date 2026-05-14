@@ -83,7 +83,7 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
 
   useEffect(() => {
     setVisuals(items.map(() => ({ parallaxX: 0 })));
-  }, [slugKey]);
+  }, [slugKey, items]);
 
   /** Center first card on load / when list changes */
   useEffect(() => {

@@ -33,7 +33,6 @@ export async function updateSiteServiceUsernames(input: {
       id: "default",
       heroSlides: [],
       siteTitle: null,
-      visionSlides: null,
       githubUsername: input.githubUsername.trim() || null,
       vercelUsername: input.vercelUsername.trim() || null,
       railwayUsername: input.railwayUsername.trim() || null,
@@ -75,7 +74,6 @@ export async function updateSiteHeroSlides(slides: HeroSlide[]) {
       id: "default",
       heroSlides: json,
       siteTitle: null,
-      visionSlides: null,
     },
     update: {
       heroSlides: json,
@@ -102,7 +100,6 @@ export async function updateSiteTitle(title: string) {
       id: "default",
       heroSlides: [],
       siteTitle: t,
-      visionSlides: null,
     },
     update: { siteTitle: t },
   });
