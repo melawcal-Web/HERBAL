@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   { href: "/admin/log", label: "לוג" },
+  { href: "/admin/users", label: "ניהול משתמשים" },
   { href: "/admin/links", label: "קישורים" },
   { href: "/admin/content", label: "ניהול תוכן (Content)" },
-  { href: "/admin/products", label: "מוצרים" },
+  { href: "/admin/products", label: "קורסים וסדנאות" },
 ];
 
 export function AdminNav() {

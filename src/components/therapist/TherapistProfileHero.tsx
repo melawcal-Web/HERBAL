@@ -1,5 +1,7 @@
 "use client";
 
+import type { ParsedContactInfo, ParsedSocialLinks } from "@/lib/therapist-contact";
+import { TherapistHeroSocialBar } from "@/components/therapist/TherapistHeroSocialBar";
 import { useState } from "react";
 
 type Props = {
@@ -9,6 +11,8 @@ type Props = {
   /** אזור פעילות / מיקום קליני */
   serviceCity: string | null;
   specialties: string[];
+  contact: ParsedContactInfo;
+  social: ParsedSocialLinks;
 };
 
 /**
@@ -21,6 +25,8 @@ export function TherapistProfileHero({
   therapistName,
   serviceCity,
   specialties,
+  contact,
+  social,
 }: Props) {
   const [showColor, setShowColor] = useState(false);
 
@@ -89,6 +95,7 @@ export function TherapistProfileHero({
             ))}
           </ul>
         ) : null}
+        <TherapistHeroSocialBar contact={contact} social={social} />
       </div>
     </div>
   );

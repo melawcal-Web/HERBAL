@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { AddProductForm } from "@/app/admin/products/add-product-form";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -69,6 +70,20 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {isAdmin && (
+        <section className="mt-10 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
+          <h2 className="font-display text-xl font-bold text-herbal-900">הוספת מוצר — קורסים וסדנאות</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            פריט חדש יופיע בדף הבית ובעמוד קורסים וסדנאות. ניתן גם לנהל מ{" "}
+            <Link href="/admin/products" className="font-semibold text-herbal-800 underline-offset-2 hover:underline">
+              מרכז הניהול
+            </Link>
+            .
+          </p>
+          <AddProductForm />
+        </section>
+      )}
 
       {role === "client" && (
         <section className="mt-10">

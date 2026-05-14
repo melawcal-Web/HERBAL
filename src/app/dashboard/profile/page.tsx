@@ -25,6 +25,7 @@ export default async function TherapistProfilePage() {
     website?: string;
     instagram?: string;
     facebook?: string;
+    tiktok?: string;
   };
 
   return (
@@ -53,6 +54,7 @@ export default async function TherapistProfilePage() {
             website: social.website ?? "",
             instagram: social.instagram ?? "",
             facebook: social.facebook ?? "",
+            tiktok: social.tiktok ?? "",
           }}
         />
       </div>

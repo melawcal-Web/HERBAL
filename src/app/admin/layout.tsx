@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminNav } from "@/components/AdminNav";
+import { ensureBootstrapAdmins } from "@/lib/bootstrap-super-admin";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await ensureBootstrapAdmins();
   const session = await auth();
   if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/admin/log");

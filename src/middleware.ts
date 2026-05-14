@@ -7,7 +7,6 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
-  const role = req.auth?.user?.role;
 
   if (pathname.startsWith("/dashboard")) {
     if (!isLoggedIn) {
@@ -22,9 +21,6 @@ export default auth((req) => {
       const url = new URL("/auth/signin", req.nextUrl.origin);
       url.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(url);
-    }
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
     }
   }
 

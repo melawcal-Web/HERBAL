@@ -37,6 +37,8 @@ export function TherapistPublicPageView({
             therapistName={profile.user.name}
             serviceCity={city}
             specialties={specs}
+            contact={contact}
+            social={social}
           />
         </header>
 

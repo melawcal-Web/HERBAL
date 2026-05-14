@@ -5,6 +5,7 @@ import type { UserRole } from "@prisma/client";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
+import { ensureBootstrapAdmins } from "@/lib/bootstrap-super-admin";
 
 const googleId = process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
@@ -66,6 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
       }
+      await ensureBootstrapAdmins();
       return true;
     },
     async jwt({ token, user }) {
@@ -77,12 +79,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (row) {
           token.id = row.id;
           token.role = row.role;
-          return token;
         }
       }
       if (user) {
         token.id = user.id;
         token.role = ((user as { role?: UserRole }).role ?? "client") as UserRole;
+      }
+      if (token.id && typeof token.id === "string") {
+        const live = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { role: true },
+        });
+        if (live) token.role = live.role;
       }
       return token;
     },

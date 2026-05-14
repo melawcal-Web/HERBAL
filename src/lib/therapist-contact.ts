@@ -11,6 +11,7 @@ export type ParsedSocialLinks = {
   website?: string;
   instagram?: string;
   facebook?: string;
+  tiktok?: string;
 };
 
 function strip(s: unknown): string | undefined {
@@ -37,6 +38,7 @@ export function parseSocialLinks(raw: unknown): ParsedSocialLinks {
     website: strip(o.website),
     instagram: strip(o.instagram),
     facebook: strip(o.facebook),
+    tiktok: strip(o.tiktok),
   };
 }
 
@@ -74,6 +76,16 @@ function ensureHttpUrl(url: string): string | null {
 
 export function buildWebsiteHref(website: string): string | null {
   return ensureHttpUrl(website);
+}
+
+/** Accepts @handle, handle, or full URL */
+export function buildTikTokHref(tiktok: string): string | null {
+  const t = tiktok.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  const handle = t.replace(/^@/, "").replace(/\/+$/, "");
+  if (!handle) return null;
+  return `https://www.tiktok.com/@${encodeURIComponent(handle)}`;
 }
 
 /** Accepts @handle, handle, or full URL */

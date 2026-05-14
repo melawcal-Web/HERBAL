@@ -20,6 +20,7 @@ export async function updateTherapistProfile(input: {
   website: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
 }) {
   const session = await auth();
   if (!session?.user?.id || !assertTherapist(session.user.role)) {
@@ -57,6 +58,7 @@ export async function updateTherapistProfile(input: {
         website: input.website,
         instagram: input.instagram,
         facebook: input.facebook,
+        tiktok: input.tiktok,
       },
     },
   });

@@ -18,6 +18,7 @@ type Initial = {
   website: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
 };
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -47,6 +48,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           website: form.website,
           instagram: form.instagram,
           facebook: form.facebook,
+          tiktok: form.tiktok,
         });
         setOk(true);
         router.refresh();
@@ -137,7 +139,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           onChange={(e) => setForm({ ...form, contactPublicEmail: e.target.value })}
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label className="text-sm font-medium text-slate-700">Instagram (שם משתמש או קישור מלא)</label>
           <input
@@ -156,6 +158,16 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             placeholder="https://facebook.com/..."
             value={form.facebook}
             onChange={(e) => setForm({ ...form, facebook: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700">TikTok (שם משתמש או קישור מלא)</label>
+          <input
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2"
+            dir="ltr"
+            placeholder="@username"
+            value={form.tiktok}
+            onChange={(e) => setForm({ ...form, tiktok: e.target.value })}
           />
         </div>
       </div>
