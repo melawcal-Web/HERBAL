@@ -57,6 +57,19 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
     return () => window.clearInterval(id);
   }, [n, reducedMotion]);
 
+  /** מרכז את השקופית הראשונה בטעינה כדי שלא תידחף לצד */
+  useEffect(() => {
+    if (n < 1) return;
+    const id = window.setTimeout(() => {
+      scrollerRef.current?.querySelector<HTMLElement>(`[data-vision-slide="0"]`)?.scrollIntoView({
+        inline: "center",
+        block: "nearest",
+        behavior: "auto",
+      });
+    }, 80);
+    return () => window.clearTimeout(id);
+  }, [n, slides.length]);
+
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root || n <= 1) return;
@@ -86,10 +99,10 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[var(--herbal-bg)] to-transparent sm:w-20" />
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[var(--herbal-bg)] to-transparent sm:w-20" />
 
-      <div className="mb-5 px-4 text-center sm:mb-7 sm:px-8 sm:text-right">
+      <div className="mb-5 px-4 text-center sm:mb-7 sm:px-8">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-herbal-600">המרכז למטפלים בצמחי מרפא</p>
         <h1 className="mt-2 font-display text-3xl font-bold text-herbal-900 sm:text-4xl md:text-[2.6rem]">חזון, ערכים ומה מחכה לכם כאן</h1>
-        <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:mx-0 sm:text-base">
+        <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
           גללו אופקית או השתמשו בחיצים — כל שקופית היא זווית אחרת על המרכז.
         </p>
       </div>
@@ -114,17 +127,25 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
 
         <div
           ref={scrollerRef}
-          dir="rtl"
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-4 pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6 sm:px-8"
+          dir="ltr"
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-0 pb-6 pt-1 [-webkit-overflow-scrolling:touch] sm:gap-6"
           style={{
-            scrollPaddingInline: "max(0.75rem, calc(50vw - min(44vw, 340px)))",
+            scrollPaddingInline: "max(6px, calc(50vw - min(45vw, 280px)))",
           }}
         >
+          <div
+            aria-hidden
+            className="shrink-0 snap-none"
+            style={{
+              minWidth: "max(6px, calc(50vw - min(45vw, 280px)))",
+              scrollSnapAlign: "none",
+            }}
+          />
           {slides.map((s, i) => (
             <article
               key={s.id}
               data-vision-slide={i}
-              className="relative h-[min(52vh,480px)] w-[min(90vw,560px)] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md sm:h-[min(48vh,440px)] sm:rounded-[2rem]"
+              className="relative h-[min(52vh,480px)] min-h-[400px] w-[min(90vw,560px)] shrink-0 snap-center overflow-hidden rounded-[1.75rem] border border-herbal-200/60 bg-white/80 shadow-lift ring-1 ring-white/70 backdrop-blur-md sm:h-[min(48vh,440px)] sm:min-h-[420px] sm:rounded-[2rem]"
             >
               {s.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -157,6 +178,14 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
               </div>
             </article>
           ))}
+          <div
+            aria-hidden
+            className="shrink-0 snap-none"
+            style={{
+              minWidth: "max(6px, calc(50vw - min(45vw, 280px)))",
+              scrollSnapAlign: "none",
+            }}
+          />
         </div>
       </div>
 

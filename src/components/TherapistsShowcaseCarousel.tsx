@@ -16,24 +16,30 @@ function specialtyLine(t: TherapistShowcaseItem) {
   return [t.specialty1, t.specialty2, t.specialty3].filter(Boolean).join(" · ");
 }
 
-/** Distance from viewport center → 0 at center, ~1 when slide is half a viewport away */
+/** Distance from viewport center → for parallax only */
 function centerNorm(root: DOMRect, slide: DOMRect): number {
   const rootCx = root.left + root.width / 2;
   const slideCx = slide.left + slide.width / 2;
   return Math.min(1, Math.abs(slideCx - rootCx) / Math.max(120, root.width * 0.42));
 }
 
-type SlideVisual = { scale: number; opacity: number; parallaxX: number };
+type SlideVisual = { parallaxX: number };
+
+/** Half of card width: min(41vw, 200px) for w = min(82vw, 400px) */
+const SCROLL_SIDE_PAD = "max(6px, calc(50vw - min(41vw, 200px)))";
 
 export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcaseItem[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [visuals, setVisuals] = useState<SlideVisual[]>(() => items.map(() => ({ scale: 1, opacity: 1, parallaxX: 0 })));
+  const [visuals, setVisuals] = useState<SlideVisual[]>(() => items.map(() => ({ parallaxX: 0 })));
+  const [activeIndex, setActiveIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const suppressNavRef = useRef(false);
   const dragRef = useRef({ active: false, pointerId: 0, startX: 0, startScroll: 0, moved: false });
   const rafRef = useRef<number | null>(null);
 
   const n = items.length;
+
+  const slugKey = items.map((x) => x.slug).join("|");
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -53,14 +59,12 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
       const r = card.getBoundingClientRect();
       const norm = centerNorm(rootRect, r);
       if (reducedMotion) {
-        next.push({ scale: 1 - norm * 0.06, opacity: 1 - norm * 0.25, parallaxX: 0 });
+        next.push({ parallaxX: 0 });
       } else {
-        const scale = 1 - norm * 0.12;
-        const opacity = 1 - norm * 0.42;
         const slideCx = r.left + r.width / 2;
         const rootCx = rootRect.left + rootRect.width / 2;
-        const parallaxX = (slideCx - rootCx) * -0.14;
-        next.push({ scale, opacity, parallaxX });
+        const parallaxX = (slideCx - rootCx) * -0.12 * (1 - norm * 0.35);
+        next.push({ parallaxX });
       }
     });
     if (next.length) setVisuals(next);
@@ -74,11 +78,42 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
     });
   }, [updateVisuals]);
 
-  const slugKey = items.map((x) => x.slug).join("|");
+  useEffect(() => {
+    setVisuals(items.map(() => ({ parallaxX: 0 })));
+  }, [slugKey]);
+
+  /** Center first card on load / when list changes */
+  useEffect(() => {
+    if (n < 1) return;
+    const id = window.setTimeout(() => {
+      scrollRef.current?.querySelector<HTMLElement>(`[data-showcase-card="0"]`)?.scrollIntoView({
+        inline: "center",
+        block: "nearest",
+        behavior: "auto",
+      });
+      scheduleUpdate();
+    }, 80);
+    return () => window.clearTimeout(id);
+  }, [slugKey, n, scheduleUpdate]);
 
   useEffect(() => {
-    setVisuals(items.map(() => ({ scale: 1, opacity: 1, parallaxX: 0 })));
-  }, [slugKey]);
+    const root = scrollRef.current;
+    if (!root || n <= 1) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting && e.intersectionRatio >= 0.4)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        const raw = (visible?.target as HTMLElement | undefined)?.dataset.showcaseCard;
+        if (raw === undefined) return;
+        const idx = Number(raw);
+        if (!Number.isNaN(idx)) setActiveIndex(idx);
+      },
+      { root, threshold: [0.35, 0.5, 0.65] },
+    );
+    root.querySelectorAll("[data-showcase-card]").forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [n, slugKey]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -93,7 +128,6 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
     };
   }, [scheduleUpdate, updateVisuals, n]);
 
-  /** Desktop: vertical wheel → horizontal scroll with eased feel */
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -114,7 +148,6 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
     return () => el.removeEventListener("wheel", onWheel);
   }, [scheduleUpdate, n]);
 
-  /** Mouse / pen drag to scroll (kinetic handoff to native momentum on touch) */
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || n <= 1) return;
@@ -202,13 +235,10 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
   }
 
   return (
-    <section
-      className="flex min-h-[calc(100dvh-5.5rem)] flex-col"
-      aria-label="מדריך מטפלים — תצוגת קרוסלה"
-    >
-      <header className="shrink-0 px-4 pb-2 pt-4 text-center sm:px-8 sm:pb-4 sm:text-right">
+    <section className="flex min-h-[calc(100dvh-5.5rem)] flex-col" aria-label="מדריך מטפלים — תצוגת קרוסלה">
+      <header className="shrink-0 px-4 pb-2 pt-4 text-center sm:px-8 sm:pb-4">
         <h1 className="font-display text-3xl font-bold text-herbal-900 sm:text-4xl">מטפלים רשומים</h1>
-        <p className="mt-2 text-sm text-slate-600 sm:text-base">
+        <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 sm:text-base">
           גרירה או מעקב אופקי — בחרו מטפל/ת ולחצו לדף הנחיתה המלא.
         </p>
       </header>
@@ -221,32 +251,31 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
         aria-label="קרוסלת מטפלים"
         onKeyDown={onKeyDown}
         dir="ltr"
-        className="showcase-scroll flex min-h-0 flex-1 cursor-grab touch-pan-x items-center gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain px-4 pb-10 pt-2 [-webkit-overflow-scrolling:touch] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-500 focus-visible:ring-offset-2 sm:gap-10 sm:px-8 sm:pb-14"
+        className="showcase-scroll flex min-h-0 flex-1 cursor-grab touch-pan-x items-center gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain px-0 pb-10 pt-2 [-webkit-overflow-scrolling:touch] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-500 focus-visible:ring-offset-2 sm:gap-8 sm:pb-14"
         style={{
           scrollSnapType: "x mandatory",
-          scrollPaddingInline: "max(1rem, calc(50vw - min(40vw, 200px)))",
+          scrollPaddingInline: SCROLL_SIDE_PAD,
         }}
       >
+        <div
+          aria-hidden
+          className="shrink-0 snap-none"
+          style={{ minWidth: SCROLL_SIDE_PAD, scrollSnapAlign: "none" }}
+        />
         {items.map((t, i) => {
-          const v = visuals[i] ?? { scale: 1, opacity: 1, parallaxX: 0 };
+          const v = visuals[i] ?? { parallaxX: 0 };
           return (
             <article
               key={t.slug}
-              data-showcase-card
-              className="flex w-[min(82vw,400px)] shrink-0 snap-center flex-col items-stretch sm:w-[min(72vw,440px)]"
-              style={{
-                transition: reducedMotion ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease",
-                transform: `scale(${v.scale})`,
-                opacity: v.opacity,
-                willChange: reducedMotion ? undefined : "transform, opacity",
-              }}
+              data-showcase-card={i}
+              className="w-[min(82vw,400px)] shrink-0 snap-center"
             >
               <Link
                 href={`/t/${t.slug}`}
                 onClick={onLinkClick}
-                className="group block rounded-[1.75rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-400 focus-visible:ring-offset-4"
+                className="group block h-[clamp(440px,min(64vh,620px),620px)] w-full overflow-hidden rounded-[1.75rem] border border-white/20 bg-herbal-900/30 shadow-[0_28px_56px_-18px_rgba(36,63,39,0.45)] ring-1 ring-black/10 transition-shadow duration-500 hover:shadow-[0_36px_72px_-20px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-herbal-400 focus-visible:ring-offset-4 sm:rounded-[2rem]"
               >
-                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[1.75rem] border border-white/20 bg-herbal-900/30 shadow-[0_28px_56px_-18px_rgba(36,63,39,0.45)] ring-1 ring-black/10 transition-shadow duration-500 group-hover:shadow-[0_36px_72px_-20px_rgba(0,0,0,0.5)]">
+                <div className="relative h-full w-full overflow-hidden">
                   <div className="absolute inset-0 overflow-hidden">
                     {t.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -255,36 +284,61 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
                         alt=""
                         className="therapist-photo-bw h-[112%] w-[112%] max-w-none object-cover object-center contrast-[1.06]"
                         style={{
-                          transform: `translateX(${v.parallaxX}px) translateY(${v.parallaxX * 0.12}px)`,
+                          transform: `translateX(${v.parallaxX}px) translateY(${v.parallaxX * 0.1}px)`,
                           willChange: reducedMotion ? undefined : "transform",
                         }}
                         draggable={false}
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-herbal-800 to-herbal-950 text-[clamp(3rem,20vw,6rem)] font-bold text-white/25">
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-herbal-800 to-herbal-950 text-[clamp(3rem,18vw,5.5rem)] font-bold text-white/25">
                         {t.name.slice(0, 1)}
                       </div>
                     )}
                   </div>
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-90" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/78 via-black/20 to-transparent" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-right sm:p-6">
-                    <h2 className="font-display text-2xl font-bold leading-tight text-white drop-shadow-md sm:text-3xl">{t.name}</h2>
-                    <p className="mt-2 text-xs font-medium leading-snug text-white/90 sm:text-sm">{specialtyLine(t)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-200/95">מטפל/ת</p>
+                    <h2 className="mt-2 font-display text-2xl font-bold leading-tight text-white drop-shadow-md sm:text-3xl">
+                      {t.name}
+                    </h2>
+                    <p className="mt-2 text-xs font-medium leading-snug text-white/92 sm:text-sm">{specialtyLine(t)}</p>
+                    <p className="mt-4 text-xs font-semibold text-emerald-200/90">לחצו לדף מלא ←</p>
                   </div>
-                </div>
-
-                <div className="mt-4 px-1 text-right sm:mt-5">
-                  <p className="font-display text-lg font-semibold text-herbal-900 sm:text-xl">{t.name}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{specialtyLine(t)}</p>
-                  <p className="mt-2 text-xs font-medium text-herbal-600 opacity-0 transition group-hover:opacity-100 sm:text-sm">
-                    לדף הנחיתה ←
-                  </p>
                 </div>
               </Link>
             </article>
           );
         })}
+        <div
+          aria-hidden
+          className="shrink-0 snap-none"
+          style={{ minWidth: SCROLL_SIDE_PAD, scrollSnapAlign: "none" }}
+        />
       </div>
+
+      {n > 1 && (
+        <div className="flex justify-center gap-2 pb-2">
+          {items.map((item, idx) => (
+            <button
+              key={item.slug}
+              type="button"
+              onClick={() => {
+                scrollRef.current?.querySelector<HTMLElement>(`[data-showcase-card="${idx}"]`)?.scrollIntoView({
+                  inline: "center",
+                  block: "nearest",
+                  behavior: reducedMotion ? "auto" : "smooth",
+                });
+                setActiveIndex(idx);
+              }}
+              className={`h-2 rounded-full transition-all ${
+                idx === activeIndex ? "w-9 bg-herbal-600" : "w-2 bg-herbal-200 hover:bg-herbal-400"
+              }`}
+              aria-label={`מטפל ${idx + 1}`}
+              aria-current={idx === activeIndex ? "true" : undefined}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
