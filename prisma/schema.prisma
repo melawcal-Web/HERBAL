@@ -145,6 +145,13 @@ model SiteConfig {
   /** Homepage vision carousel (JSON array) */
   visionSlides Json?   @map("vision_slides")
 
+  /** Homepage hero — small line above headline (e.g. center name) */
+  homeHeroMainTitle  String? @map("home_hero_main_title") @db.VarChar(255)
+  /** Homepage hero — large headline */
+  homeHeroHeadline   String? @map("home_hero_headline") @db.VarChar(500)
+  /** Homepage hero — instructions under headline */
+  homeHeroSliderHint String? @map("home_hero_slider_hint") @db.VarChar(600)
+
   githubUsername  String? @map("github_username") @db.VarChar(191)
   vercelUsername  String? @map("vercel_username") @db.VarChar(191)
   railwayUsername String? @map("railway_username") @db.VarChar(191)

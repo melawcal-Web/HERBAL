@@ -61,15 +61,23 @@ function IconFacebook({ className }: { className?: string }) {
   );
 }
 
-const btnBase =
+const btnElevated =
   "inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-herbal-600 sm:w-auto sm:min-w-[200px]";
+
+const btnMinimal =
+  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-neutral-900/10 bg-white px-5 py-2.5 text-sm font-medium text-neutral-900 transition hover:border-neutral-900/22 hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-800";
+
+const btnMinimalWa = `${btnMinimal} border-emerald-800/20 text-emerald-900 hover:bg-emerald-50/60`;
 
 export function TherapistProfileContact({
   contact,
   social,
+  appearance = "elevated",
 }: {
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
+  /** elevated = כרטיסים מלאים; minimal = קו תחתון מינימליסטי */
+  appearance?: "elevated" | "minimal";
 }) {
   const wa = contact.whatsapp ? buildWhatsAppHref(contact.whatsapp) : null;
   const phone = contact.phone?.trim();
@@ -85,6 +93,67 @@ export function TherapistProfileContact({
     return null;
   }
 
+  const minimal = appearance === "minimal";
+
+  if (minimal) {
+    return (
+      <section className="mt-0 border-t border-neutral-200/90 pt-14 md:pt-16" aria-labelledby="therapist-contact-heading">
+        <h2 id="therapist-contact-heading" className="text-[11px] font-bold uppercase tracking-[0.38em] text-neutral-500">
+          יצירת קשר
+        </h2>
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          {wa && (
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${btnMinimalWa} motion-reduce:transition-none`}
+            >
+              <IconWhatsApp className="h-[1.1rem] w-[1.1rem] shrink-0" />
+              WhatsApp
+            </a>
+          )}
+          {phone && (
+            <a href={buildTelHref(phone)} className={`${btnMinimal} motion-reduce:transition-none`}>
+              <IconPhone className="h-[1.1rem] w-[1.1rem] shrink-0 text-neutral-600" />
+              טלפון
+            </a>
+          )}
+          {emailOk && (
+            <a href={buildMailto(email!)} className={`${btnMinimal} motion-reduce:transition-none`}>
+              <IconMail className="h-[1.1rem] w-[1.1rem] shrink-0 text-neutral-600" />
+              אימייל
+            </a>
+          )}
+          {ig && (
+            <a href={ig} target="_blank" rel="noopener noreferrer" className={`${btnMinimal} motion-reduce:transition-none`}>
+              <IconInstagram className="h-[1.1rem] w-[1.1rem] shrink-0 text-neutral-600" />
+              Instagram
+            </a>
+          )}
+          {fb && (
+            <a href={fb} target="_blank" rel="noopener noreferrer" className={`${btnMinimal} motion-reduce:transition-none`}>
+              <IconFacebook className="h-[1.1rem] w-[1.1rem] shrink-0 text-neutral-600" />
+              Facebook
+            </a>
+          )}
+          {web && (
+            <a href={web} target="_blank" rel="noopener noreferrer" className={`${btnMinimal} motion-reduce:transition-none`}>
+              <IconGlobe className="h-[1.1rem] w-[1.1rem] shrink-0 text-neutral-600" />
+              אתר
+            </a>
+          )}
+        </div>
+        {contact.city?.trim() && (
+          <p className="mt-8 text-sm text-neutral-600">
+            <span className="font-semibold text-neutral-800">אזור פעילות · </span>
+            {contact.city.trim()}
+          </p>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section className="mt-10 border-t border-herbal-100/90 pt-8">
       <h2 className="font-display text-xl text-herbal-900">יצירת קשר</h2>
@@ -95,20 +164,20 @@ export function TherapistProfileContact({
             href={wa}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${btnBase} border-emerald-600/30 bg-emerald-600 text-white shadow-md hover:bg-emerald-500`}
+            className={`${btnElevated} border-emerald-600/30 bg-emerald-600 text-white shadow-md hover:bg-emerald-500`}
           >
             <IconWhatsApp className="h-5 w-5 shrink-0" />
             WhatsApp
           </a>
         )}
         {phone && (
-          <a href={buildTelHref(phone)} className={`${btnBase} border-herbal-200 bg-white text-herbal-900 hover:border-herbal-300 hover:bg-herbal-50`}>
+          <a href={buildTelHref(phone)} className={`${btnElevated} border-herbal-200 bg-white text-herbal-900 hover:border-herbal-300 hover:bg-herbal-50`}>
             <IconPhone className="h-5 w-5 shrink-0 text-herbal-600" />
             חיוג
           </a>
         )}
         {emailOk && (
-          <a href={buildMailto(email!)} className={`${btnBase} border-herbal-200 bg-white text-herbal-900 hover:border-herbal-300 hover:bg-herbal-50`}>
+          <a href={buildMailto(email!)} className={`${btnElevated} border-herbal-200 bg-white text-herbal-900 hover:border-herbal-300 hover:bg-herbal-50`}>
             <IconMail className="h-5 w-5 shrink-0 text-herbal-600" />
             אימייל
           </a>
@@ -118,7 +187,7 @@ export function TherapistProfileContact({
             href={ig}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${btnBase} border-herbal-200 bg-gradient-to-br from-purple-600 to-pink-600 text-white hover:opacity-95`}
+            className={`${btnElevated} border-herbal-200 bg-gradient-to-br from-purple-600 to-pink-600 text-white hover:opacity-95`}
           >
             <IconInstagram className="h-5 w-5 shrink-0" />
             Instagram
@@ -129,7 +198,7 @@ export function TherapistProfileContact({
             href={fb}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${btnBase} border-blue-700/40 bg-[#1877F2] text-white hover:bg-[#166fe5]`}
+            className={`${btnElevated} border-blue-700/40 bg-[#1877F2] text-white hover:bg-[#166fe5]`}
           >
             <IconFacebook className="h-5 w-5 shrink-0" />
             Facebook
@@ -140,7 +209,7 @@ export function TherapistProfileContact({
             href={web}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${btnBase} border-herbal-200 bg-herbal-700 text-white hover:bg-herbal-600`}
+            className={`${btnElevated} border-herbal-200 bg-herbal-700 text-white hover:bg-herbal-600`}
           >
             <IconGlobe className="h-5 w-5 shrink-0" />
             אתר

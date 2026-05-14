@@ -31,21 +31,14 @@ export function HomePortfolioCarousel({ items }: { items: ExploreGridItem[] }) {
   }, [filter]);
 
   return (
-    <section className="mt-0 w-full max-w-full" aria-labelledby="portfolio-heading">
+    <section className="mt-0 w-full max-w-full" aria-labelledby="portfolio-tabs-label">
       <div className="mx-auto w-full max-w-[1320px]">
-        <h2 id="portfolio-heading" className="mb-3 text-center font-display text-xl font-bold text-herbal-900 sm:text-2xl">
-          גלריית תוכן
+        <h2 id="portfolio-tabs-label" className="sr-only">
+          גלריית תוכן לפי קטגוריה
         </h2>
-        <p className="mx-auto mb-6 max-w-xl text-center text-sm text-slate-600 sm:text-base">
-          מעבר אופקי — בחרו קטגוריה וגללו כרטיסים גדולים בהשראת תיק עבודות נקי.
-        </p>
-
-        <h3 className="sr-only" id="portfolio-tabs-label">
-          סינון קטגוריות
-        </h3>
         <div
           role="tablist"
-          aria-labelledby="portfolio-heading"
+          aria-labelledby="portfolio-tabs-label"
           className="mb-6 flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]"
         >
           {tabs.map((t) => {

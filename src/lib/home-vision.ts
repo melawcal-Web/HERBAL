@@ -109,3 +109,15 @@ export function parseVisionSlides(raw: unknown): VisionSlide[] {
 }
 
 export const DEFAULT_SITE_TITLE = "המרכז למטפלים בצמחי מרפא";
+
+/** Copy above/below the homepage vision carousel (admin-editable, DB-backed) */
+export const DEFAULT_HOME_HERO_MAIN_TITLE = "המרכז למטפלים בצמחי מרפא";
+export const DEFAULT_HOME_HERO_HEADLINE = "חזון, ערכים ומה מחכה לכם כאן";
+export const DEFAULT_HOME_HERO_SLIDER_HINT =
+  "הזיזו בגרירה או עם החיצים — לולאה אינסופית בין השקופיות (ללא גלילה אוטומטית).";
+
+export type HomeHeroCopy = {
+  mainTitle: string;
+  headline: string;
+  sliderHint: string;
+};

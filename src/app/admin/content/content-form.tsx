@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { VisionSlide } from "@/lib/home-vision";
-import { updateSiteTitle, updateVisionSlides } from "@/app/actions/site-config";
+import type { VisionSlide, HomeHeroCopy } from "@/lib/home-vision";
+import { updateSiteTitle, updateVisionSlides, updateHomeHeroCopy } from "@/app/actions/site-config";
 import { UnsplashPicker } from "./UnsplashPicker";
 
 function cloneSlides(s: VisionSlide[]): VisionSlide[] {
@@ -20,16 +20,23 @@ function newSlideId(): string {
 export function ContentSettingsForm({
   initialTitle,
   initialSlides,
+  initialHomeHero,
 }: {
   initialTitle: string;
   initialSlides: VisionSlide[];
+  initialHomeHero: HomeHeroCopy;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
+  const [heroMain, setHeroMain] = useState(initialHomeHero.mainTitle);
+  const [heroHeadline, setHeroHeadline] = useState(initialHomeHero.headline);
+  const [heroSliderHint, setHeroSliderHint] = useState(initialHomeHero.sliderHint);
   const [slides, setSlides] = useState(() => cloneSlides(initialSlides));
   const [msgTitle, setMsgTitle] = useState<string | null>(null);
+  const [msgHero, setMsgHero] = useState<string | null>(null);
   const [msgSlides, setMsgSlides] = useState<string | null>(null);
   const [pendingTitle, startTitle] = useTransition();
+  const [pendingHero, startHero] = useTransition();
   const [pendingSlides, startSlides] = useTransition();
 
   function patchSlide(i: number, patch: Partial<VisionSlide>) {
@@ -75,6 +82,23 @@ export function ContentSettingsForm({
       const [row] = cp.splice(i, 1);
       cp.splice(j, 0, row!);
       return cp;
+    });
+  }
+
+  function saveHomeHero() {
+    setMsgHero(null);
+    startHero(async () => {
+      try {
+        await updateHomeHeroCopy({
+          mainTitle: heroMain,
+          headline: heroHeadline,
+          sliderHint: heroSliderHint,
+        });
+        setMsgHero("טקסטי ה-Hero נשמרו והאתר עודכן.");
+        router.refresh();
+      } catch (e) {
+        setMsgHero(e instanceof Error ? e.message : "שגיאה");
+      }
     });
   }
 
@@ -145,6 +169,68 @@ export function ContentSettingsForm({
             {pendingTitle ? "שומר…" : "שמור כותרת"}
           </button>
           {msgTitle && <p className="text-sm text-slate-700">{msgTitle}</p>}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-herbal-200/80 bg-white/90 p-5 shadow-sm sm:p-7">
+        <h3 className="font-display text-lg font-bold text-herbal-900">טקסטים — אזור החזון בדף הבית</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          השורות מעל ומתחת לסליידר החזון. נשמרות במסד הנתונים ומתעדכנות בדף הראשי לאחר שמירה.
+        </p>
+        <div className="mt-5 space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="hero-main" className="block text-sm font-semibold text-herbal-900">
+              כותרת ראשית (שורת פתיחה קטנה)
+            </label>
+            <input
+              id="hero-main"
+              type="text"
+              value={heroMain}
+              onChange={(e) => setHeroMain(e.target.value)}
+              className="w-full max-w-full rounded-xl border border-herbal-200 bg-white px-4 py-3 text-right text-sm text-herbal-950 shadow-inner outline-none transition focus:border-herbal-500"
+              dir="rtl"
+              maxLength={255}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="hero-headline" className="block text-sm font-semibold text-herbal-900">
+              כותרת משנה (כותרת גדולה)
+            </label>
+            <input
+              id="hero-headline"
+              type="text"
+              value={heroHeadline}
+              onChange={(e) => setHeroHeadline(e.target.value)}
+              className="w-full max-w-full rounded-xl border border-herbal-200 bg-white px-4 py-3 text-right text-sm text-herbal-950 shadow-inner outline-none transition focus:border-herbal-500"
+              dir="rtl"
+              maxLength={500}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="hero-slider-hint" className="block text-sm font-semibold text-herbal-900">
+              הנחיות לסליידר
+            </label>
+            <textarea
+              id="hero-slider-hint"
+              value={heroSliderHint}
+              onChange={(e) => setHeroSliderHint(e.target.value)}
+              rows={3}
+              className="w-full max-w-full resize-y rounded-xl border border-herbal-200 bg-white px-4 py-3 text-right text-sm text-herbal-950 shadow-inner outline-none transition focus:border-herbal-500"
+              dir="rtl"
+              maxLength={600}
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={saveHomeHero}
+            disabled={pendingHero}
+            className="rounded-xl border border-herbal-600 bg-herbal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-herbal-700 disabled:opacity-60"
+          >
+            {pendingHero ? "שומר…" : "שמור טקסטי Hero"}
+          </button>
+          {msgHero && <p className="text-sm text-slate-700">{msgHero}</p>}
         </div>
       </section>
 

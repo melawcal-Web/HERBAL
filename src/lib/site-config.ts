@@ -1,9 +1,16 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_SITE_TITLE, parseVisionSlides } from "@/lib/home-vision";
-import type { VisionSlide } from "@/lib/home-vision";
+import {
+  DEFAULT_HOME_HERO_HEADLINE,
+  DEFAULT_HOME_HERO_MAIN_TITLE,
+  DEFAULT_HOME_HERO_SLIDER_HINT,
+  DEFAULT_SITE_TITLE,
+  parseVisionSlides,
+  type HomeHeroCopy,
+  type VisionSlide,
+} from "@/lib/home-vision";
 
 export type HeroSlide = { imageUrl: string; caption: string };
-export type { VisionSlide } from "@/lib/home-vision";
+export type { VisionSlide, HomeHeroCopy } from "@/lib/home-vision";
 
 const FALLBACK_SLIDES: HeroSlide[] = [
   {
@@ -72,5 +79,25 @@ export async function getVisionSlides(): Promise<VisionSlide[]> {
     return parseVisionSlides(row?.visionSlides ?? null);
   } catch {
     return parseVisionSlides(null);
+  }
+}
+
+export async function getHomeHeroCopy(): Promise<HomeHeroCopy> {
+  try {
+    const row = await prisma.siteConfig.findUnique({ where: { id: "default" } });
+    const mainTitle = row?.homeHeroMainTitle?.trim();
+    const headline = row?.homeHeroHeadline?.trim();
+    const sliderHint = row?.homeHeroSliderHint?.trim();
+    return {
+      mainTitle: mainTitle?.length ? mainTitle : DEFAULT_HOME_HERO_MAIN_TITLE,
+      headline: headline?.length ? headline : DEFAULT_HOME_HERO_HEADLINE,
+      sliderHint: sliderHint?.length ? sliderHint : DEFAULT_HOME_HERO_SLIDER_HINT,
+    };
+  } catch {
+    return {
+      mainTitle: DEFAULT_HOME_HERO_MAIN_TITLE,
+      headline: DEFAULT_HOME_HERO_HEADLINE,
+      sliderHint: DEFAULT_HOME_HERO_SLIDER_HINT,
+    };
   }
 }

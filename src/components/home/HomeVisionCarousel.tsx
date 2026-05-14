@@ -9,7 +9,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type { VisionSlide } from "@/lib/home-vision";
+import type { HomeHeroCopy, VisionSlide } from "@/lib/home-vision";
 
 const sidePadStyle: CSSProperties = {
   minWidth: "max(6px, calc((100cqw - min(90cqw, 560px)) / 2))",
@@ -145,7 +145,7 @@ function VisionSlideCard({ slide, loopIndex, isFocused }: { slide: VisionSlide; 
   );
 }
 
-export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
+export function HomeVisionCarousel({ slides, heroCopy }: { slides: VisionSlide[]; heroCopy: HomeHeroCopy }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [realIndex, setRealIndex] = useState(() => (slides.length <= 1 ? 0 : Math.floor((slides.length - 1) / 2)));
   const [focusedLoopIndex, setFocusedLoopIndex] = useState(0);
@@ -268,11 +268,9 @@ export function HomeVisionCarousel({ slides }: { slides: VisionSlide[] }) {
     <section className="relative w-full max-w-full [container-type:inline-size]" aria-label="הקדמה — חזון המרכז">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-5 px-1 text-center sm:mb-7 sm:px-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-herbal-600">המרכז למטפלים בצמחי מרפא</p>
-          <h1 className="mt-2 font-display text-3xl font-bold text-herbal-900 sm:text-4xl md:text-[2.6rem]">חזון, ערכים ומה מחכה לכם כאן</h1>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-            הזיזו בגרירה או עם החיצים — לולאה אינסופית בין השקופיות (ללא גלילה אוטומטית).
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-herbal-600">{heroCopy.mainTitle}</p>
+          <h1 className="mt-2 font-display text-3xl font-bold text-herbal-900 sm:text-4xl md:text-[2.6rem]">{heroCopy.headline}</h1>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">{heroCopy.sliderHint}</p>
         </div>
 
         <div className="relative">

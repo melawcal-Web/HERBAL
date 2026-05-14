@@ -170,3 +170,40 @@ export async function updateVisionSlides(slides: VisionSlide[]) {
   revalidatePath("/");
   revalidatePath("/admin/content");
 }
+
+export async function updateHomeHeroCopy(input: { mainTitle: string; headline: string; sliderHint: string }) {
+  const mainTitle = input.mainTitle.trim().slice(0, 255);
+  const headline = input.headline.trim().slice(0, 500);
+  const sliderHint = input.sliderHint.trim().slice(0, 600);
+  if (!mainTitle.length) throw new Error("כותרת ראשית (שורת פתיחה) ריקה");
+  if (!headline.length) throw new Error("כותרת משנה ריקה");
+  if (!sliderHint.length) throw new Error("הנחיות לסליידר ריקות");
+
+  await prisma.siteConfig.upsert({
+    where: { id: "default" },
+    create: {
+      id: "default",
+      heroSlides: [],
+      siteTitle: null,
+      homeHeroMainTitle: mainTitle,
+      homeHeroHeadline: headline,
+      homeHeroSliderHint: sliderHint,
+    },
+    update: {
+      homeHeroMainTitle: mainTitle,
+      homeHeroHeadline: headline,
+      homeHeroSliderHint: sliderHint,
+    },
+  });
+
+  await writeAudit({
+    action: "site_config.home_hero",
+    entityType: "SiteConfig",
+    entityId: "default",
+    metadata: {},
+  });
+
+  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/admin/content");
+}

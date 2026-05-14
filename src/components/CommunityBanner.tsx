@@ -2,10 +2,9 @@ import Link from "next/link";
 
 type Props = {
   therapistName: string;
-  therapistSlug: string;
 };
 
-export function CommunityBanner({ therapistName, therapistSlug }: Props) {
+export function CommunityBanner({ therapistName }: Props) {
   return (
     <section className="mt-12 rounded-2xl border border-dashed border-herbal-300 bg-herbal-50/80 p-6 text-center animate-fade-in">
       <p className="text-xs font-semibold uppercase tracking-wider text-sage">Community Banner</p>
@@ -23,10 +22,10 @@ export function CommunityBanner({ therapistName, therapistSlug }: Props) {
           גלו פעילויות ושירותים
         </Link>
         <Link
-          href={`/t/${therapistSlug}`}
+          href="/"
           className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-herbal-300 bg-white px-5 py-2 text-sm text-herbal-800 hover:bg-white"
         >
-          חזרה לדף המטפל
+          חזרה לדף הבית של המרכז
         </Link>
       </div>
     </section>
