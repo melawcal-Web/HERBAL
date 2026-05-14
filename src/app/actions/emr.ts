@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { assertTherapist } from "@/lib/formula";
+import { therapistCanUseClinicalTools } from "@/lib/formula";
 import type { FormulaJson } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
 import { mkdir, writeFile } from "fs/promises";
@@ -17,7 +17,7 @@ export async function createClinicalLog(input: {
   notesImageDataUrl?: string | null;
 }) {
   const session = await auth();
-  if (!session?.user?.id || !assertTherapist(session.user.role)) {
+  if (!session?.user?.id || !therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) {
     throw new Error("אין הרשאה");
   }
 

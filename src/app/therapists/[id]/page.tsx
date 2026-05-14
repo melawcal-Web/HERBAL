@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { findTherapistProfileForPublicRoute } from "@/lib/therapist-public";
 import { TherapistPublicPageView } from "@/components/therapist/TherapistPublicPageView";
 
@@ -20,5 +21,12 @@ export default async function TherapistByIdPage({ params }: Props) {
   const profile = await findTherapistProfileForPublicRoute(id);
   if (!profile) notFound();
 
-  return <TherapistPublicPageView profile={profile} />;
+  const articles = await prisma.herbalArticle.findMany({
+    where: { therapistId: profile.user.id, published: true },
+    orderBy: { createdAt: "desc" },
+    take: 24,
+    select: { id: true, title: true, slug: true, excerpt: true, coverImageUrl: true },
+  });
+
+  return <TherapistPublicPageView profile={profile} articles={articles} />;
 }

@@ -2,7 +2,7 @@
  * Type-only augmentations for Auth.js / NextAuth v5.
  * Importing `@auth/core/jwt` ensures `declare module "@auth/core/jwt"` resolves during `next build`.
  */
-import type { UserRole } from "@prisma/client";
+import type { TherapistVerificationStatus, UserRole } from "@prisma/client";
 import "@auth/core/jwt";
 
 declare module "next-auth" {
@@ -13,6 +13,7 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       role: UserRole;
+      therapistVerification: TherapistVerificationStatus;
     };
   }
 }
@@ -21,6 +22,7 @@ declare module "@auth/core/jwt" {
   interface JWT {
     id?: string;
     role?: UserRole;
+    therapistVerification?: TherapistVerificationStatus;
   }
 }
 

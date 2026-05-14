@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateTherapistProfile } from "@/app/actions/profile";
+import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
 
 type Initial = {
   slug: string;
@@ -11,6 +12,8 @@ type Initial = {
   specialty1: string;
   specialty2: string;
   specialty3: string;
+  publicTherapistTitle: "male" | "female";
+  profileImageUrl: string;
   acceptsSupervisionRequests: boolean;
   supervisionHourlyRate: string;
   contactPhone: string;
@@ -43,6 +46,8 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           specialty1: form.specialty1,
           specialty2: form.specialty2,
           specialty3: form.specialty3,
+          publicTherapistTitle: form.publicTherapistTitle,
+          profileImageUrl: form.profileImageUrl.trim() === "" ? null : form.profileImageUrl.trim(),
           acceptsSupervisionRequests: form.acceptsSupervisionRequests,
           supervisionHourlyRate:
             form.acceptsSupervisionRequests && form.supervisionHourlyRate.trim() !== ""
@@ -77,6 +82,28 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           onChange={(e) => setForm({ ...form, slug: e.target.value })}
         />
       </div>
+      <fieldset className="space-y-2 rounded-2xl border border-herbal-200/80 bg-white/80 p-4">
+        <legend className="text-sm font-medium text-herbal-900">כותרת מקצועית בדף הציבורי</legend>
+        <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
+          <input
+            type="radio"
+            name="publicTherapistTitle"
+            checked={form.publicTherapistTitle === "female"}
+            onChange={() => setForm({ ...form, publicTherapistTitle: "female" })}
+          />
+          מטפלת בצמחי מרפא
+        </label>
+        <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
+          <input
+            type="radio"
+            name="publicTherapistTitle"
+            checked={form.publicTherapistTitle === "male"}
+            onChange={() => setForm({ ...form, publicTherapistTitle: "male" })}
+          />
+          מטפל בצמחי מרפא
+        </label>
+      </fieldset>
+      <HebrewUnsplashPicker label="תמונת פרופיל (חיפוש חכם)" value={form.profileImageUrl} onChange={(url) => setForm({ ...form, profileImageUrl: url })} />
       <div>
         <label className="text-sm font-medium text-slate-700">ביו — אודותיי (מוצג בדף הציבורי)</label>
         <textarea

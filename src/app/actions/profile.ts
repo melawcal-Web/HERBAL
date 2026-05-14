@@ -14,6 +14,10 @@ export async function updateTherapistProfile(input: {
   specialty1: string;
   specialty2: string;
   specialty3: string;
+  /** כותרת ציבורית בדף המטפל */
+  publicTherapistTitle: "male" | "female";
+  /** תמונת פרופיל — URL https (למשל מ-Unsplash) */
+  profileImageUrl: string | null;
   acceptsSupervisionRequests: boolean;
   supervisionHourlyRate: number | null;
   contactPhone: string;
@@ -43,6 +47,11 @@ export async function updateTherapistProfile(input: {
     }
   }
 
+  const img = (input.profileImageUrl ?? "").trim();
+  if (img.length > 0 && !img.startsWith("https://")) {
+    throw new Error("תמונת פרופיל חייבת להיות כתובת https");
+  }
+
   const prev = await prisma.therapistProfile.findUnique({
     where: { userId: session.user.id },
     select: { slug: true, id: true },
@@ -52,6 +61,7 @@ export async function updateTherapistProfile(input: {
     where: { userId: session.user.id },
     data: {
       slug: input.slug,
+      publicTherapistTitle: input.publicTherapistTitle,
       bio: input.bio,
       clinicalExperience: input.clinicalExperience.trim() || null,
       specialty1: input.specialty1,
@@ -77,6 +87,13 @@ export async function updateTherapistProfile(input: {
     },
   });
 
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      image: img.length > 0 ? img : null,
+    },
+  });
+
   await writeAudit({
     actorId: session.user.id,
     action: "therapist_profile.update",
@@ -92,6 +109,7 @@ export async function updateTherapistProfile(input: {
 
   revalidatePath("/dashboard/profile");
   revalidatePath("/therapists");
+  revalidatePath("/");
   if (prev?.slug) revalidatePath(`/t/${prev.slug}`);
   if (prev?.id) revalidatePath(`/therapists/${prev.id}`);
   if (nextProfile?.slug) revalidatePath(`/t/${nextProfile.slug}`);

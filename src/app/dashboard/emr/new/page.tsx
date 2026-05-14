@@ -1,13 +1,14 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { assertTherapist } from "@/lib/formula";
+import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
 import { NewClinicalLogForm } from "./new-log-form";
 
 export default async function NewClinicalLogPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
   if (!assertTherapist(session.user.role)) redirect("/dashboard");
+  if (!therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) redirect("/dashboard");
 
   const clients = await prisma.user.findMany({
     where: { role: "client" },

@@ -46,12 +46,11 @@ function IconArticle() {
   );
 }
 
-function IconUsers() {
+function IconCourseFrontal() {
   return (
     <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" />
+      <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 10h6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -136,7 +135,7 @@ export function DashboardAddContent() {
     <section className="mt-10 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
       <h2 className="font-display text-xl font-bold text-herbal-900">הוספת תוכן</h2>
       <p className="mt-2 text-sm text-slate-600">
-        בחרו סוג תוכן. חיפוש תמונות בעברית מתורגם אוטומטית לאנגלית לחיפוש ב-Unsplash (דורש UNSPLASH_ACCESS_KEY בשרת).
+        בחרו סוג תוכן. חיפוש חכם בעברית מתורגם אוטומטית לאנגלית לחיפוש ב-Unsplash (דורש UNSPLASH_ACCESS_KEY בשרת).
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -147,7 +146,7 @@ export function DashboardAddContent() {
           onClick={() => setMode("article")}
         />
         <ActionTile
-          icon={<IconUsers />}
+          icon={<IconCourseFrontal />}
           title="קורס פרונטלי"
           subtitle="מיקום, מועד, מחירים, משתתפים מקסימליים"
           onClick={() => setMode("course")}

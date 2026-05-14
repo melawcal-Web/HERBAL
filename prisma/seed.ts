@@ -638,6 +638,16 @@ async function main() {
     },
   });
 
+  await prisma.user.updateMany({
+    where: { role: "therapist" },
+    data: { therapistVerification: "approved", registrationPersona: "therapist" },
+  });
+
+  await prisma.therapistProfile.updateMany({
+    where: { userId: { in: [michael.id, eran.id] } },
+    data: { publicTherapistTitle: "male" },
+  });
+
   const profile = await prisma.therapistProfile.findUniqueOrThrow({
     where: { userId: therapistUser.id },
   });

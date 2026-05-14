@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
 import { DashboardAddContent } from "@/components/dashboard/DashboardAddContent";
 
 export default async function DashboardPage() {
@@ -9,8 +10,9 @@ export default async function DashboardPage() {
   if (!session?.user) redirect("/auth/signin");
 
   const role = session.user.role;
-  const isTherapist = role === "therapist" || role === "admin";
+  const isTherapist = assertTherapist(role);
   const isAdmin = role === "admin";
+  const canEmr = therapistCanUseClinicalTools(role, session.user.therapistVerification);
 
   const clientLogs =
     role === "client"
@@ -28,7 +30,7 @@ export default async function DashboardPage() {
       <p className="mt-2 text-slate-600">שלום {session.user.name}</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {isTherapist && (
+        {isTherapist && canEmr && (
           <>
             <Link
               href="/dashboard/emr"
@@ -37,6 +39,18 @@ export default async function DashboardPage() {
               <h2 className="text-lg font-semibold text-herbal-900">יומן קליני (EMR)</h2>
               <p className="mt-2 text-sm text-slate-600">רישום טיפולים, נוסחאות, והעלאת פתקים.</p>
             </Link>
+          </>
+        )}
+        {isTherapist && !canEmr && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-6 shadow-sm sm:col-span-2">
+            <h2 className="text-lg font-semibold text-amber-950">יומן קליני (EMR) — לא זמין כרגע</h2>
+            <p className="mt-2 text-sm text-amber-900/90">
+              חשבון המטפל ממתין לאישור תעודה או נדרש עדכון מול המרכז. לאחר האישור תופיע כאן הכניסה ל-EMR.
+            </p>
+          </div>
+        )}
+        {isTherapist && (
+          <>
             <Link
               href="/dashboard/profile"
               className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"

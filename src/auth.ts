@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import type { UserRole } from "@prisma/client";
+import type { TherapistVerificationStatus, UserRole } from "@prisma/client";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
@@ -33,7 +33,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            role: true,
+            therapistVerification: true,
+            passwordHash: true,
+          },
+        });
         if (!user?.passwordHash) return null;
 
         const ok = await compare(password, user.passwordHash);
@@ -45,6 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           image: user.image,
           role: user.role,
+          therapistVerification: user.therapistVerification,
         };
       },
     }),
@@ -74,23 +86,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.email) {
         const row = await prisma.user.findUnique({
           where: { email: user.email },
-          select: { id: true, role: true },
+          select: { id: true, role: true, therapistVerification: true },
         });
         if (row) {
           token.id = row.id;
           token.role = row.role;
+          token.therapistVerification = row.therapistVerification;
         }
       }
       if (user) {
         token.id = user.id;
         token.role = ((user as { role?: UserRole }).role ?? "client") as UserRole;
+        token.therapistVerification =
+          (user as { therapistVerification?: TherapistVerificationStatus }).therapistVerification ?? "none";
       }
       if (token.id && typeof token.id === "string") {
         const live = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { role: true },
+          select: { role: true, therapistVerification: true },
         });
-        if (live) token.role = live.role;
+        if (live) {
+          token.role = live.role;
+          token.therapistVerification = live.therapistVerification;
+        }
       }
       return token;
     },
@@ -98,6 +116,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = (token.id as string) ?? session.user.id;
         session.user.role = (token.role as UserRole) ?? "client";
+        session.user.therapistVerification =
+          (token.therapistVerification as TherapistVerificationStatus) ?? "none";
       }
       return session;
     },

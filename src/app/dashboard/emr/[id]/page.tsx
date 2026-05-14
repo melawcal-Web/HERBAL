@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ExportClinicalSummary } from "@/components/ExportClinicalSummary";
-import type { FormulaJson } from "@/lib/formula";
-
+import { therapistCanUseClinicalTools, type FormulaJson } from "@/lib/formula";
 type Props = { params: Promise<{ id: string }> };
 
 export default async function ClinicalLogDetailPage({ params }: Props) {
@@ -25,6 +24,13 @@ export default async function ClinicalLogDetailPage({ params }: Props) {
   const isClient = log.clientId === session.user.id;
   const isAdmin = session.user.role === "admin";
   if (!isTherapist && !isClient && !isAdmin) notFound();
+
+  if (
+    isTherapist &&
+    !therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)
+  ) {
+    redirect("/dashboard");
+  }
 
   const formula = log.formulaJson as unknown as FormulaJson;
 

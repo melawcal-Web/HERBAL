@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { href: "/admin/log", label: "לוג" },
   { href: "/admin/users", label: "ניהול משתמשים" },
+  { href: "/admin/therapist-approvals", label: "אישור תעודות" },
   { href: "/admin/links", label: "קישורים" },
   { href: "/admin/content", label: "ניהול תוכן (Content)" },
   { href: "/admin/products", label: "קורסים וסדנאות" },

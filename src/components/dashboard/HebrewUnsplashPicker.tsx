@@ -22,7 +22,7 @@ export function HebrewUnsplashPicker({
     setLoading(true);
     setHint(null);
     try {
-      const res = await fetch("/api/admin/image-search", {
+      const res = await fetch("/api/image-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ q }),
@@ -55,7 +55,7 @@ export function HebrewUnsplashPicker({
           onClick={() => void search()}
           className="min-h-[44px] rounded-xl border border-herbal-300 bg-herbal-50 px-4 text-sm font-semibold text-herbal-900 transition hover:bg-herbal-100 disabled:opacity-50"
         >
-          {loading ? "מחפשים…" : "חיפוש תמונות"}
+          {loading ? "מחפשים…" : "חיפוש חכם"}
         </button>
       </div>
       {hint ? <p className="text-xs text-slate-600">{hint}</p> : null}

@@ -13,10 +13,14 @@ type Props = {
   specialties: string[];
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
+  publicTherapistTitle: "male" | "female";
 };
 
+const titleLine =
+  "text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300 drop-shadow-[0_0_14px_rgba(16,185,129,0.85)] sm:text-[11px]";
+
 /**
- * Hero: full-bleed photo (B&W default) + compact identity row + small specialty pills + overlay icons.
+ * Hero: full-bleed photo (B&W default) + compact identity row + small specialty pills + שורת אייקונים מתחת לפילים.
  */
 export function TherapistProfileHero({
   imageUrl,
@@ -26,10 +30,12 @@ export function TherapistProfileHero({
   specialties,
   contact,
   social,
+  publicTherapistTitle,
 }: Props) {
   const [showColor, setShowColor] = useState(false);
 
   const toneClass = showColor ? "grayscale-0" : "therapist-photo-bw";
+  const roleHe = publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
 
   return (
     <div className="relative min-h-[min(68vh,560px)] w-full overflow-hidden bg-neutral-950 md:min-h-[min(72vh,640px)]">
@@ -60,15 +66,13 @@ export function TherapistProfileHero({
         </button>
       </div>
 
-      <TherapistHeroSocialBar contact={contact} social={social} />
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-[4rem] pt-20 text-right sm:px-8 sm:pb-[4.25rem] sm:pt-24 md:px-12 md:pb-20">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-8 pt-20 text-right sm:px-8 sm:pb-10 sm:pt-24 md:px-12 md:pb-12">
         <div className="mx-auto max-w-5xl">
           <div
             className="flex flex-wrap items-baseline justify-end gap-x-2 gap-y-1"
             style={{ textShadow: "0 2px 18px rgba(0,0,0,0.88)" }}
           >
-            <span className="text-[10px] font-medium tracking-[0.16em] text-white/88 sm:text-[11px]">מטפל/ת בצמחי מרפא</span>
+            <span className={titleLine}>{roleHe}</span>
             <span className="hidden text-white/35 sm:inline" aria-hidden>
               ·
             </span>
@@ -98,6 +102,10 @@ export function TherapistProfileHero({
               ))}
             </ul>
           ) : null}
+
+          <div className="pointer-events-auto mt-5">
+            <TherapistHeroSocialBar contact={contact} social={social} />
+          </div>
         </div>
       </div>
     </div>

@@ -9,9 +9,11 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 export default function SignInForm({
   callbackUrl,
   showRegisteredBanner,
+  showPendingTherapistBanner,
 }: {
   callbackUrl: string;
   showRegisteredBanner?: boolean;
+  showPendingTherapistBanner?: boolean;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -47,6 +49,11 @@ export default function SignInForm({
       {showRegisteredBanner && (
         <p className="mt-3 rounded-xl border border-herbal-200 bg-herbal-50 px-3 py-2 text-sm text-herbal-800">
           החשבון נוצר בהצלחה — ניתן להתחבר.
+        </p>
+      )}
+      {showPendingTherapistBanner && (
+        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          נרשמתם כמטפלים — חשבונכם במצב ממתין לאישור תעודה. לאחר אישור האדמין יופעלו הדף הציבורי, האינדקס ו-EMR.
         </p>
       )}
       <p className="mt-2 text-slate-600">התחברו לחשבון המטפל או הלקוח שלכם.</p>

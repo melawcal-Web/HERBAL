@@ -13,7 +13,12 @@ export async function findTherapistProfileForPublicRoute(param: string) {
   const trimmed = param.trim();
   if (!trimmed.length) return null;
   return prisma.therapistProfile.findFirst({
-    where: { OR: [{ id: trimmed }, { slug: trimmed }] },
-    include: { user: { select: { name: true, image: true } } },
+    where: {
+      OR: [{ id: trimmed }, { slug: trimmed }],
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
+    include: { user: { select: { id: true, name: true, image: true } } },
   });
 }

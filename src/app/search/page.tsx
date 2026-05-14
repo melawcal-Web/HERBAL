@@ -28,12 +28,21 @@ export default async function SearchPage({ searchParams }: Props) {
   const [therapists, products, articles] = await Promise.all([
     prisma.therapistProfile.findMany({
       where: {
-        OR: [
-          { user: { name: { contains: query } } },
-          { bio: { contains: query } },
-          { specialty1: { contains: query } },
-          { specialty2: { contains: query } },
-          { specialty3: { contains: query } },
+        AND: [
+          {
+            user: {
+              OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+            },
+          },
+          {
+            OR: [
+              { user: { name: { contains: query } } },
+              { bio: { contains: query } },
+              { specialty1: { contains: query } },
+              { specialty2: { contains: query } },
+              { specialty3: { contains: query } },
+            ],
+          },
         ],
       },
       take: 20,

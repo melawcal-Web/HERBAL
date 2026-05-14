@@ -10,6 +10,11 @@ export const metadata = {
 
 export default async function TherapistsDirectoryPage() {
   const therapists = await prisma.therapistProfile.findMany({
+    where: {
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
     include: { user: { select: { name: true, image: true } } },
     orderBy: { createdAt: "desc" },
   });

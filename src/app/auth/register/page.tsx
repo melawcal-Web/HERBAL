@@ -5,12 +5,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
+type Persona = "therapist" | "student" | "interested";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"client" | "therapist">("client");
+  const [persona, setPersona] = useState<Persona>("interested");
+  const [certificateUrl, setCertificateUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,22 +24,25 @@ export default function RegisterPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }),
+      body: JSON.stringify({ name, email, password, persona, certificateUrl }),
     });
-    const data = await res.json().catch(() => ({}));
+    const data = (await res.json().catch(() => ({}))) as { error?: string; pendingTherapistApproval?: boolean };
     if (!res.ok) {
       setError(data.error ?? "שגיאה בהרשמה");
       setLoading(false);
       return;
     }
-    router.push("/auth/signin?registered=1");
+    const q = data.pendingTherapistApproval ? "registered=1&pendingTherapist=1" : "registered=1";
+    router.push(`/auth/signin?${q}`);
     router.refresh();
   }
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="font-display text-2xl text-herbal-900">הרשמה מאובטחת</h1>
-      <p className="mt-2 text-slate-600">בחרו תפקיד: לקוח לגלישה במטפלים ובאינדקס, או מטפל לכלי EMR.</p>
+      <p className="mt-2 text-slate-600">
+        בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ית, או מתעניין/ת — גלישה בקהילה ובאינדקס.
+      </p>
       <div className="mt-8 space-y-3">
         <GoogleSignInButton callbackUrl="/dashboard" />
       </div>
@@ -79,28 +85,35 @@ export default function RegisterPage() {
           />
         </div>
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium text-slate-700">סוג משתמש</legend>
+          <legend className="text-sm font-medium text-slate-700">מסלול</legend>
           <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
-            <input
-              type="radio"
-              name="role"
-              value="client"
-              checked={role === "client"}
-              onChange={() => setRole("client")}
-            />
-            לקוח — גלישה במטפלים ובאינדקס הצמחים
+            <input type="radio" name="persona" checked={persona === "therapist"} onChange={() => setPersona("therapist")} />
+            מטפל/ת — דף ציבורי ו-EMR לאחר אישור תעודה
           </label>
           <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
-            <input
-              type="radio"
-              name="role"
-              value="therapist"
-              checked={role === "therapist"}
-              onChange={() => setRole("therapist")}
-            />
-            מטפל — דף נחיתה ו-EMR (אישור פרופיל בהמשך)
+            <input type="radio" name="persona" checked={persona === "student"} onChange={() => setPersona("student")} />
+            סטודנט/ית
+          </label>
+          <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-herbal-200 px-3 py-2 has-[:checked]:border-herbal-500 has-[:checked]:bg-herbal-50">
+            <input type="radio" name="persona" checked={persona === "interested"} onChange={() => setPersona("interested")} />
+            מתעניין/ת
           </label>
         </fieldset>
+        {persona === "therapist" ? (
+          <div>
+            <label className="text-sm font-medium text-slate-700">קישור לתעודה (https)</label>
+            <input
+              required
+              type="url"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2 font-mono text-sm"
+              dir="ltr"
+              placeholder="https://..."
+              value={certificateUrl}
+              onChange={(e) => setCertificateUrl(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-slate-600">יש להעלות את קובץ התעודה לשירות ענן ולהדביק כאן כתובת ציבורית ב-https.</p>
+          </div>
+        ) : null}
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <button
           type="submit"

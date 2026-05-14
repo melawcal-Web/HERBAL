@@ -25,6 +25,21 @@ enum SubscriptionStatus {
   canceled
 }
 
+/** הרשמה: מסלול שנבחר בעת ההרשמה */
+enum RegistrationPersona {
+  therapist
+  student
+  interested
+}
+
+/** אישור מטפל חדש (תעודה) — אדמין */
+enum TherapistVerificationStatus {
+  none
+  pending_approval
+  approved
+  rejected
+}
+
 enum ProductType {
   zoom
   workshop
@@ -41,6 +56,12 @@ model User {
   role             UserRole             @default(client)
   subStatus        SubscriptionStatus   @default(none) @map("sub_status")
   image            String?
+  /** מסלול שנרשם אליו (מטפל/ת, סטודנט/ית, מתעניין/ת) */
+  registrationPersona RegistrationPersona? @map("registration_persona")
+  /** סטטוס אימות תעודה למטפלים חדשים */
+  therapistVerification TherapistVerificationStatus @default(none) @map("therapist_verification")
+  /** קישור https לתעודה / קובץ שהועלה (מטפל ממתין) */
+  certificateUrl   String?              @map("certificate_url") @db.VarChar(512)
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 
@@ -57,6 +78,8 @@ model TherapistProfile {
   id           String   @id @default(cuid())
   userId       String   @unique @map("user_id")
   slug         String   @unique
+  /** כותרת ציבורית בדף המטפל: male = מטפל בצמחי מרפא, female = מטפלת בצמחי מרפא */
+  publicTherapistTitle String @default("female") @map("public_therapist_title") @db.VarChar(16)
   bio          String   @db.Text
   /** ניסיון קליני, הכשרות והשכלה — מוצג בדף הציבורי */
   clinicalExperience String? @map("clinical_experience") @db.Text

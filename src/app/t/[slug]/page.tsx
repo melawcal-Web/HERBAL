@@ -7,8 +7,13 @@ type Props = { params: Promise<{ slug: string }> };
 /** Legacy URL — redirects to canonical `/therapists/[id]`. */
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const profile = await prisma.therapistProfile.findUnique({
-    where: { slug },
+  const profile = await prisma.therapistProfile.findFirst({
+    where: {
+      slug,
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
     include: { user: { select: { name: true } } },
   });
   if (!profile) return { title: "מטפל לא נמצא" };
@@ -21,7 +26,15 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function LegacyTherapistSlugRedirect({ params }: Props) {
   const { slug } = await params;
-  const profile = await prisma.therapistProfile.findUnique({ where: { slug }, select: { id: true } });
+  const profile = await prisma.therapistProfile.findFirst({
+    where: {
+      slug,
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
+    select: { id: true },
+  });
   if (!profile) notFound();
   permanentRedirect(therapistPublicHref(profile.id));
 }

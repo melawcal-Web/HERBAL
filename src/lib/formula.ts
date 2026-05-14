@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+import type { TherapistVerificationStatus, UserRole } from "@prisma/client";
 
 export type FormulaIngredient = {
   name: string;
@@ -26,6 +26,13 @@ export function computeFormulaPercentages(formula: FormulaJson): Array<
 
 export function assertTherapist(role: UserRole) {
   return role === "therapist" || role === "admin";
+}
+
+/** EMR ורישום קליני — רק מטפל מאושר או אדמין */
+export function therapistCanUseClinicalTools(role: UserRole, verification?: TherapistVerificationStatus | null) {
+  if (role === "admin") return true;
+  if (role !== "therapist") return false;
+  return verification === "approved";
 }
 
 export function assertAdmin(role: UserRole) {

@@ -48,6 +48,11 @@ function gridCardImageUrl(url: string | null | undefined, fallback: string): str
 export default async function HomePage() {
   const [therapists, products, articles, visionSlides, homeHero] = await Promise.all([
     prisma.therapistProfile.findMany({
+      where: {
+        user: {
+          OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+        },
+      },
       include: { user: { select: { name: true, image: true } } },
       orderBy: { updatedAt: "desc" },
       take: 5,
