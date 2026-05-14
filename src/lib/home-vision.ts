@@ -18,6 +18,8 @@ const UNSPLASH3 =
   "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=1400&q=80";
 const UNSPLASH4 =
   "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1400&q=80";
+const UNSPLASH5 =
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1400&q=80";
 
 export const DEFAULT_VISION_SLIDES: VisionSlide[] = [
   {
@@ -55,6 +57,15 @@ export const DEFAULT_VISION_SLIDES: VisionSlide[] = [
     imageUrl: UNSPLASH4,
     gradientFrom: "#e3f2e4",
     gradientTo: "#6fb072",
+  },
+  {
+    id: "v5",
+    eyebrow: "תזונה ומרחב",
+    title: "מרחב בטוח ללמוד ולהתפתח",
+    body: "תכנים מגוונים, שפה נגישה, ודגש על בטיחות ובהירות — כדי שמטפלים ולקוחות ירגישו בבית.",
+    imageUrl: UNSPLASH5,
+    gradientFrom: "#f6faf6",
+    gradientTo: "#b6d9b8",
   },
 ];
 

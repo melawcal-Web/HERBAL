@@ -11,7 +11,7 @@ export default async function AdminContentPage() {
       <div>
         <h2 className="font-display text-xl font-bold text-herbal-900 sm:text-2xl">ניהול תוכן</h2>
         <p className="mt-2 text-sm text-slate-600">
-          עריכת כותרת האתר (בכותרת העליונה) ושקופיות דף הבית — טקסט, צבעי רקע רכים (אופציונלי) ותמונת כיסוי (https). השינויים נשמרים במסד הנתונים (MySQL) ומתעדכנים בדף הבית לאחר שמירה.
+          שני אזורים: <strong>הגדרות כלליות</strong> (כותרת האתר) ו־<strong>מנהל שקופיות</strong> (יצירה / עריכה / מחיקה / סידור). חיפוש תמונות דרך Unsplash דורש מפתח בסביבה.
         </p>
       </div>
       <ContentSettingsForm initialTitle={siteTitle} initialSlides={visionSlides} />
