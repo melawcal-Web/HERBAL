@@ -13,7 +13,7 @@ const IMG_MICHAEL = `https://images.unsplash.com/photo-1612349317150-e413f6a5b16
 const IMG_YAEL = `https://images.unsplash.com/photo-1594824476967-48c8b964273f?${U}`;
 const IMG_DAN = `https://images.unsplash.com/photo-1582750433449-648ed127bb54?${U}`;
 
-/** Marketplace / workshop visuals */
+/** Courses & workshops placeholder visuals */
 const IMG_ZOOM = `https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?${U}`;
 const IMG_WORKSHOP = `https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?${U}`;
 const IMG_SUPERVISION = `https://images.unsplash.com/photo-1522071820081-009f0129c71c?${U}`;

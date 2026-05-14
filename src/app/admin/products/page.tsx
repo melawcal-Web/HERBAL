@@ -7,9 +7,9 @@ export const metadata = {
 export default function AdminProductsPage() {
   return (
     <div>
-      <h2 className="font-display text-xl font-bold text-herbal-900 sm:text-2xl">הוספת מוצר לשוק</h2>
+      <h2 className="font-display text-xl font-bold text-herbal-900 sm:text-2xl">הוספת פריט לקורסים וסדנאות</h2>
       <p className="mt-2 text-sm text-slate-600">
-        מוצר חדש מסוג «מוצר מדף» יופיע בדף הבית ובדף השוק לאחר השמירה.
+        פריט חדש מסוג «מוצר מדף» יופיע בדף הבית ובדף קורסים וסדנאות לאחר השמירה.
       </p>
       <AddProductForm />
     </div>

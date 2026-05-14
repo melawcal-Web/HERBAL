@@ -20,7 +20,7 @@ export default async function SearchPage({ searchParams }: Props) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <h1 className="font-display text-2xl text-herbal-900">חיפוש באתר</h1>
-        <p className="mt-2 text-slate-600">הזינו מילת חיפוש בשדה החיפוש בראש העמוד.</p>
+        <p className="mt-2 text-slate-600">הזינו מילת חיפוש — לחצו על אייקון החיפוש בראש העמוד.</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
       {products.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-bold text-herbal-900">מוצרים</h2>
+          <h2 className="font-display text-lg font-bold text-herbal-900">קורסים וסדנאות</h2>
           <ul className="mt-3 space-y-2">
             {products.map((p) => (
               <li key={p.id}>

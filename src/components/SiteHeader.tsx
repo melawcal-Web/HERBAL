@@ -8,7 +8,7 @@ import { HeaderSearch } from "@/components/HeaderSearch";
 
 const menuLinks = [
   { href: "/therapists", label: "מטפלים" },
-  { href: "/marketplace", label: "שוק" },
+  { href: "/marketplace", label: "קורסים וסדנאות" },
   { href: "/herbal-index", label: "אינדקס צמחים" },
 ];
 
@@ -34,6 +34,25 @@ function HamburgerIcon({ open }: { open: boolean }) {
   );
 }
 
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function UserGuestIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" />
+      <circle cx="12" cy="7" r="4" />
+      <path d="M4 4l16 16" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SiteHeader({ session, siteTitle }: { session: Session | null; siteTitle: string }) {
   const [open, setOpen] = useState(false);
 
@@ -55,34 +74,34 @@ export function SiteHeader({ session, siteTitle }: { session: Session | null; si
 
   return (
     <header className="sticky top-0 z-50 pt-3 sm:pt-4">
-      <div className="glass-panel-strong flex flex-wrap items-center justify-between gap-2 rounded-2xl px-3 py-2.5 shadow-glass transition-shadow duration-300 ease-out sm:gap-3 sm:px-5 sm:py-3.5">
+      <div className="glass-panel-strong flex items-center justify-between gap-2 rounded-2xl px-3 py-2.5 shadow-glass transition-shadow duration-300 ease-out sm:gap-3 sm:px-5 sm:py-3.5">
         <Link
           href="/"
-          className="min-w-0 shrink font-display text-base font-bold leading-snug text-gradient-herbal transition-opacity duration-200 hover:opacity-90 sm:text-lg"
+          className="min-w-0 flex-1 font-display text-base font-bold leading-snug text-gradient-herbal transition-opacity duration-200 hover:opacity-90 sm:text-lg"
           onClick={() => setOpen(false)}
         >
           {siteTitle}
         </Link>
 
-        <div className="order-3 flex min-w-0 flex-[1_1_100%] items-center justify-end gap-2 sm:order-none sm:flex-[1_1_auto] sm:justify-center">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <HeaderSearch />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {session?.user ? (
             <Link
               href="/dashboard"
-              className="max-w-[10rem] truncate text-sm font-semibold text-herbal-900 underline-offset-4 transition hover:underline sm:max-w-[14rem]"
+              className="flex max-w-[min(11rem,42vw)] items-center gap-1.5 rounded-xl border border-transparent px-1 py-1 text-sm font-semibold text-herbal-900 transition hover:border-herbal-200/80 hover:bg-white/60 sm:max-w-[14rem] sm:gap-2 sm:px-2"
               title={displayName ?? "לוח בקרה"}
             >
-              {displayName ?? "לוח בקרה"}
+              <span className="truncate">{displayName ?? "לוח בקרה"}</span>
+              <UserIcon className="h-5 w-5 shrink-0 text-herbal-700" aria-hidden />
             </Link>
           ) : (
             <Link
               href="/auth"
-              className="rounded-full border border-herbal-600 bg-herbal-600 px-3 py-2 text-xs font-bold tracking-wide text-white shadow-sm transition hover:bg-herbal-700 sm:px-4 sm:text-sm"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-herbal-200/80 bg-white/80 text-herbal-700 shadow-sm transition hover:border-herbal-300 hover:bg-white motion-reduce:transition-none"
+              aria-label="אורח — כניסה והרשמה"
+              title="כניסה והרשמה"
             >
-              LOG IN
+              <UserGuestIcon className="h-6 w-6" />
             </Link>
           )}
           <button

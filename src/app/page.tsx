@@ -20,7 +20,7 @@ function productTypeHebrew(t: ProductType): string {
     case "shelf_product":
       return "מוצר";
     default:
-      return "מרקט";
+      return "קורסים וסדנאות";
   }
 }
 
@@ -83,15 +83,15 @@ export default async function HomePage() {
   }
 
   for (const p of products) {
-    const img = p.imageUrl?.trim().startsWith("https://") ? p.imageUrl!.trim() : pickDemoImage(`p-${p.id}`, "marketplace");
+    const img = p.imageUrl?.trim().startsWith("https://") ? p.imageUrl!.trim() : pickDemoImage(`p-${p.id}`, "courses_workshops");
     gridItems.push({
       id: `p-${p.id}`,
-      category: "marketplace",
+      category: "courses_workshops",
       title: p.title,
       subtitle: clip(`${productTypeHebrew(p.type)} · מ-${moneyShort(p.price)} — ${p.description}`, 140),
       href: "/marketplace",
       imageUrl: img,
-      badge: "מרקט",
+      badge: "קורסים וסדנאות",
     });
   }
 

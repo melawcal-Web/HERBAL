@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | Herbal Therapists Center",
   },
   description:
-    "קהילה, שוק וכלי EMR למטפלים בצמחי מרפא. Community, marketplace, and clinical tools for herbal therapists.",
+    "קהילה, קורסים וסדנאות וכלי EMR למטפלים בצמחי מרפא. Community, courses and workshops, and clinical tools for herbal therapists.",
 };
 
 export default async function RootLayout({

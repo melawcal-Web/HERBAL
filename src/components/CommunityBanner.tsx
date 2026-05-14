@@ -19,7 +19,7 @@ export function CommunityBanner({ therapistName }: Props) {
           href="/marketplace"
           className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-herbal-600 px-5 py-2 text-sm text-white hover:bg-herbal-500"
         >
-          גלו פעילויות ושירותים
+          קורסים וסדנאות
         </Link>
         <Link
           href="/"

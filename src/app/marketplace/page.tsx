@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "שוק",
+  title: "קורסים וסדנאות",
 };
 
 function money(n: unknown) {
@@ -17,7 +17,7 @@ export default async function MarketplacePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-3xl text-herbal-900">שוק / Marketplace</h1>
+      <h1 className="font-display text-3xl text-herbal-900">קורסים וסדנאות</h1>
       <p className="mt-2 text-slate-600">סדנאות, זום, השגחה ומוצרי מדף — מחיר מלא ומחיר חברים.</p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {products.map((p) => (

@@ -21,7 +21,7 @@ const FALLBACK_SLIDES: HeroSlide[] = [
   {
     imageUrl:
       "https://images.unsplash.com/photo-1515378791036-0648a3c77a02?auto=format&fit=crop&w=1600&q=80",
-    caption: "יומן קליני, שוק וכלים דיגיטליים במקום אחד.",
+    caption: "יומן קליני, קורסים וסדנאות וכלים דיגיטליים במקום אחד.",
   },
 ];
 

@@ -42,7 +42,7 @@ export async function createAdminProduct(
   }
 
   const { title, price, memberPrice, imageUrl } = parsed.data;
-  const description = `מוצר מהשוק: ${title}`;
+  const description = `קורסים וסדנאות — ${title}`;
 
   const created = await prisma.product.create({
     data: {
@@ -67,5 +67,5 @@ export async function createAdminProduct(
   revalidatePath("/");
   revalidatePath("/marketplace");
 
-  return { ok: true as const, message: "המוצר נוסף ומוצג בדף הבית ובשוק." };
+  return { ok: true as const, message: "המוצר נוסף ומוצג בדף הבית ובדף קורסים וסדנאות." };
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
-export type ExploreCategory = "all" | "therapists" | "marketplace" | "herbal";
+export type ExploreCategory = "all" | "therapists" | "courses_workshops" | "herbal";
 
 export type ExploreGridItem = {
   id: string;
@@ -18,7 +18,7 @@ export type ExploreGridItem = {
 const tabs: { id: ExploreCategory; label: string }[] = [
   { id: "all", label: "הכל" },
   { id: "therapists", label: "מטפלים" },
-  { id: "marketplace", label: "מרקט" },
+  { id: "courses_workshops", label: "קורסים וסדנאות" },
   { id: "herbal", label: "צמחים" },
 ];
 
@@ -93,7 +93,7 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   return (
     <section className="mt-0 w-full max-w-full" aria-labelledby="explore-tabs-label">
       <h2 id="explore-tabs-label" className="sr-only">
-        סינון תוכן — מטפלים, מרקט ואינדקס צמחים
+        סינון תוכן — מטפלים, קורסים וסדנאות, ואינדקס צמחים
       </h2>
 
       <div

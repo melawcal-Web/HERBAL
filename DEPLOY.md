@@ -25,7 +25,7 @@ Create accounts (free or paid tiers as you prefer) for:
 | **Hosting for Node.js** | Runs the Next.js app (Vercel, Railway, Render, Fly.io, AWS, Azure, etc.). |
 | **MySQL hosting** | PlanetScale (MySQL-compatible), AWS RDS, Google Cloud SQL, Azure Database for MySQL, DigitalOcean Managed DB, etc. |
 | **AUTH_SECRET** | Random secret so login sessions are secure — no third-party account; you generate it locally (section 5). |
-| **Payment gateway (later)** | Stripe, PayPal, or a local Israeli processor — for marketplace checkout and membership. |
+| **Payment gateway (later)** | Stripe, PayPal, or a local Israeli processor — for courses/workshops checkout and membership. |
 | **Video / webinar (optional)** | Zoom, Google Meet, or Vimeo for paid “Zoom” products — links can live inside product descriptions until native integration is added. |
 | **Email provider (recommended)** | SendGrid, Postmark, Amazon SES, or Resend — for password reset and notifications (not wired in MVP; plan ahead). |
 | **Google Cloud (optional, for Google Docs export)** | Only if you want **one-click** creation of Google Docs via API. The app already supports **copy to clipboard** and **PDF** without Google. |

@@ -28,7 +28,7 @@ export function SiteFooter() {
             Herbal Index
           </Link>
           <Link href="/marketplace" className="link-pill min-h-[44px] inline-flex items-center">
-            Marketplace
+            קורסים וסדנאות
           </Link>
           <Link href="/auth" className="link-pill min-h-[44px] inline-flex items-center">
             Join

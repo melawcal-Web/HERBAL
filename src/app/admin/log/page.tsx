@@ -25,7 +25,7 @@ export default async function AdminLogPage() {
           { label: "משתמשים", value: users },
           { label: "מטפלים (פרופילים)", value: therapists },
           { label: "רישומי EMR", value: logs },
-          { label: "מוצרים בשוק", value: products },
+          { label: "רישומי קורסים וסדנאות (מוצרים)", value: products },
         ].map((c) => (
           <article key={c.label} className="glass-panel p-5">
             <p className="text-sm text-slate-500">{c.label}</p>

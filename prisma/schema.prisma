@@ -97,7 +97,7 @@ model Product {
   type        ProductType
   title       String
   description String      @db.Text
-  /** תמונת כיסוי לדוגמה / מרקט — https בלבד */
+  /** תמונת כיסוי לדוגמה / קורסים וסדנאות — https בלבד */
   imageUrl    String?     @map("image_url") @db.VarChar(512)
   price       Decimal     @db.Decimal(10, 2)
   memberPrice Decimal     @map("member_price") @db.Decimal(10, 2)

@@ -8,7 +8,7 @@ const THERAPIST = [
   "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=800&q=80",
 ];
 
-const MARKET = [
+const COURSES_WORKSHOPS = [
   "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1515378791036-0648a3c77a02?auto=format&fit=crop&w=800&q=80",
@@ -32,8 +32,8 @@ function hashToIndex(key: string, mod: number): number {
 
 export function pickDemoImage(
   key: string,
-  category: "therapists" | "marketplace" | "herbal",
+  category: "therapists" | "courses_workshops" | "herbal",
 ): string {
-  const pool = category === "therapists" ? THERAPIST : category === "marketplace" ? MARKET : HERBAL;
+  const pool = category === "therapists" ? THERAPIST : category === "courses_workshops" ? COURSES_WORKSHOPS : HERBAL;
   return pool[hashToIndex(key, pool.length)] ?? pool[0]!;
 }

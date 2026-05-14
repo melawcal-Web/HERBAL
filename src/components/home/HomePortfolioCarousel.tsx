@@ -8,7 +8,7 @@ import { ExploreCardImage } from "@/components/home/HomeExploreGrid";
 const tabs: { id: ExploreCategory; label: string }[] = [
   { id: "all", label: "הכל" },
   { id: "therapists", label: "מטפלים" },
-  { id: "marketplace", label: "מרקט" },
+  { id: "courses_workshops", label: "קורסים וסדנאות" },
   { id: "herbal", label: "צמחים" },
 ];
 
