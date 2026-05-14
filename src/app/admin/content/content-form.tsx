@@ -147,7 +147,7 @@ export function ContentSettingsForm({
         <p className="mt-1 text-xs text-slate-500">כותרת האתר בכותרת העליונה (לוגו טקסט).</p>
         <div className="mt-4 space-y-2">
           <label htmlFor="site-title" className="block text-sm font-semibold text-herbal-900">
-            כותרת ראשית
+            כותרת האתר (ניווט עליון)
           </label>
           <input
             id="site-title"
@@ -180,8 +180,9 @@ export function ContentSettingsForm({
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
             <label htmlFor="hero-main" className="block text-sm font-semibold text-herbal-900">
-              כותרת ראשית (שורת פתיחה קטנה)
+              כותרת ראשית
             </label>
+            <p className="text-[11px] text-slate-500">למשל: המרכז למטפלים בצמחי מרפא — שורה קטנה מעל כותרת המשנה.</p>
             <input
               id="hero-main"
               type="text"
@@ -194,8 +195,9 @@ export function ContentSettingsForm({
           </div>
           <div className="space-y-2">
             <label htmlFor="hero-headline" className="block text-sm font-semibold text-herbal-900">
-              כותרת משנה (כותרת גדולה)
+              כותרת משנה
             </label>
+            <p className="text-[11px] text-slate-500">למשל: חזון, ערכים ומה מחכה לכם כאן — הכותרת הגדולה מעל הסליידר.</p>
             <input
               id="hero-headline"
               type="text"
@@ -210,6 +212,7 @@ export function ContentSettingsForm({
             <label htmlFor="hero-slider-hint" className="block text-sm font-semibold text-herbal-900">
               הנחיות לסליידר
             </label>
+            <p className="text-[11px] text-slate-500">למשל: הזיזו בגרירה או עם החיצים… — טקסט עזר מתחת לכותרת המשנה.</p>
             <textarea
               id="hero-slider-hint"
               value={heroSliderHint}

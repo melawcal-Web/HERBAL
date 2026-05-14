@@ -7,6 +7,7 @@ import { updateTherapistProfile } from "@/app/actions/profile";
 type Initial = {
   slug: string;
   bio: string;
+  clinicalExperience: string;
   specialty1: string;
   specialty2: string;
   specialty3: string;
@@ -35,6 +36,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         await updateTherapistProfile({
           slug: form.slug,
           bio: form.bio,
+          clinicalExperience: form.clinicalExperience,
           specialty1: form.specialty1,
           specialty2: form.specialty2,
           specialty3: form.specialty3,
@@ -67,12 +69,21 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">ביו</label>
+        <label className="text-sm font-medium text-slate-700">ביו — אודותיי (מוצג בדף הציבורי)</label>
         <textarea
           required
           className="mt-1 w-full min-h-[140px] rounded-xl border border-herbal-200 px-3 py-2"
           value={form.bio}
           onChange={(e) => setForm({ ...form, bio: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">ניסיון קליני והשכלה (אופציונלי)</label>
+        <textarea
+          className="mt-1 w-full min-h-[120px] rounded-xl border border-herbal-200 px-3 py-2"
+          placeholder="הכשרות, קורסים, שנות ניסיון בתחומים ספציפיים…"
+          value={form.clinicalExperience}
+          onChange={(e) => setForm({ ...form, clinicalExperience: e.target.value })}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-3">

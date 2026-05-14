@@ -9,6 +9,7 @@ import { writeAudit } from "@/lib/audit";
 export async function updateTherapistProfile(input: {
   slug: string;
   bio: string;
+  clinicalExperience: string;
   specialty1: string;
   specialty2: string;
   specialty3: string;
@@ -42,6 +43,7 @@ export async function updateTherapistProfile(input: {
     data: {
       slug: input.slug,
       bio: input.bio,
+      clinicalExperience: input.clinicalExperience.trim() || null,
       specialty1: input.specialty1,
       specialty2: input.specialty2,
       specialty3: input.specialty3,

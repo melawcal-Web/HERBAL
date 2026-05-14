@@ -83,25 +83,27 @@ export default async function HomePage() {
   }
 
   for (const p of products) {
+    const img = p.imageUrl?.trim().startsWith("https://") ? p.imageUrl!.trim() : pickDemoImage(`p-${p.id}`, "marketplace");
     gridItems.push({
       id: `p-${p.id}`,
       category: "marketplace",
       title: p.title,
       subtitle: clip(`${productTypeHebrew(p.type)} · מ-${moneyShort(p.price)} — ${p.description}`, 140),
       href: "/marketplace",
-      imageUrl: pickDemoImage(`p-${p.id}`, "marketplace"),
+      imageUrl: img,
       badge: "מרקט",
     });
   }
 
   for (const a of articles) {
+    const img = a.coverImageUrl?.trim().startsWith("https://") ? a.coverImageUrl!.trim() : pickDemoImage(`a-${a.id}`, "herbal");
     gridItems.push({
       id: `a-${a.id}`,
       category: "herbal",
       title: a.title,
       subtitle: clip(`${a.excerpt} · ${a.therapist.name}`, 140),
       href: `/herbal-index/${a.slug}`,
-      imageUrl: pickDemoImage(`a-${a.id}`, "herbal"),
+      imageUrl: img,
       badge: "צמחים",
     });
   }

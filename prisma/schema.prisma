@@ -57,6 +57,8 @@ model TherapistProfile {
   userId       String   @unique @map("user_id")
   slug         String   @unique
   bio          String   @db.Text
+  /** ניסיון קליני, הכשרות והשכלה — מוצג בדף הציבורי */
+  clinicalExperience String? @map("clinical_experience") @db.Text
   specialty1   String   @map("specialty_1")
   specialty2   String   @map("specialty_2")
   specialty3   String   @map("specialty_3")
@@ -94,6 +96,8 @@ model Product {
   type        ProductType
   title       String
   description String      @db.Text
+  /** תמונת כיסוי לדוגמה / מרקט — https בלבד */
+  imageUrl    String?     @map("image_url") @db.VarChar(512)
   price       Decimal     @db.Decimal(10, 2)
   memberPrice Decimal     @map("member_price") @db.Decimal(10, 2)
   active      Boolean     @default(true)
@@ -125,6 +129,8 @@ model HerbalArticle {
   slug        String   @unique
   excerpt     String   @db.VarChar(500)
   body        String   @db.LongText
+  /** תמונה לכרטיס אינדקס — https בלבד */
+  coverImageUrl String? @map("cover_image_url") @db.VarChar(512)
   published   Boolean  @default(false)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

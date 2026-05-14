@@ -41,8 +41,7 @@ export default async function TherapistProfilePage() {
         <ProfileForm
           initial={{
             slug: profile.slug,
-            bio: profile.bio,
-            specialty1: profile.specialty1,
+            clinicalExperience: profile.clinicalExperience ?? "",
             specialty2: profile.specialty2,
             specialty3: profile.specialty3,
             contactPhone: contact.phone ?? "",
