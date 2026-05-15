@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateTherapistProfile } from "@/app/actions/profile";
 import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
+import { PortfolioTimelineEditor } from "@/components/dashboard/PortfolioTimelineEditor";
+import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
 
 type Initial = {
   slug: string;
@@ -24,6 +26,7 @@ type Initial = {
   instagram: string;
   facebook: string;
   tiktok: string;
+  portfolioTimeline: PortfolioTimelineEntry[];
 };
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -61,6 +64,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           instagram: form.instagram,
           facebook: form.facebook,
           tiktok: form.tiktok,
+          portfolioTimeline: form.portfolioTimeline,
         });
         setOk(true);
         router.refresh();
@@ -113,8 +117,12 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           onChange={(e) => setForm({ ...form, bio: e.target.value })}
         />
       </div>
+      <PortfolioTimelineEditor
+        value={form.portfolioTimeline}
+        onChange={(portfolioTimeline) => setForm({ ...form, portfolioTimeline })}
+      />
       <div>
-        <label className="text-sm font-medium text-slate-700">ניסיון קליני והשכלה (אופציונלי)</label>
+        <label className="text-sm font-medium text-slate-700">ניסיון קליני והשכלה — טקסט חופשי (אופציונלי)</label>
         <textarea
           className="mt-1 w-full min-h-[120px] rounded-xl border border-herbal-200 px-3 py-2"
           placeholder="הכשרות, קורסים, שנות ניסיון בתחומים ספציפיים…"

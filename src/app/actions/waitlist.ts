@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { logContentEvent } from "@/app/actions/commerce";
+import { productTypeToContentKind } from "@/lib/content-kind";
+import type { PriceCategory } from "@prisma/client";
 
 export async function joinProductWaitlist(input: {
   productId: string;
@@ -45,6 +48,31 @@ export async function joinProductWaitlist(input: {
       data: { currentRegistered: { increment: 1 } },
     }),
   ]);
+
+  const therapistId = product.therapistId;
+  if (therapistId) {
+    let priceCategory: PriceCategory = "regular";
+    let amountNis = Number(product.price);
+    if (session?.user?.subStatus === "active") {
+      priceCategory = "member";
+      amountNis = Number(product.memberPrice);
+    }
+    if (amountNis <= 0) {
+      priceCategory = "free";
+      amountNis = 0;
+    }
+    await logContentEvent({
+      therapistId,
+      contentKind: productTypeToContentKind(product.type),
+      contentId: product.id,
+      contentTitle: product.title,
+      eventType: "acquisition",
+      priceCategory,
+      amountNis,
+      guestEmail: email,
+      guestName: p.data.guestName.trim(),
+    });
+  }
 
   revalidatePath("/marketplace");
   if (product.therapistId) {

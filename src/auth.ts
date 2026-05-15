@@ -9,6 +9,7 @@ import { ensureBootstrapAdmins } from "@/lib/bootstrap-super-admin";
 
 const googleId = process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
+const allowPasswordAuth = process.env.ALLOW_PASSWORD_AUTH === "true";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -22,7 +23,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }),
         ]
       : []),
-    Credentials({
+    ...(allowPasswordAuth
+      ? [
+          Credentials({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -60,6 +63,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+        ]
+      : []),
   ],
   callbacks: {
     async signIn({ user, account }) {

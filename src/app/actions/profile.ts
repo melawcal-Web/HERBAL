@@ -28,6 +28,7 @@ export async function updateTherapistProfile(input: {
   instagram: string;
   facebook: string;
   tiktok: string;
+  portfolioTimeline?: { id: string; yearFrom: string; yearTo?: string; description: string }[];
 }) {
   const session = await auth();
   if (!session?.user?.id || !assertTherapist(session.user.role)) {
@@ -84,6 +85,7 @@ export async function updateTherapistProfile(input: {
         facebook: input.facebook,
         tiktok: input.tiktok,
       },
+      portfolioTimeline: input.portfolioTimeline?.length ? input.portfolioTimeline : undefined,
     },
   });
 

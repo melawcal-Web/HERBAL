@@ -16,6 +16,9 @@ import {
 } from "@/lib/content-search";
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
+import { TherapistPortfolioStats } from "@/components/therapist/TherapistPortfolioStats";
+import { TherapistPortfolioTimeline } from "@/components/therapist/TherapistPortfolioTimeline";
+import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -95,6 +98,14 @@ export function TherapistPublicPageView({
   const showSupervision =
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
 
+  const portfolioTimeline = parsePortfolioTimeline(profile.portfolioTimeline);
+  const stats = {
+    articles: visibleArticles.length,
+    courses: visibleProducts.filter((p) => p.type === "workshop" || p.type === "zoom").length,
+    recipes: visibleProducts.filter((p) => p.type === "recipe").length,
+    lectures: visibleProducts.filter((p) => p.type === "lecture").length,
+  };
+
   return (
     <article className="mx-auto w-full max-w-[1320px] px-0 pb-12 pt-0 sm:px-4 sm:pb-16 md:px-6" dir="rtl">
       <header className="overflow-hidden rounded-none shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:shadow-xl">
@@ -119,13 +130,19 @@ export function TherapistPublicPageView({
           />
         </Suspense>
 
+        <div className="mb-10">
+          <TherapistPortfolioStats stats={stats} />
+        </div>
+
         <section aria-labelledby="about-heading">
           <p className={sectionLabel}>ביוגרפיה</p>
           <h2 id="about-heading" className="sr-only">
             ביוגרפיה — {profile.user.name}
           </h2>
           <p className="mt-5 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio}</p>
-          {profile.clinicalExperience?.trim() ? (
+          {portfolioTimeline.length > 0 ? (
+            <TherapistPortfolioTimeline entries={portfolioTimeline} />
+          ) : profile.clinicalExperience?.trim() ? (
             <div className="mt-8">
               <p className={sectionLabel}>ניסיון והשכלה</p>
               <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-neutral-700">

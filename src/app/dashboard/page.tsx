@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
 import { DashboardAddContent } from "@/components/dashboard/DashboardAddContent";
+import { VideoUploadPanel } from "@/components/dashboard/VideoUploadPanel";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -58,6 +59,27 @@ export default async function DashboardPage() {
               <h2 className="text-lg font-semibold text-herbal-900">פרופיל מטפל/ת</h2>
               <p className="mt-2 text-sm text-slate-600">ביו, מומחיות, קישורים וכתובת דף ציבורית.</p>
             </Link>
+            <Link
+              href="/dashboard/reports"
+              className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <h2 className="text-lg font-semibold text-herbal-900">דוח צפיות ושימושים</h2>
+              <p className="mt-2 text-sm text-slate-600">רכישות, הרשמות וצפיות בכל סוגי התוכן.</p>
+            </Link>
+            <Link
+              href="/dashboard/approvals"
+              className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <h2 className="text-lg font-semibold text-herbal-900">אישורי תשלום</h2>
+              <p className="mt-2 text-sm text-slate-600">אישור גישה לאחר ביט/העברה.</p>
+            </Link>
+            <Link
+              href="/dashboard/finance"
+              className="rounded-2xl border border-herbal-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <h2 className="text-lg font-semibold text-herbal-900">כספים</h2>
+              <p className="mt-2 text-sm text-slate-600">פנקס תנועות ועמלת מרכז 15%.</p>
+            </Link>
           </>
         )}
         {isAdmin && (
@@ -72,6 +94,12 @@ export default async function DashboardPage() {
       </div>
 
       {isAdmin && <DashboardAddContent />}
+
+      {isTherapist && (
+        <div className="mt-10">
+          <VideoUploadPanel />
+        </div>
+      )}
 
       {role === "client" && (
         <section className="mt-10">

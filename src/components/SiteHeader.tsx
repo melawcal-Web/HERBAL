@@ -9,6 +9,7 @@ import { HeaderSearch } from "@/components/HeaderSearch";
 const menuLinks = [
   { href: "/therapists", label: "מטפלים" },
   { href: "/marketplace", label: "קורסים וסדנאות" },
+  { href: "/content-hub", label: "מרכז תוכן" },
   { href: "/herbal-index", label: "אינדקס צמחים" },
 ];
 

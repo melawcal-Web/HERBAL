@@ -16,6 +16,15 @@ export type ProductMetadata = {
   supervisionMode?: "individual" | "group";
   /** תעריף לשעה להשגחה (מוצר) */
   hourlyRate?: number;
+  /** פרקים (אקורדיון) */
+  chapters?: { id: string; title: string; body: string }[];
+  /** קישור חיצוני: Spotify / YouTube / פודקאסט */
+  externalUrl?: string;
+  externalProvider?: "spotify" | "youtube" | "podcast" | "other";
+  /** וידאו — Vimeo / Bunny */
+  videoProvider?: "vimeo" | "bunny";
+  videoId?: string;
+  playbackUrl?: string;
 };
 
 export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): ProductMetadata {
@@ -32,6 +41,26 @@ export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): 
   if (o.zoomSessionMode === "single" || o.zoomSessionMode === "multi") out.zoomSessionMode = o.zoomSessionMode;
   if (o.supervisionMode === "individual" || o.supervisionMode === "group") out.supervisionMode = o.supervisionMode;
   if (typeof o.hourlyRate === "number" && Number.isFinite(o.hourlyRate)) out.hourlyRate = o.hourlyRate;
+  if (typeof o.externalUrl === "string") out.externalUrl = o.externalUrl;
+  if (o.externalProvider === "spotify" || o.externalProvider === "youtube" || o.externalProvider === "podcast" || o.externalProvider === "other") {
+    out.externalProvider = o.externalProvider;
+  }
+  if (o.videoProvider === "vimeo" || o.videoProvider === "bunny") out.videoProvider = o.videoProvider;
+  if (typeof o.videoId === "string") out.videoId = o.videoId;
+  if (typeof o.playbackUrl === "string") out.playbackUrl = o.playbackUrl;
+  if (Array.isArray(o.chapters)) {
+    out.chapters = o.chapters
+      .filter((c): c is { id: string; title: string; body: string } => {
+        if (c == null || typeof c !== "object") return false;
+        const ch = c as Record<string, unknown>;
+        return typeof ch.title === "string";
+      })
+      .map((c, i) => ({
+        id: (c as { id?: string }).id ?? `ch-${i}`,
+        title: (c as { title: string }).title,
+        body: typeof (c as { body?: string }).body === "string" ? (c as { body: string }).body : "",
+      }));
+  }
   return out;
 }
 

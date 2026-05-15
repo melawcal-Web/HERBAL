@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { ContentAccessLogger } from "@/components/content/ContentAccessLogger";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,6 +28,13 @@ export default async function HerbalArticlePage({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <ContentAccessLogger
+        therapistId={article.therapistId}
+        contentKind="article"
+        contentId={article.id}
+        contentTitle={article.title}
+        priceCategory="free"
+      />
       <p className="text-sm text-sage">
         {article.therapist.therapistProfile ? (
           <Link href={therapistPublicHref(article.therapist.therapistProfile.id)} className="underline">

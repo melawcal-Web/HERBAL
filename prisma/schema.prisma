@@ -45,6 +45,40 @@ enum ProductType {
   workshop
   supervision
   shelf_product
+  video
+  podcast
+  recipe
+  lecture
+}
+
+/** סוג תוכן לדוחות רכישה/צפייה */
+enum ContentKind {
+  video
+  podcast
+  article
+  recipe
+  lecture
+  course
+  zoom
+  supervision
+  shelf_product
+}
+
+enum PriceCategory {
+  free
+  member
+  regular
+}
+
+enum AcquisitionEventType {
+  acquisition
+  view
+}
+
+enum ManualAccessStatus {
+  pending
+  approved
+  rejected
 }
 
 enum AppointmentRequestStatus {
@@ -81,6 +115,10 @@ model User {
   appointmentRequestsAsTherapist AppointmentRequest[] @relation("TherapistAppointments")
   appointmentRequestsAsClient    AppointmentRequest[] @relation("ClientAppointments")
   waitlistEntries WaitlistEntry[]
+  contentAcquisitions ContentAcquisition[] @relation("AcquisitionUser")
+  therapistAcquisitions ContentAcquisition[] @relation("AcquisitionTherapist")
+  manualAccessRequestsAsClient ManualAccessRequest[] @relation("ManualAccessClient")
+  manualAccessRequestsAsTherapist ManualAccessRequest[] @relation("ManualAccessTherapist")
 
   @@map("users")
 }
@@ -107,6 +145,8 @@ model TherapistProfile {
   weeklyAvailability Json? @map("weekly_availability")
   /** עד תאריך זה ניתן לקבוע פגישות מהיומן הציבורי */
   availabilityOpenUntil DateTime? @map("availability_open_until")
+  /** ציר זמן ניסיון והשכלה — [{ yearFrom, yearTo?, description }] */
+  portfolioTimeline Json? @map("portfolio_timeline")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -226,6 +266,58 @@ model AppointmentRequest {
   @@index([therapistId, slotStart])
   @@index([clientUserId])
   @@map("appointment_requests")
+}
+
+model ContentAcquisition {
+  id                   String               @id @default(cuid())
+  therapistId          String               @map("therapist_id")
+  userId               String?              @map("user_id")
+  guestEmail           String?              @map("guest_email") @db.VarChar(191)
+  guestName            String?              @map("guest_name") @db.VarChar(120)
+  contentKind          ContentKind          @map("content_kind")
+  contentId            String               @map("content_id") @db.VarChar(64)
+  contentTitle         String               @map("content_title") @db.VarChar(300)
+  eventType            AcquisitionEventType @map("event_type")
+  priceCategory        PriceCategory        @map("price_category")
+  amountNis            Decimal              @default(0) @map("amount_nis") @db.Decimal(10, 2)
+  centerCommissionNis  Decimal              @default(0) @map("center_commission_nis") @db.Decimal(10, 2)
+  manualRequestId      String?              @unique @map("manual_request_id")
+  metadata             Json?
+  createdAt            DateTime             @default(now()) @map("created_at")
+
+  therapist User @relation("AcquisitionTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  user      User? @relation("AcquisitionUser", fields: [userId], references: [id], onDelete: SetNull)
+  manualRequest ManualAccessRequest? @relation(fields: [manualRequestId], references: [id], onDelete: SetNull)
+
+  @@index([therapistId, createdAt])
+  @@index([userId, createdAt])
+  @@index([contentKind, contentId])
+  @@map("content_acquisitions")
+}
+
+model ManualAccessRequest {
+  id            String             @id @default(cuid())
+  therapistId   String             @map("therapist_id")
+  userId        String?            @map("user_id")
+  guestEmail    String             @map("guest_email") @db.VarChar(191)
+  guestName     String?            @map("guest_name") @db.VarChar(120)
+  contentKind   ContentKind        @map("content_kind")
+  contentId     String             @map("content_id") @db.VarChar(64)
+  contentTitle  String             @map("content_title") @db.VarChar(300)
+  priceCategory PriceCategory      @map("price_category")
+  amountNis     Decimal            @map("amount_nis") @db.Decimal(10, 2)
+  status        ManualAccessStatus @default(pending)
+  paymentNote   String?            @map("payment_note") @db.Text
+  approvedAt    DateTime?          @map("approved_at")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  therapist   User @relation("ManualAccessTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  client      User? @relation("ManualAccessClient", fields: [userId], references: [id], onDelete: SetNull)
+  acquisition ContentAcquisition?
+
+  @@index([therapistId, status])
+  @@map("manual_access_requests")
 }
 
 model WaitlistEntry {
