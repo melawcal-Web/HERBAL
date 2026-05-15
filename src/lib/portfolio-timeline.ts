@@ -5,6 +5,15 @@ export type PortfolioTimelineEntry = {
   description: string;
 };
 
+/** תצוגת שנים: "2014" או "2014 – 2018" */
+export function formatTimelineYears(entry: PortfolioTimelineEntry): string {
+  const from = entry.yearFrom.trim();
+  const to = entry.yearTo?.trim();
+  if (!from) return "";
+  if (to && to !== from) return `${from} – ${to}`;
+  return from;
+}
+
 export function parsePortfolioTimeline(raw: unknown): PortfolioTimelineEntry[] {
   if (!Array.isArray(raw)) return [];
   const entries: PortfolioTimelineEntry[] = [];

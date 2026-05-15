@@ -380,7 +380,7 @@ export function ContentSettingsForm({
 
               <ImagePicker
                 label="תמונת שקופית"
-                value={slide.imageUrl ?? ""}
+                value={s.imageUrl ?? ""}
                 onChange={(url) => patchSlide(i, { imageUrl: url })}
                 uploadPrefix="content"
               />
