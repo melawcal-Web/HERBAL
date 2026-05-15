@@ -85,7 +85,9 @@ export async function updateTherapistProfile(input: {
         facebook: input.facebook,
         tiktok: input.tiktok,
       },
-      portfolioTimeline: input.portfolioTimeline?.length ? input.portfolioTimeline : undefined,
+      portfolioTimeline: input.portfolioTimeline?.length
+        ? (input.portfolioTimeline as Prisma.InputJsonValue)
+        : null,
     },
   });
 

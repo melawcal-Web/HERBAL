@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const LINKS = [
+type NavLink = { href: string; label: string; exact?: boolean };
+
+const LINKS: NavLink[] = [
   { href: "/dashboard", label: "סקירה", exact: true },
   { href: "/dashboard/profile", label: "פרופיל" },
   { href: "/dashboard/reports", label: "דוח צפיות" },
   { href: "/dashboard/approvals", label: "אישורים" },
   { href: "/dashboard/finance", label: "כספים" },
-] as const;
+];
 
 export function TherapistDashboardNav() {
   const pathname = usePathname();
@@ -20,7 +22,7 @@ export function TherapistDashboardNav() {
       aria-label="ניווט מטפל/ת"
     >
       {LINKS.map((link) => {
-        const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+        const active = link.exact ? pathname === link.href : pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (
           <Link
             key={link.href}

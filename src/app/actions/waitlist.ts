@@ -53,9 +53,15 @@ export async function joinProductWaitlist(input: {
   if (therapistId) {
     let priceCategory: PriceCategory = "regular";
     let amountNis = Number(product.price);
-    if (session?.user?.subStatus === "active") {
-      priceCategory = "member";
-      amountNis = Number(product.memberPrice);
+    if (session?.user?.id) {
+      const buyer = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { subStatus: true },
+      });
+      if (buyer?.subStatus === "active") {
+        priceCategory = "member";
+        amountNis = Number(product.memberPrice);
+      }
     }
     if (amountNis <= 0) {
       priceCategory = "free";

@@ -19,6 +19,14 @@ function productTypeHebrew(t: ProductType): string {
       return "השגחה";
     case "shelf_product":
       return "מוצר";
+    case "video":
+      return "וידאו";
+    case "podcast":
+      return "פודקאסט";
+    case "recipe":
+      return "מתכון";
+    case "lecture":
+      return "הרצאה";
     default:
       return "קורסים וסדנאות";
   }
