@@ -7,16 +7,19 @@ export type PortfolioTimelineEntry = {
 
 export function parsePortfolioTimeline(raw: unknown): PortfolioTimelineEntry[] {
   if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item, i) => {
-      if (item == null || typeof item !== "object") return null;
-      const o = item as Record<string, unknown>;
-      const yearFrom = typeof o.yearFrom === "string" ? o.yearFrom.trim() : "";
-      const description = typeof o.description === "string" ? o.description.trim() : "";
-      if (!yearFrom && !description) return null;
-      const yearTo = typeof o.yearTo === "string" ? o.yearTo.trim() : undefined;
-      const id = typeof o.id === "string" && o.id ? o.id : `tl-${i}`;
-      return { id, yearFrom, yearTo: yearTo || undefined, description };
-    })
-    .filter((x): x is PortfolioTimelineEntry => x != null);
+  const entries: PortfolioTimelineEntry[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const item = raw[i];
+    if (item == null || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const yearFrom = typeof o.yearFrom === "string" ? o.yearFrom.trim() : "";
+    const description = typeof o.description === "string" ? o.description.trim() : "";
+    if (!yearFrom && !description) continue;
+    const yearTo = typeof o.yearTo === "string" ? o.yearTo.trim() : "";
+    const id = typeof o.id === "string" && o.id ? o.id : `tl-${i}`;
+    const entry: PortfolioTimelineEntry = { id, yearFrom, description };
+    if (yearTo) entry.yearTo = yearTo;
+    entries.push(entry);
+  }
+  return entries;
 }
