@@ -167,3 +167,63 @@ export async function revokeTherapistApproval(targetUserId: string) {
   revalidatePath("/");
   revalidatePath(`/therapists/${u.therapistProfile.id}`);
 }
+
+/** שכפול מבנה פרופיל מטפל — אדמין בלבד, עם אימייל דמה ייחודי */
+export async function duplicateTherapistProfile(sourceUserId: string): Promise<{ email: string; profileId: string }> {
+  const session = await requireAdmin();
+
+  const source = await prisma.user.findUnique({
+    where: { id: sourceUserId },
+    include: { therapistProfile: true },
+  });
+  if (!source?.therapistProfile) throw new Error("לא נמצא פרופיל מטפל לשכפול");
+
+  const p = source.therapistProfile;
+  const stamp = Date.now().toString(36);
+  const email = `duplicate+${stamp}@herbal.local`;
+  const slug = `${p.slug}-copy-${stamp.slice(-5)}`;
+
+  const created = await prisma.user.create({
+    data: {
+      name: `${source.name} (עותק)`,
+      email,
+      role: "therapist",
+      therapistVerification: "none",
+      registrationPersona: source.registrationPersona,
+      image: source.image,
+      therapistProfile: {
+        create: {
+          slug,
+          publicTherapistTitle: p.publicTherapistTitle,
+          bio: p.bio,
+          clinicalExperience: p.clinicalExperience,
+          specialty1: p.specialty1,
+          specialty2: p.specialty2,
+          specialty3: p.specialty3,
+          acceptsSupervisionRequests: p.acceptsSupervisionRequests,
+          supervisionHourlyRate: p.supervisionHourlyRate,
+          contactInfo: p.contactInfo as object,
+          socialLinks: p.socialLinks as object,
+          weeklyAvailability: p.weeklyAvailability ?? undefined,
+          availabilityOpenUntil: p.availabilityOpenUntil,
+          portfolioTimeline: p.portfolioTimeline ?? undefined,
+        },
+      },
+    },
+    include: { therapistProfile: { select: { id: true } } },
+  });
+
+  await writeAudit({
+    actorId: session.user.id,
+    action: "admin.therapist.duplicate",
+    entityType: "User",
+    entityId: created.id,
+    metadata: { sourceUserId, email, slug },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/therapist-approvals");
+  revalidatePath("/therapists");
+
+  return { email, profileId: created.therapistProfile!.id };
+}

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateTherapistProfile } from "@/app/actions/profile";
-import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
+import { ImagePicker } from "@/components/dashboard/ImagePicker";
+import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { PortfolioTimelineEditor } from "@/components/dashboard/PortfolioTimelineEditor";
 import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
 
@@ -107,7 +108,22 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           מטפל בצמחי מרפא
         </label>
       </fieldset>
-      <HebrewUnsplashPicker label="תמונת פרופיל (חיפוש חכם)" value={form.profileImageUrl} onChange={(url) => setForm({ ...form, profileImageUrl: url })} />
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+        <ProfileAvatar
+          imageUrl={form.profileImageUrl}
+          name="תמונת פרופיל"
+          seed="profile-form-preview"
+          size="lg"
+        />
+        <div className="min-w-0 flex-1">
+          <ImagePicker
+            label="תמונת פרופיל"
+            value={form.profileImageUrl}
+            uploadPrefix="profiles"
+            onChange={(url) => setForm({ ...form, profileImageUrl: url })}
+          />
+        </div>
+      </div>
       <div>
         <label className="text-sm font-medium text-slate-700">ביו — אודותיי (מוצג בדף הציבורי)</label>
         <textarea

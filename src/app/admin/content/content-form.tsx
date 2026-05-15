@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { VisionSlide, HomeHeroCopy } from "@/lib/home-vision";
 import { updateSiteTitle, updateVisionSlides, updateHomeHeroCopy } from "@/app/actions/site-config";
-import { UnsplashPicker } from "./UnsplashPicker";
+import { ImagePicker } from "@/components/dashboard/ImagePicker";
 
 function cloneSlides(s: VisionSlide[]): VisionSlide[] {
   return s.map((x) => ({ ...x }));
@@ -378,7 +378,12 @@ export function ContentSettingsForm({
                 />
               </div>
 
-              <UnsplashPicker onPick={(url) => patchSlide(i, { imageUrl: url })} />
+              <ImagePicker
+                label="תמונת שקופית"
+                value={slide.imageUrl ?? ""}
+                onChange={(url) => patchSlide(i, { imageUrl: url })}
+                uploadPrefix="content"
+              />
             </fieldset>
           ))}
         </div>

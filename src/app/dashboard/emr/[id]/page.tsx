@@ -29,7 +29,7 @@ export default async function ClinicalLogDetailPage({ params }: Props) {
     isTherapist &&
     !therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)
   ) {
-    redirect("/dashboard");
+    redirect("/herbal-index");
   }
 
   const formula = log.formulaJson as unknown as FormulaJson;
@@ -38,7 +38,7 @@ export default async function ClinicalLogDetailPage({ params }: Props) {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl text-herbal-900">רישום טיפול</h1>
-        <Link href={isTherapist ? "/dashboard/emr" : "/dashboard"} className="text-sm text-herbal-700 underline">
+        <Link href={isTherapist ? "/dashboard/emr" : "/herbal-index"} className="text-sm text-herbal-700 underline">
           חזרה
         </Link>
       </div>

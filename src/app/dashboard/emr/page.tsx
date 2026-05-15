@@ -7,8 +7,8 @@ import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
 export default async function EmrListPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/dashboard");
-  if (!therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) redirect("/dashboard");
+  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) redirect("/dashboard/profile");
 
   const logs = await prisma.clinicalLog.findMany({
     where: { therapistId: session.user.id },

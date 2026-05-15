@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { ContentAccessLogger } from "@/components/content/ContentAccessLogger";
+import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
+import { chaptersFromArticleBody } from "@/lib/content-description-chapters";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -46,8 +48,8 @@ export default async function HerbalArticlePage({ params }: Props) {
       </p>
       <h1 className="mt-2 font-display text-3xl text-herbal-900">{article.title}</h1>
       <p className="mt-4 text-lg text-slate-700">{article.excerpt}</p>
-      <div className="mt-10 max-w-none whitespace-pre-wrap text-slate-800 leading-relaxed">
-        {article.body}
+      <div className="mt-10">
+        <ChaptersAccordion chapters={chaptersFromArticleBody(article.body, article.excerpt)} />
       </div>
       <div className="mt-10">
         <Link href="/herbal-index" className="text-herbal-700 underline">

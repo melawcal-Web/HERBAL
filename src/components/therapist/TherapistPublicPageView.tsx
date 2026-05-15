@@ -74,7 +74,9 @@ export function TherapistPublicPageView({
 
   const rawImg = profile.user.image?.trim();
   const heroCoverUrl =
-    rawImg?.startsWith("https://") ? rawImg : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
+    rawImg?.startsWith("https://") || rawImg?.startsWith("/uploads/")
+      ? rawImg
+      : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
 
   const availability: WeeklyAvailability = parseWeeklyAvailability(profile.weeklyAvailability);
 
@@ -111,6 +113,8 @@ export function TherapistPublicPageView({
       <header className="overflow-hidden rounded-none shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:shadow-xl">
         <TherapistProfileHero
           heroCoverUrl={heroCoverUrl}
+          profileImageUrl={profile.user.image}
+          profileImageSeed={`therapist-${profile.id}`}
           therapistName={profile.user.name}
           serviceCity={city}
           specialties={specs}
@@ -154,13 +158,15 @@ export function TherapistPublicPageView({
 
         <TherapistOfferingSections products={filteredProducts} />
 
-        <TherapistAppointmentCalendar
-          therapistUserId={profile.user.id}
-          therapistProfileId={profile.id}
-          availability={availability}
-          openUntil={openUntil}
-          booked={booked}
-        />
+        <Suspense fallback={<div className="mt-14 h-32 animate-pulse rounded-2xl bg-herbal-50" />}>
+          <TherapistAppointmentCalendar
+            therapistUserId={profile.user.id}
+            therapistProfileId={profile.id}
+            availability={availability}
+            openUntil={openUntil}
+            booked={booked}
+          />
+        </Suspense>
 
         {showSupervision ? (
           <section className="mt-12 border-t border-neutral-200/90 pt-10" aria-labelledby="supervision-heading">

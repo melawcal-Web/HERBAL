@@ -7,12 +7,13 @@ import { auth } from "@/auth";
 import { assertAdmin } from "@/lib/formula";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
+import { storedImageUrlSchema } from "@/lib/stored-image-url";
 
 const schema = z.object({
   title: z.string().min(1).max(200),
   price: z.coerce.number().positive(),
   memberPrice: z.coerce.number().positive(),
-  imageUrl: z.string().url().refine((u) => u.startsWith("https://"), "יש להזין כתובת https מלאה"),
+  imageUrl: storedImageUrlSchema,
 });
 
 export type CreateAdminProductState =

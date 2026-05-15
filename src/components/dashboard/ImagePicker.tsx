@@ -1,0 +1,213 @@
+"use client";
+
+import { useRef, useState } from "react";
+
+export type UnsplashHit = { id: string; thumb: string; full: string };
+
+type Mode = "search" | "upload";
+
+export function ImagePicker({
+  value,
+  onChange,
+  label = "תמונת כיסוי",
+  uploadPrefix = "content",
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  label?: string;
+  /** profiles | content — נתיב שמירה ב-public/uploads */
+  uploadPrefix?: "profiles" | "content";
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<Mode>("search");
+  const [q, setQ] = useState("");
+  const [hits, setHits] = useState<UnsplashHit[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [pendingThumb, setPendingThumb] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const previewUrl = pendingUrl ?? (value || null);
+  const previewThumb = pendingThumb ?? previewUrl;
+
+  async function search() {
+    setLoading(true);
+    setHint(null);
+    try {
+      const res = await fetch("/api/image-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q }),
+      });
+      const data = (await res.json()) as { error?: string; queryEn?: string; results?: UnsplashHit[] };
+      if (!res.ok) throw new Error(data.error ?? "שגיאה");
+      setHits(data.results ?? []);
+      if (data.queryEn) setHint(`חיפוש באנגלית: ${data.queryEn}`);
+    } catch (e) {
+      setHint(e instanceof Error ? e.message : "שגיאה");
+      setHits([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function selectPending(full: string, thumb: string) {
+    setPendingUrl(full);
+    setPendingThumb(thumb);
+  }
+
+  function confirmSelection() {
+    if (!pendingUrl) return;
+    onChange(pendingUrl);
+    setPendingUrl(null);
+    setPendingThumb(null);
+    setHint("התמונה נשמרה לטופס — לחצו «שמירה» בטופס הראשי כדי לעדכן במסד.");
+  }
+
+  async function onFileChange(file: File | null) {
+    if (!file) return;
+    setUploading(true);
+    setHint(null);
+    try {
+      const localPreview = URL.createObjectURL(file);
+      setPendingUrl(localPreview);
+      setPendingThumb(localPreview);
+
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("prefix", uploadPrefix);
+      const res = await fetch("/api/upload/image", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "העלאה נכשלה");
+      URL.revokeObjectURL(localPreview);
+      setPendingUrl(data.url);
+      setPendingThumb(data.url);
+      setHint("תצוגה מקדימה — אשרו את הבחירה לפני שמירת הטופס.");
+    } catch (e) {
+      setPendingUrl(null);
+      setPendingThumb(null);
+      setHint(e instanceof Error ? e.message : "שגיאה");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4 rounded-2xl border border-herbal-100 bg-herbal-50/30 p-4">
+      <p className="text-sm font-medium text-slate-700">{label}</p>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setMode("search")}
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+            mode === "search" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
+          }`}
+        >
+          חיפוש Unsplash
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("upload")}
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+            mode === "upload" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
+          }`}
+        >
+          העלאת תמונה מהמחשב
+        </button>
+      </div>
+
+      {mode === "search" ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <input
+              className="min-h-[44px] min-w-[12rem] flex-1 rounded-xl border border-herbal-200 bg-white px-3 py-2 text-right"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="הקלידו מילת חיפוש בעברית…"
+            />
+            <button
+              type="button"
+              disabled={loading || !q.trim()}
+              onClick={() => void search()}
+              className="min-h-[44px] rounded-xl border border-herbal-300 bg-white px-4 text-sm font-semibold text-herbal-900 transition hover:bg-herbal-50 disabled:opacity-50"
+            >
+              {loading ? "מחפשים…" : "חיפוש חכם"}
+            </button>
+          </div>
+          {hits.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2">
+              {hits.map((h) => {
+                const highlighted = pendingUrl === h.full || (!pendingUrl && value === h.full);
+                return (
+                  <button
+                    key={h.id}
+                    type="button"
+                    onClick={() => selectPending(h.full, h.thumb)}
+                    className={`overflow-hidden rounded-xl border-2 transition ${
+                      highlighted
+                        ? "border-herbal-600 ring-2 ring-herbal-400/70 scale-[1.02]"
+                        : "border-transparent hover:border-herbal-300"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={h.thumb} alt="" className="aspect-square w-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <div className="space-y-3">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="sr-only"
+            onChange={(e) => void onFileChange(e.target.files?.[0] ?? null)}
+          />
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+            className="w-full rounded-xl border-2 border-dashed border-herbal-300 bg-white px-4 py-8 text-sm font-semibold text-herbal-800 transition hover:border-herbal-500 hover:bg-herbal-50/80 disabled:opacity-60"
+          >
+            {uploading ? "מעלה…" : "בחרו קובץ מהמחשב (עד 5MB)"}
+          </button>
+        </div>
+      )}
+
+      {hint ? <p className="text-xs text-slate-600">{hint}</p> : null}
+
+      {previewThumb ? (
+        <div className="space-y-3 rounded-xl border border-herbal-200 bg-white p-3">
+          <p className="text-xs font-semibold text-herbal-800">תצוגה מקדימה</p>
+          <div className="overflow-hidden rounded-xl border border-herbal-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={previewThumb} alt="" className="max-h-48 w-full object-cover" />
+          </div>
+          {pendingUrl ? (
+            <button
+              type="button"
+              onClick={confirmSelection}
+              className="w-full rounded-full bg-herbal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-herbal-500"
+            >
+              אשר בחירת תמונה
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-xs text-amber-800/90">בחרו תמונה ואשרו לפני שמירת הטופס.</p>
+      )}
+
+      {value && !pendingUrl ? (
+        <p className="truncate text-xs text-slate-500" dir="ltr" title={value}>
+          שמור כרגע: {value.slice(0, 80)}
+          {value.length > 80 ? "…" : ""}
+        </p>
+      ) : null}
+    </div>
+  );
+}

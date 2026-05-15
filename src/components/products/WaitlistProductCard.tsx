@@ -6,6 +6,12 @@ import type { Prisma } from "@prisma/client";
 import { joinProductWaitlist } from "@/app/actions/waitlist";
 import { audienceLabels } from "@/lib/content-audience";
 import { parseProductMetadata, parseProductAudience } from "@/lib/product-metadata";
+import { productTypeToContentKind } from "@/lib/content-kind";
+import { isStoredImageUrl } from "@/lib/stored-image-url";
+import { ManualAccessRequestButton } from "@/components/products/ManualAccessRequestButton";
+import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
+import { chaptersFromProductMeta } from "@/lib/content-description-chapters";
+import type { PriceCategory } from "@prisma/client";
 
 export type WaitlistProductModel = {
   id: string;
@@ -35,6 +41,7 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
   const [err, setErr] = useState<string | null>(null);
 
   const meta = parseProductMetadata(product.metadata);
+  const chapters = chaptersFromProductMeta(product.metadata, product.description, meta.courseDetails);
   const aud = audienceLabels(parseProductAudience(product.audience));
   const min = Math.max(1, product.minParticipants);
   const cur = product.currentRegistered;
@@ -47,7 +54,7 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-200 hover:shadow-md">
-      {product.imageUrl?.startsWith("https://") ? (
+      {isStoredImageUrl(product.imageUrl) ? (
         <div className="aspect-[16/10] w-full bg-herbal-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={product.imageUrl} alt="" className="h-full w-full object-cover" />
@@ -58,7 +65,7 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
       <div className="flex flex-1 flex-col p-5">
         <h3 className="font-display text-lg font-bold text-herbal-900">{product.title}</h3>
         {aud ? <p className="mt-1 text-xs text-slate-500">קהל: {aud}</p> : null}
-        <p className="mt-2 line-clamp-3 flex-1 text-sm text-slate-600">{product.description}</p>
+        <ChaptersAccordion chapters={chapters} className="mt-3" />
         {when ? <p className="mt-2 text-xs text-slate-500">מועד: {when}</p> : null}
         {meta.location ? <p className="text-xs text-slate-500">מיקום: {meta.location}</p> : null}
 
@@ -125,6 +132,15 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
               {pending ? "שולח…" : "הצטרפות לרשימת המתנה"}
             </button>
           </form>
+        ) : product.therapistId ? (
+          <ManualAccessRequestButton
+            therapistId={product.therapistId}
+            contentKind={productTypeToContentKind(product.type)}
+            contentId={product.id}
+            contentTitle={product.title}
+            priceCategory={"regular" as PriceCategory}
+            amountNis={Number(product.price)}
+          />
         ) : (
           <button
             type="button"

@@ -8,7 +8,8 @@ import {
   createAdminSupervisionSession,
   createAdminZoomSession,
 } from "@/app/actions/admin-content";
-import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
+import { ImagePicker } from "@/components/dashboard/ImagePicker";
+import { isStoredImageUrl } from "@/lib/stored-image-url";
 import { AudienceMultiSelect } from "@/components/forms/AudienceMultiSelect";
 import type { ContentAudienceId } from "@/lib/content-audience";
 
@@ -277,7 +278,7 @@ function ArticleForm({
         <label className="text-sm font-medium text-slate-700">תוכן</label>
         <textarea required className={`${fieldClass()} min-h-[160px]`} value={content} onChange={(e) => setContent(e.target.value)} />
       </div>
-      <HebrewUnsplashPicker value={img} onChange={setImg} />
+      <ImagePicker value={img} onChange={setImg} />
       <button
         type="submit"
         disabled={pending || !img.startsWith("https://")}
@@ -386,10 +387,10 @@ function CourseForm({
         />
       </div>
       <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
-      <HebrewUnsplashPicker value={img} onChange={setImg} />
+      <ImagePicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://") || audience.length === 0}
+        disabled={pending || !isStoredImageUrl(img) || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}
@@ -495,10 +496,10 @@ function ZoomForm({
         />
       </div>
       <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
-      <HebrewUnsplashPicker value={img} onChange={setImg} />
+      <ImagePicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://") || audience.length === 0}
+        disabled={pending || !isStoredImageUrl(img) || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}
@@ -584,10 +585,10 @@ function SupervisionForm({
         />
       </div>
       <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
-      <HebrewUnsplashPicker value={img} onChange={setImg} />
+      <ImagePicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://") || audience.length === 0}
+        disabled={pending || !isStoredImageUrl(img) || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}

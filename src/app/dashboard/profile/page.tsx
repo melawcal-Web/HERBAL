@@ -21,7 +21,7 @@ export default async function TherapistProfilePage() {
 
   if (!session?.user?.id) redirect("/auth/signin");
 
-  if (!assertTherapist(session.user.role)) redirect("/dashboard");
+  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
 
 
 
@@ -33,7 +33,7 @@ export default async function TherapistProfilePage() {
 
   });
 
-  if (!profile) redirect("/dashboard");
+  if (!profile) redirect("/auth/signin");
 
 
 

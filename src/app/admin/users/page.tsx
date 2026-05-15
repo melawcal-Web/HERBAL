@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRoleToggle } from "./user-role-toggle";
+import { DuplicateTherapistButton } from "./DuplicateTherapistButton";
 
 export const metadata = {
   title: "ניהול משתמשים",
@@ -53,6 +54,9 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   <UserRoleToggle userId={u.id} currentRole={u.role} isSelf={selfId === u.id} />
+                  {u.therapistProfile ? (
+                    <DuplicateTherapistButton userId={u.id} userName={u.name} />
+                  ) : null}
                 </td>
               </tr>
             ))}

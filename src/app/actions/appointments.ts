@@ -57,13 +57,16 @@ export async function requestAppointment(input: {
   if (!profile) throw new Error("מטפל לא נמצא");
 
   const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("יש להתחבר עם Google כדי לקבוע פגישה");
+  }
 
   await prisma.appointmentRequest.create({
     data: {
       therapistId: p.data.therapistUserId,
-      clientUserId: session?.user?.id ?? null,
-      guestName: p.data.guestName.trim(),
-      guestEmail: p.data.guestEmail.trim().toLowerCase(),
+      clientUserId: session.user.id,
+      guestName: (session.user.name ?? p.data.guestName).trim(),
+      guestEmail: (session.user.email ?? p.data.guestEmail).trim().toLowerCase(),
       guestPhone: p.data.guestPhone?.trim() || null,
       slotStart: start,
       slotEnd: end,

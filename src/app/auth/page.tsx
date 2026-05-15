@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { postLoginPath } from "@/lib/post-login-path";
 
 export const metadata = {
   title: "כניסה והרשמה",
@@ -9,7 +10,7 @@ export const metadata = {
 
 export default async function AuthHubPage() {
   const session = await auth();
-  if (session?.user) redirect("/dashboard");
+  if (session?.user) redirect(postLoginPath(session));
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">

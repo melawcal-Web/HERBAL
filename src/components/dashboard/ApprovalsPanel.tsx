@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { approveManualAccess, rejectManualAccess } from "@/app/actions/commerce";
 import { contentKindLabel, priceCategoryLabel } from "@/lib/commerce";
 import type { ManualAccessRequest, PriceCategory } from "@prisma/client";
@@ -10,6 +11,7 @@ type Row = ManualAccessRequest & {
 };
 
 export function ApprovalsPanel({ initial }: { initial: Row[] }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -32,6 +34,7 @@ export function ApprovalsPanel({ initial }: { initial: Row[] }) {
                 onClick={() =>
                   startTransition(async () => {
                     await approveManualAccess(req.id);
+                    router.refresh();
                   })
                 }
                 className="rounded-full bg-herbal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-60"
@@ -44,6 +47,7 @@ export function ApprovalsPanel({ initial }: { initial: Row[] }) {
                 onClick={() =>
                   startTransition(async () => {
                     await rejectManualAccess(req.id);
+                    router.refresh();
                   })
                 }
                 className="rounded-full border border-rose-200 px-5 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-60"

@@ -2,11 +2,15 @@
 
 import type { ParsedContactInfo, ParsedSocialLinks } from "@/lib/therapist-contact";
 import { TherapistHeroSocialBar } from "@/components/therapist/TherapistHeroSocialBar";
+import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { useState } from "react";
 
 type Props = {
   /** תמונת רקע — תמיד כתובת https (כולל placeholder מהשרת) */
   heroCoverUrl: string;
+  /** תמונת פרופיל עגולה — מוצגת בדף הציבורי */
+  profileImageUrl?: string | null;
+  profileImageSeed: string;
   therapistName: string;
   /** שם העיר בלבד */
   serviceCity: string | null;
@@ -26,6 +30,8 @@ const titleLine =
  */
 export function TherapistProfileHero({
   heroCoverUrl,
+  profileImageUrl,
+  profileImageSeed,
   therapistName,
   serviceCity,
   specialties,
@@ -72,6 +78,13 @@ export function TherapistProfileHero({
               className="flex min-w-0 flex-col items-end text-right"
               style={{ textShadow: "0 2px 18px rgba(0,0,0,0.88)" }}
             >
+              <ProfileAvatar
+                imageUrl={profileImageUrl}
+                name={therapistName}
+                seed={profileImageSeed}
+                size="xl"
+                className="mb-4 shadow-2xl"
+              />
               <span className={titleLine}>{roleHe}</span>
               <span className="mt-2 font-display text-2xl font-bold leading-tight text-white sm:text-3xl md:text-[clamp(1.85rem,3.2vw,2.75rem)]">
                 {therapistName}

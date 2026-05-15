@@ -9,13 +9,14 @@ import { assertAdmin } from "@/lib/formula";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import type { ContentAudienceId } from "@/lib/content-audience";
+import { storedImageUrlSchema } from "@/lib/stored-image-url";
 
 const audienceSchema = z
   .array(z.enum(["therapist", "student", "interested"]))
   .min(1, "יש לבחור לפחות קהל יעד אחד")
   .optional();
 
-const httpsUrl = z.string().url().refine((u) => u.startsWith("https://"), "יש להזין כתובת https מלאה");
+const imageUrlField = storedImageUrlSchema;
 
 function excerptFromBody(body: string): string {
   const flat = body.replace(/\s+/g, " ").trim();
@@ -56,7 +57,7 @@ export async function createAdminArticle(input: {
     title: z.string().min(1).max(240),
     content: z.string().min(20),
     category: z.string().min(1).max(120),
-    imageUrl: httpsUrl,
+    imageUrl: imageUrlField,
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -118,7 +119,7 @@ export async function createAdminFrontalCourse(input: {
     price: z.number().positive(),
     memberPrice: z.number().positive(),
     maxParticipants: z.number().int().positive().max(500),
-    imageUrl: httpsUrl,
+    imageUrl: imageUrlField,
     courseDetails: z.string().max(8000).optional(),
     audience: audienceSchema,
   });
@@ -188,7 +189,7 @@ export async function createAdminZoomSession(input: {
     price: z.number().positive(),
     memberPrice: z.number().positive(),
     maxParticipants: z.number().int().positive().max(500),
-    imageUrl: httpsUrl,
+    imageUrl: imageUrlField,
     courseDetails: z.string().max(8000).optional(),
     audience: audienceSchema,
   });
@@ -254,7 +255,7 @@ export async function createAdminSupervisionSession(input: {
     startsAt: z.string().min(1),
     price: z.number().positive(),
     maxParticipants: z.number().int().positive().max(200),
-    imageUrl: httpsUrl,
+    imageUrl: imageUrlField,
     courseDetails: z.string().max(8000).optional(),
     audience: audienceSchema,
   });

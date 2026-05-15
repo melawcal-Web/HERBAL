@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { createAdminProduct, type CreateAdminProductState } from "@/app/actions/admin-product";
-import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
+import { ImagePicker } from "@/components/dashboard/ImagePicker";
+import { isStoredImageUrl } from "@/lib/stored-image-url";
 
 function SubmitButton({ pending, disabled }: { pending: boolean; disabled?: boolean }) {
   return (
@@ -70,10 +71,10 @@ export function AddProductForm() {
         </div>
       </div>
       <input type="hidden" name="imageUrl" value={img} readOnly />
-      <HebrewUnsplashPicker value={img} onChange={setImg} />
+      <ImagePicker value={img} onChange={setImg} uploadPrefix="content" />
       {state && !state.ok && <p className="text-sm text-rose-600">{state.error}</p>}
       {state?.ok && <p className="text-sm text-herbal-700">{state.message}</p>}
-      <SubmitButton pending={pending} disabled={!img.startsWith("https://")} />
+      <SubmitButton pending={pending} disabled={!isStoredImageUrl(img)} />
     </form>
   );
 }

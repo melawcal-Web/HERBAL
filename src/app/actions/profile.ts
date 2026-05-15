@@ -55,8 +55,8 @@ export async function updateTherapistProfile(input: {
   }
 
   const img = (input.profileImageUrl ?? "").trim();
-  if (img.length > 0 && !img.startsWith("https://")) {
-    throw new Error("תמונת פרופיל חייבת להיות כתובת https");
+  if (img.length > 0 && !img.startsWith("https://") && !img.startsWith("/uploads/")) {
+    throw new Error("תמונת פרופיל חייבת להיות כתובת https או קובץ שהועלה למערכת");
   }
 
   const prev = await prisma.therapistProfile.findUnique({

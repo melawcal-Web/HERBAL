@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function GoogleSignInButton({
-  callbackUrl = "/dashboard",
+  callbackUrl = "/dashboard/profile",
   className = "w-full min-h-[48px] rounded-full border border-herbal-200 bg-white py-3 text-sm font-semibold text-herbal-900 shadow-sm transition hover:bg-herbal-50 disabled:opacity-60",
 }: Props) {
   return (

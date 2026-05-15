@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminNav } from "@/components/AdminNav";
 import { ensureBootstrapAdmins } from "@/lib/bootstrap-super-admin";
+import { postLoginPath } from "@/lib/post-login-path";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await ensureBootstrapAdmins();
@@ -11,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/auth/signin?callbackUrl=/admin/log");
   }
   if (session.user.role !== "admin") {
-    redirect("/dashboard");
+    redirect(postLoginPath(session));
   }
 
   return (

@@ -44,7 +44,7 @@ export default function RegisterPage() {
         בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ת, או חבר קהילה — גלישה בקהילה ובאינדקס.
       </p>
       <div className="mt-8 space-y-3">
-        <GoogleSignInButton callbackUrl="/dashboard" />
+        <GoogleSignInButton callbackUrl="/dashboard/profile" />
       </div>
 
       <div className="my-8 flex items-center gap-3">
