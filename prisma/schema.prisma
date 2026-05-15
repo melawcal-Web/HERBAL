@@ -47,6 +47,13 @@ enum ProductType {
   shelf_product
 }
 
+enum AppointmentRequestStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
 model User {
   id               String               @id @default(cuid())
   name             String
@@ -70,6 +77,10 @@ model User {
   clinicalLogsAsClient    ClinicalLog[] @relation("ClientLogs")
   herbalArticles HerbalArticle[]
   auditEntries   AuditLog[]           @relation("AuditActor")
+  therapistProducts Product[]         @relation("TherapistProducts")
+  appointmentRequestsAsTherapist AppointmentRequest[] @relation("TherapistAppointments")
+  appointmentRequestsAsClient    AppointmentRequest[] @relation("ClientAppointments")
+  waitlistEntries WaitlistEntry[]
 
   @@map("users")
 }
@@ -92,6 +103,8 @@ model TherapistProfile {
   supervisionHourlyRate Decimal? @map("supervision_hourly_rate") @db.Decimal(10, 2)
   contactInfo  Json     @map("contact_info")
   socialLinks  Json     @map("social_links")
+  /** שעות זמינות שבועיות לפגישות — JSON { "0": [{ "start": "09:00", "end": "12:00" }], ... } (0=ראשון) */
+  weeklyAvailability Json? @map("weekly_availability")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -123,9 +136,14 @@ model Product {
   id          String      @id @default(cuid())
   /** מפתח יציב לפריטי קטלוג מה־seed — מאפשר עדכון חוזר בלי למחוק מוצרים שיצרת ידנית */
   catalogKey  String?     @unique @map("catalog_key") @db.VarChar(64)
+  therapistId String?     @map("therapist_id")
   type        ProductType
   title       String
   description String      @db.Text
+  /** תגיות לחיפוש (מערך מחרוזות בעברית) */
+  tags        Json?
+  /** קהל יעד: therapist | student | interested */
+  audience    Json?
   /** תמונת כיסוי לדוגמה / קורסים וסדנאות — https בלבד */
   imageUrl    String?     @map("image_url") @db.VarChar(512)
   /** מיקום, מועד, קישור זום, מקסימום משתתפים וכו׳ */
@@ -133,9 +151,16 @@ model Product {
   price       Decimal     @db.Decimal(10, 2)
   memberPrice Decimal     @map("member_price") @db.Decimal(10, 2)
   active      Boolean     @default(true)
+  isWaitlist  Boolean     @default(true) @map("is_waitlist")
+  minParticipants Int     @default(5) @map("min_participants")
+  currentRegistered Int   @default(0) @map("current_registered")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
+  therapist User? @relation("TherapistProducts", fields: [therapistId], references: [id], onDelete: SetNull)
+  waitlistEntries WaitlistEntry[]
+
+  @@index([therapistId])
   @@map("products")
 }
 
@@ -165,6 +190,8 @@ model HerbalArticle {
   body        String   @db.LongText
   /** תמונה לכרטיס אינדקס — https בלבד */
   coverImageUrl String? @map("cover_image_url") @db.VarChar(512)
+  tags        Json?
+  audience    Json?
   published   Boolean  @default(false)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -173,6 +200,44 @@ model HerbalArticle {
 
   @@index([therapistId])
   @@map("herbal_articles")
+}
+
+model AppointmentRequest {
+  id           String                   @id @default(cuid())
+  therapistId  String                   @map("therapist_id")
+  clientUserId String?                  @map("client_user_id")
+  guestName    String                   @map("guest_name")
+  guestEmail   String                   @map("guest_email")
+  guestPhone   String?                  @map("guest_phone") @db.VarChar(64)
+  slotStart    DateTime                 @map("slot_start")
+  slotEnd      DateTime                 @map("slot_end")
+  status       AppointmentRequestStatus @default(pending)
+  note         String?                  @db.Text
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  therapist User  @relation("TherapistAppointments", fields: [therapistId], references: [id], onDelete: Cascade)
+  client    User? @relation("ClientAppointments", fields: [clientUserId], references: [id], onDelete: SetNull)
+
+  @@index([therapistId, slotStart])
+  @@index([clientUserId])
+  @@map("appointment_requests")
+}
+
+model WaitlistEntry {
+  id         String   @id @default(cuid())
+  productId  String   @map("product_id")
+  userId     String?  @map("user_id")
+  guestEmail String   @map("guest_email")
+  guestName  String?  @map("guest_name")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, guestEmail])
+  @@index([productId])
+  @@map("waitlist_entries")
 }
 
 model SiteConfig {

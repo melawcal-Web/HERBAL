@@ -1,8 +1,21 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { TherapistProfile, User } from "@prisma/client";
 import { TherapistProfileHero } from "@/components/therapist/TherapistProfileHero";
+import { TherapistOfferingSections } from "@/components/therapist/TherapistOfferingSections";
+import { TherapistAppointmentCalendar } from "@/components/therapist/TherapistAppointmentCalendar";
+import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
 import { parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
 import { pickDemoImage } from "@/lib/demo-placeholders";
+import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
+import { parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
+import {
+  filterArticleRow,
+  filterProductRow,
+  type ContentSearchParams,
+} from "@/lib/content-search";
+import type { ContentAudienceId } from "@/lib/content-audience";
+import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -13,13 +26,16 @@ export type TherapistPublishedArticle = {
   slug: string;
   excerpt: string;
   coverImageUrl: string | null;
+  tags?: unknown;
+  audience?: unknown;
+  therapistId: string;
 };
+
+const sectionLabel = "text-[11px] font-bold uppercase tracking-[0.36em] text-herbal-800/80";
 
 function specialtyList(s1: string, s2: string, s3: string) {
   return [s1, s2, s3].map((s) => s.trim()).filter(Boolean);
 }
-
-const sectionLabel = "text-[11px] font-bold uppercase tracking-[0.36em] text-herbal-800/80";
 
 function moneyIls(n: number) {
   return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n);
@@ -28,9 +44,18 @@ function moneyIls(n: number) {
 export function TherapistPublicPageView({
   profile,
   articles = [],
+  products = [],
+  searchParams = {},
 }: {
   profile: TherapistPublicProfile;
   articles?: TherapistPublishedArticle[];
+  products?: WaitlistProductModel[];
+  searchParams?: {
+    q?: string;
+    tag?: string;
+    type?: string;
+    audience?: string;
+  };
 }) {
   const contact = parseContactInfo(profile.contactInfo);
   const social = parseSocialLinks(profile.socialLinks);
@@ -41,6 +66,19 @@ export function TherapistPublicPageView({
   const rawImg = profile.user.image?.trim();
   const heroCoverUrl =
     rawImg?.startsWith("https://") ? rawImg : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
+
+  const availability: WeeklyAvailability = parseWeeklyAvailability(profile.weeklyAvailability);
+
+  const filters: ContentSearchParams = {
+    q: searchParams.q,
+    tag: searchParams.tag,
+    type: (searchParams.type as ContentFilterType) || "all",
+    audience: (searchParams.audience as ContentAudienceId) || null,
+    therapistUserId: profile.user.id,
+  };
+
+  const filteredProducts = products.filter((p) => filterProductRow({ ...p, therapistId: profile.user.id }, filters));
+  const filteredArticles = articles.filter((a) => filterArticleRow(a, filters));
 
   const showSupervision =
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
@@ -59,16 +97,52 @@ export function TherapistPublicPageView({
         />
       </header>
 
-      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-16 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-herbal-50" />}>
+          <ContentSearchFilter
+            therapistUserId={profile.user.id}
+            basePath={`/therapists/${profile.id}`}
+            className="mb-10"
+          />
+        </Suspense>
+
         <section aria-labelledby="about-heading">
           <p className={sectionLabel}>ביוגרפיה</p>
           <h2 id="about-heading" className="sr-only">
             ביוגרפיה — {profile.user.name}
           </h2>
           <p className="mt-5 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio}</p>
+          {profile.clinicalExperience?.trim() ? (
+            <div className="mt-8">
+              <p className={sectionLabel}>ניסיון והשכלה</p>
+              <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-neutral-700">
+                {profile.clinicalExperience}
+              </p>
+            </div>
+          ) : null}
         </section>
 
-        {articles.length > 0 ? (
+        <TherapistOfferingSections products={filteredProducts} />
+
+        <TherapistAppointmentCalendar
+          therapistUserId={profile.user.id}
+          therapistProfileId={profile.id}
+          availability={availability}
+        />
+
+        {showSupervision ? (
+          <section className="mt-12 border-t border-neutral-200/90 pt-10" aria-labelledby="supervision-heading">
+            <p id="supervision-heading" className={sectionLabel}>
+              השגחה מקצועית
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-neutral-700">
+              המטפל/ת מאשר/ת פניות להשגחה מקצועית. תעריף לשעת עבודה:{" "}
+              <span className="font-semibold text-herbal-900">{moneyIls(Number(profile.supervisionHourlyRate))}</span>
+            </p>
+          </section>
+        ) : null}
+
+        {filteredArticles.length > 0 ? (
           <section className="mt-14 border-t border-neutral-200/90 pt-12" aria-labelledby="articles-heading">
             <p id="articles-heading" className={sectionLabel}>
               מאמרים שפורסמו
@@ -78,7 +152,7 @@ export function TherapistPublicPageView({
               dir="ltr"
               style={{ scrollSnapType: "x proximity" }}
             >
-              {articles.map((a) => (
+              {filteredArticles.map((a) => (
                 <Link
                   key={a.id}
                   href={`/herbal-index/${a.slug}`}
@@ -103,19 +177,6 @@ export function TherapistPublicPageView({
                 </Link>
               ))}
             </div>
-          </section>
-        ) : null}
-
-        {showSupervision ? (
-          <section className="mt-12 border-t border-neutral-200/90 pt-10" aria-labelledby="supervision-heading">
-            <p id="supervision-heading" className={sectionLabel}>
-              השגחה מקצועית
-            </p>
-            <p className="mt-4 text-base leading-relaxed text-neutral-700">
-              המטפל/ת מאשר/ת פניות להשגחה מקצועית. תעריף מוצג לשעת עבודה אחת:{" "}
-              <span className="font-semibold text-herbal-900">{moneyIls(Number(profile.supervisionHourlyRate))}</span>
-              . לתיאום ופרטים נוספים ניתן ליצור קשר דרך האייקונים בראש הדף.
-            </p>
           </section>
         ) : null}
       </div>

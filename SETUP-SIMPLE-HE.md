@@ -12,8 +12,12 @@
    בלי זה אי אפשר להעלות לגיטהאב.
 
 2. ב־Vercel נבנה את האתר עם הפקודה (כבר מוכן בפרויקט):  
-   `prisma generate && prisma db push && next build`  
-   כלומר בכל בנייה המסד מתעדכן לפי הסכימה. זה בסיסי לתחילת דרך; אחר כך אפשר “להבשיל” עם מיגרציות.
+   `prisma generate && prisma db push --accept-data-loss && next build`  
+   כלומר בכל **Deploy** מוצלח — **מבנה** מסד הנתונים (טבלאות/עמודות לפי `prisma/schema.prisma`) מתעדכן אוטומטית מול ה־`DATABASE_URL` שלך (למשל Railway). **לא צריך** ללחוץ שום דבר ב-Railway בשביל זה.
+
+3. **תוכן התחלה** (מוצרים/מאמרים/משתמשים מה־seed) **לא** רץ אוטומטית ב-Vercel. אם צריך — מריצים פעם מהמחשב: `npm run db:seed` (ראו `DATABASE.md` ושלב 4 למטה).
+
+**קישורים רשמיים ל-Prisma:** כל המבנה + דגל `accept-data-loss` + seed — בקובץ **[DATABASE.md](./DATABASE.md)** (עברית + לינקים).
 
 ---
 
@@ -169,6 +173,9 @@ npx prisma db seed
 - GitHub Desktop: [https://desktop.github.com/](https://desktop.github.com/)
 - Railway: [https://railway.app](https://railway.app)
 - Vercel הרשמה: [https://vercel.com/signup](https://vercel.com/signup)
+- **מסד נתונים — מתי מתעדכן אוטומטית / מה ידני / לינקים ל-Prisma:** [DATABASE.md](./DATABASE.md)
+- `prisma db push` (תיעוד): [https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push)
+- Seeding: [https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding](https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding)
 
 ---
 
@@ -179,4 +186,4 @@ npx prisma db seed
 - דומיין משלך (למשל ב־Cloudflare / Namecheap) וחיבור ל־Vercel (מדריך נפרד כשתהיה מוכן).
 - סליקה (Stripe וכו’) — כשתרצו מכירות אמיתיות בקורסים וסדנאות.
 
-מדריך טכני יותר באנגלית עדיין קיים בקובץ `DEPLOY.md`.
+מדריך טכני יותר באנגלית עדיין קיים בקובץ `DEPLOY.md`. **מסד נתונים (מתי מתעדכן / לינקים ל-Prisma):** `DATABASE.md`.

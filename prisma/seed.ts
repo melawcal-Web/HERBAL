@@ -94,6 +94,9 @@ async function upsertCatalogProduct(
       imageUrl: data.imageUrl,
       metadata: data.metadata ?? Prisma.JsonNull,
       active: data.active ?? true,
+      isWaitlist: true,
+      minParticipants: 5,
+      currentRegistered: 0,
     },
     update: {
       type: data.type,
@@ -104,6 +107,7 @@ async function upsertCatalogProduct(
       imageUrl: data.imageUrl,
       metadata: data.metadata ?? Prisma.JsonNull,
       active: data.active ?? true,
+      isWaitlist: true,
     },
   });
 }

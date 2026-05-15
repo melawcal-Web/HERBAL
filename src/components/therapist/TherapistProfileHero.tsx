@@ -17,7 +17,7 @@ type Props = {
 };
 
 const titleLine =
-  "text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300 drop-shadow-[0_0_14px_rgba(16,185,129,0.85)] sm:text-[11px]";
+  "text-[10px] font-black uppercase tracking-[0.22em] text-herbal-300 drop-shadow-[0_0_16px_rgba(74,222,128,0.9)] sm:text-[11px]";
 
 /**
  * Hero: תמונת רקע + שני טורים בתחתית (RTL):

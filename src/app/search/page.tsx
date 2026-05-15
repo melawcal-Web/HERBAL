@@ -1,6 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
+import {
+  filterArticleRow,
+  filterProductRow,
+  filterTherapistRow,
+  type ContentSearchParams,
+} from "@/lib/content-search";
+import type { ContentAudienceId } from "@/lib/content-audience";
+import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 
 export const metadata = {
   title: "חיפוש",
@@ -9,83 +19,68 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string; type?: string; audience?: string }>;
 };
 
 export default async function SearchPage({ searchParams }: Props) {
-  const { q } = await searchParams;
-  const query = (q ?? "").trim();
+  const sp = await searchParams;
+  const filters: ContentSearchParams = {
+    q: sp.q,
+    tag: sp.tag,
+    type: (sp.type as ContentFilterType) || "all",
+    audience: (sp.audience as ContentAudienceId) || null,
+  };
 
-  if (!query) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="font-display text-2xl text-herbal-900">חיפוש באתר</h1>
-        <p className="mt-2 text-slate-600">הזינו מילת חיפוש — לחצו על אייקון החיפוש בראש העמוד.</p>
-      </div>
-    );
-  }
+  const hasFilter = Boolean(sp.q?.trim() || sp.tag?.trim() || sp.type || sp.audience);
 
   const [therapists, products, articles] = await Promise.all([
     prisma.therapistProfile.findMany({
       where: {
-        AND: [
-          {
-            user: {
-              OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
-            },
-          },
-          {
-            OR: [
-              { user: { name: { contains: query } } },
-              { bio: { contains: query } },
-              { specialty1: { contains: query } },
-              { specialty2: { contains: query } },
-              { specialty3: { contains: query } },
-            ],
-          },
-        ],
+        user: {
+          OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+        },
       },
-      take: 20,
+      take: 50,
       include: { user: { select: { name: true } } },
     }),
     prisma.product.findMany({
-      where: {
-        active: true,
-        OR: [{ title: { contains: query } }, { description: { contains: query } }],
-      },
-      take: 20,
+      where: { active: true },
+      take: 50,
       orderBy: { createdAt: "desc" },
     }),
     prisma.herbalArticle.findMany({
-      where: {
-        published: true,
-        OR: [
-          { title: { contains: query } },
-          { excerpt: { contains: query } },
-          { category: { contains: query } },
-        ],
-      },
-      take: 20,
+      where: { published: true },
+      take: 50,
       include: { therapist: { select: { name: true } } },
     }),
   ]);
 
-  const empty = therapists.length === 0 && products.length === 0 && articles.length === 0;
+  const therapistRows = therapists.filter((t) => filterTherapistRow(t, filters));
+  const productRows = products.filter((p) => filterProductRow(p, filters));
+  const articleRows = articles.filter((a) => filterArticleRow(a, filters));
+
+  const empty = !hasFilter || (therapistRows.length === 0 && productRows.length === 0 && articleRows.length === 0);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-2xl text-herbal-900">תוצאות חיפוש</h1>
-      <p className="mt-2 text-slate-600">
-        חיפוש עבור: <span className="font-semibold text-herbal-800">{query}</span>
-      </p>
+      <h1 className="font-display text-2xl text-herbal-900">חיפוש באתר</h1>
+      <p className="mt-2 text-slate-600">סינון לפי תגית, קהל יעד וסוג תוכן — בכל האתר.</p>
 
-      {empty && <p className="mt-8 text-slate-600">לא נמצאו תוצאות. נסו מילה אחרת.</p>}
+      <Suspense fallback={<div className="mt-6 h-28 animate-pulse rounded-2xl bg-herbal-50" />}>
+        <ContentSearchFilter className="mt-6" />
+      </Suspense>
 
-      {therapists.length > 0 && (
+      {!hasFilter ? (
+        <p className="mt-8 text-slate-600">בחרו מסננים או הקלידו מילת חיפוש.</p>
+      ) : null}
+
+      {hasFilter && empty ? <p className="mt-8 text-slate-600">לא נמצאו תוצאות. נסו מילה אחרת.</p> : null}
+
+      {therapistRows.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-bold text-herbal-900">מטפלים</h2>
           <ul className="mt-3 space-y-2">
-            {therapists.map((t) => (
+            {therapistRows.map((t) => (
               <li key={t.id}>
                 <Link
                   href={therapistPublicHref(t.id)}
@@ -100,11 +95,11 @@ export default async function SearchPage({ searchParams }: Props) {
         </section>
       )}
 
-      {products.length > 0 && (
+      {productRows.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-bold text-herbal-900">קורסים וסדנאות</h2>
           <ul className="mt-3 space-y-2">
-            {products.map((p) => (
+            {productRows.map((p) => (
               <li key={p.id}>
                 <Link
                   href="/marketplace"
@@ -119,11 +114,11 @@ export default async function SearchPage({ searchParams }: Props) {
         </section>
       )}
 
-      {articles.length > 0 && (
+      {articleRows.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-bold text-herbal-900">מאמרים — אינדקס צמחים</h2>
           <ul className="mt-3 space-y-2">
-            {articles.map((a) => (
+            {articleRows.map((a) => (
               <li key={a.id}>
                 <Link
                   href={`/herbal-index/${a.slug}`}

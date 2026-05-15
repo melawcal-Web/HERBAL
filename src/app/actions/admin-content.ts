@@ -142,6 +142,9 @@ export async function createAdminFrontalCourse(input: {
       price: new Prisma.Decimal(p.data.price),
       memberPrice: new Prisma.Decimal(p.data.memberPrice),
       active: true,
+      isWaitlist: true,
+      minParticipants: p.data.maxParticipants > 0 ? Math.min(p.data.maxParticipants, 5) : 5,
+      currentRegistered: 0,
     },
   });
 
@@ -206,6 +209,9 @@ export async function createAdminZoomSession(input: {
       price: new Prisma.Decimal(p.data.price),
       memberPrice: new Prisma.Decimal(p.data.memberPrice),
       active: true,
+      isWaitlist: true,
+      minParticipants: 5,
+      currentRegistered: 0,
     },
   });
 
@@ -265,6 +271,9 @@ export async function createAdminSupervisionSession(input: {
       price: new Prisma.Decimal(p.data.price),
       memberPrice: new Prisma.Decimal(p.data.price),
       active: true,
+      isWaitlist: true,
+      minParticipants: Math.max(3, p.data.maxParticipants),
+      currentRegistered: 0,
     },
   });
 

@@ -55,6 +55,8 @@ You do **not** need all optional items on day one. Minimum to go live: **hosting
    npx prisma db push
    ```
 
+   **Production (Vercel):** `npm run build` already runs `prisma db push --accept-data-loss` so the hosted MySQL schema stays in sync on each deploy — no separate “update database” click in Railway. Initial/demo **data** is not seeded on Vercel unless you run `npm run db:seed` from a trusted machine. See **`DATABASE.md`** in this repo (Hebrew + Prisma doc links).
+
 6. (Optional) Load demo data — **change default passwords immediately**:
 
    ```bash
@@ -189,11 +191,14 @@ Document who is allowed to create **admin** users (`role = admin` in the databas
 
 ```bash
 npm run dev          # local development
-npm run build        # production build
+npm run build        # production build (includes prisma db push --accept-data-loss)
 npm run start        # production server
 npx prisma studio    # visual database browser
-npx prisma migrate dev  # when you add migrations (optional; db push is simpler early on)
+npm run db:seed      # load/update starter catalog & users (run manually; not part of Vercel build)
+npx prisma migrate dev  # optional: create migrations locally instead of db push
 ```
+
+Schema vs data: see **`DATABASE.md`** — [Prisma `db push` reference](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push), [seeding](https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding).
 
 ---
 

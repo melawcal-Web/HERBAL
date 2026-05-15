@@ -10,7 +10,7 @@
 
 לפני הרצה מקומית: `npm install` ואז צרו `.env` לפי `.env.example`.
 
-מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית).
+מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית), **`DATABASE.md`** (מתי מסד הנתונים מתעדכן ב-Vercel, מה ידני, וקישורים ל-Prisma).
 
 ## פריסה (Vercel)
 
