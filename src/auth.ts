@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import type { TherapistVerificationStatus, UserRole } from "@prisma/client";
+import type { RegistrationPersona, TherapistVerificationStatus, UserRole } from "@prisma/client";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
@@ -86,12 +86,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.email) {
         const row = await prisma.user.findUnique({
           where: { email: user.email },
-          select: { id: true, role: true, therapistVerification: true },
+          select: { id: true, role: true, therapistVerification: true, registrationPersona: true },
         });
         if (row) {
           token.id = row.id;
           token.role = row.role;
           token.therapistVerification = row.therapistVerification;
+          token.registrationPersona = row.registrationPersona;
         }
       }
       if (user) {
@@ -103,11 +104,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id && typeof token.id === "string") {
         const live = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { role: true, therapistVerification: true },
+          select: { role: true, therapistVerification: true, registrationPersona: true },
         });
         if (live) {
           token.role = live.role;
           token.therapistVerification = live.therapistVerification;
+          token.registrationPersona = live.registrationPersona;
         }
       }
       return token;
@@ -118,6 +120,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = (token.role as UserRole) ?? "client";
         session.user.therapistVerification =
           (token.therapistVerification as TherapistVerificationStatus) ?? "none";
+        session.user.registrationPersona = (token.registrationPersona as RegistrationPersona | null) ?? null;
       }
       return session;
     },

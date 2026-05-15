@@ -8,6 +8,12 @@ import { auth } from "@/auth";
 import { assertAdmin } from "@/lib/formula";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
+import type { ContentAudienceId } from "@/lib/content-audience";
+
+const audienceSchema = z
+  .array(z.enum(["therapist", "student", "interested"]))
+  .min(1, "יש לבחור לפחות קהל יעד אחד")
+  .optional();
 
 const httpsUrl = z.string().url().refine((u) => u.startsWith("https://"), "יש להזין כתובת https מלאה");
 
@@ -102,6 +108,7 @@ export async function createAdminFrontalCourse(input: {
   maxParticipants: number;
   imageUrl: string;
   courseDetails?: string;
+  audience?: ContentAudienceId[];
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -113,6 +120,7 @@ export async function createAdminFrontalCourse(input: {
     maxParticipants: z.number().int().positive().max(500),
     imageUrl: httpsUrl,
     courseDetails: z.string().max(8000).optional(),
+    audience: audienceSchema,
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -145,6 +153,7 @@ export async function createAdminFrontalCourse(input: {
       isWaitlist: true,
       minParticipants: p.data.maxParticipants > 0 ? Math.min(p.data.maxParticipants, 5) : 5,
       currentRegistered: 0,
+      audience: p.data.audience ?? [],
     },
   });
 
@@ -169,6 +178,7 @@ export async function createAdminZoomSession(input: {
   maxParticipants: number;
   imageUrl: string;
   courseDetails?: string;
+  audience?: ContentAudienceId[];
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -180,6 +190,7 @@ export async function createAdminZoomSession(input: {
     maxParticipants: z.number().int().positive().max(500),
     imageUrl: httpsUrl,
     courseDetails: z.string().max(8000).optional(),
+    audience: audienceSchema,
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -212,6 +223,7 @@ export async function createAdminZoomSession(input: {
       isWaitlist: true,
       minParticipants: 5,
       currentRegistered: 0,
+      audience: p.data.audience ?? [],
     },
   });
 
@@ -234,6 +246,7 @@ export async function createAdminSupervisionSession(input: {
   maxParticipants: number;
   imageUrl: string;
   courseDetails?: string;
+  audience?: ContentAudienceId[];
 }): Promise<void> {
   const actorId = await requireAdminActorId();
   const schema = z.object({
@@ -243,6 +256,7 @@ export async function createAdminSupervisionSession(input: {
     maxParticipants: z.number().int().positive().max(200),
     imageUrl: httpsUrl,
     courseDetails: z.string().max(8000).optional(),
+    audience: audienceSchema,
   });
   const p = schema.safeParse(input);
   if (!p.success) {
@@ -274,6 +288,7 @@ export async function createAdminSupervisionSession(input: {
       isWaitlist: true,
       minParticipants: Math.max(3, p.data.maxParticipants),
       currentRegistered: 0,
+      audience: p.data.audience ?? [],
     },
   });
 

@@ -84,3 +84,120 @@ export async function getTherapistAvailabilityForEdit(): Promise<WeeklyAvailabil
   });
   return parseWeeklyAvailability(profile?.weeklyAvailability);
 }
+
+export type TherapistDashboardAppointment = {
+  id: string;
+  guestName: string;
+  guestEmail: string;
+  slotStart: string;
+  slotEnd: string;
+  status: string;
+  recurringWeekly: boolean;
+};
+
+export async function getTherapistScheduleDashboardData(): Promise<{
+  availability: WeeklyAvailability;
+  openUntil: string | null;
+  appointments: TherapistDashboardAppointment[];
+}> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { availability: {}, openUntil: null, appointments: [] };
+  }
+
+  const profile = await prisma.therapistProfile.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      weeklyAvailability: true,
+      availabilityOpenUntil: true,
+    },
+  });
+
+  const appointments = await prisma.appointmentRequest.findMany({
+    where: { therapistId: session.user.id },
+    orderBy: { slotStart: "asc" },
+    take: 80,
+    select: {
+      id: true,
+      guestName: true,
+      guestEmail: true,
+      slotStart: true,
+      slotEnd: true,
+      status: true,
+      recurringWeekly: true,
+    },
+  });
+
+  return {
+    availability: parseWeeklyAvailability(profile?.weeklyAvailability),
+    openUntil: profile?.availabilityOpenUntil
+      ? profile.availabilityOpenUntil.toISOString().slice(0, 10)
+      : null,
+    appointments: appointments.map((a) => ({
+      id: a.id,
+      guestName: a.guestName,
+      guestEmail: a.guestEmail,
+      slotStart: a.slotStart.toISOString(),
+      slotEnd: a.slotEnd.toISOString(),
+      status: a.status,
+      recurringWeekly: a.recurringWeekly,
+    })),
+  };
+}
+
+export async function getTherapistAppointmentsForDashboard(): Promise<TherapistDashboardAppointment[]> {
+  const data = await getTherapistScheduleDashboardData();
+  return data.appointments;
+}
+
+export async function saveTherapistScheduleSettings(input: {
+  availability: WeeklyAvailability;
+  openUntil: string | null;
+}): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("יש להתחבר");
+
+  const profile = await prisma.therapistProfile.findUnique({ where: { userId: session.user.id } });
+  if (!profile) throw new Error("פרופיל מטפל לא נמצא");
+
+  let openUntilDate: Date | null = null;
+  if (input.openUntil) {
+    openUntilDate = new Date(`${input.openUntil}T23:59:59`);
+    if (Number.isNaN(openUntilDate.getTime())) throw new Error("תאריך לא תקין");
+  }
+
+  await prisma.therapistProfile.update({
+    where: { id: profile.id },
+    data: {
+      weeklyAvailability: input.availability,
+      availabilityOpenUntil: openUntilDate,
+    },
+  });
+
+  revalidatePath("/dashboard/profile");
+  revalidatePath(`/therapists/${profile.id}`);
+}
+
+export async function setAppointmentRecurringWeekly(id: string, recurringWeekly: boolean): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("יש להתחבר");
+
+  const row = await prisma.appointmentRequest.findFirst({
+    where: { id, therapistId: session.user.id },
+  });
+  if (!row) throw new Error("פגישה לא נמצאה");
+
+  const profile = await prisma.therapistProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+
+  await prisma.appointmentRequest.update({
+    where: { id },
+    data: { recurringWeekly },
+  });
+
+  const profileId = profile?.id;
+  if (profileId) revalidatePath(`/therapists/${profileId}`);
+  revalidatePath("/dashboard/profile");
+}

@@ -2,11 +2,12 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { findTherapistProfileForPublicRoute } from "@/lib/therapist-public";
 import { TherapistPublicPageView } from "@/components/therapist/TherapistPublicPageView";
+import { getContentViewer } from "@/lib/content-viewer";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ q?: string; tag?: string; type?: string; audience?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string; type?: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -26,7 +27,9 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
   const profile = await findTherapistProfileForPublicRoute(id);
   if (!profile) notFound();
 
-  const [articles, products] = await Promise.all([
+  const viewer = await getContentViewer();
+
+  const [articles, products, appointments] = await Promise.all([
     prisma.herbalArticle.findMany({
       where: { therapistId: profile.user.id, published: true },
       orderBy: { createdAt: "desc" },
@@ -46,6 +49,15 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
     prisma.product.findMany({
       where: { active: true, therapistId: profile.user.id },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.appointmentRequest.findMany({
+      where: { therapistId: profile.user.id },
+      select: {
+        slotStart: true,
+        slotEnd: true,
+        recurringWeekly: true,
+        status: true,
+      },
     }),
   ]);
 
@@ -72,6 +84,9 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
       articles={articles}
       products={productModels}
       searchParams={sp}
+      openUntil={profile.availabilityOpenUntil}
+      bookedAppointments={appointments}
+      viewer={viewer}
     />
   );
 }

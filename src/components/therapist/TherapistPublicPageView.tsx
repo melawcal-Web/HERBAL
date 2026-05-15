@@ -8,13 +8,13 @@ import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
 import { parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
-import { parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
+import { expandBookedAppointments, parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
 import {
   filterArticleRow,
   filterProductRow,
   type ContentSearchParams,
 } from "@/lib/content-search";
-import type { ContentAudienceId } from "@/lib/content-audience";
+import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
@@ -47,6 +47,9 @@ export function TherapistPublicPageView({
   articles = [],
   products = [],
   searchParams = {},
+  openUntil = null,
+  bookedAppointments = [],
+  viewer = null,
 }: {
   profile: TherapistPublicProfile;
   articles?: TherapistPublishedArticle[];
@@ -55,8 +58,10 @@ export function TherapistPublicPageView({
     q?: string;
     tag?: string;
     type?: string;
-    audience?: string;
   };
+  openUntil?: Date | null;
+  bookedAppointments?: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string }[];
+  viewer?: ContentViewer | null;
 }) {
   const contact = parseContactInfo(profile.contactInfo);
   const social = parseSocialLinks(profile.socialLinks);
@@ -74,14 +79,18 @@ export function TherapistPublicPageView({
     q: searchParams.q,
     tag: searchParams.tag,
     type: (searchParams.type as ContentFilterType) || "all",
-    audience: (searchParams.audience as ContentAudienceId) || null,
     therapistUserId: profile.user.id,
   };
 
-  const filteredProducts = products.filter((p) =>
+  const visibleProducts = products.filter((p) => contentVisibleForViewer(p.audience, viewer));
+  const visibleArticles = articles.filter((a) => contentVisibleForViewer(a.audience, viewer));
+
+  const filteredProducts = visibleProducts.filter((p) =>
     filterProductRow({ ...p, therapistId: p.therapistId ?? profile.user.id }, filters),
   );
-  const filteredArticles = articles.filter((a) => filterArticleRow(a, filters));
+  const filteredArticles = visibleArticles.filter((a) => filterArticleRow(a, filters));
+
+  const booked = expandBookedAppointments(bookedAppointments);
 
   const showSupervision =
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
@@ -105,6 +114,7 @@ export function TherapistPublicPageView({
           <ContentSearchFilter
             therapistUserId={profile.user.id}
             basePath={`/therapists/${profile.id}`}
+            variant="therapist"
             className="mb-10"
           />
         </Suspense>
@@ -131,6 +141,8 @@ export function TherapistPublicPageView({
           therapistUserId={profile.user.id}
           therapistProfileId={profile.id}
           availability={availability}
+          openUntil={openUntil}
+          booked={booked}
         />
 
         {showSupervision ? (

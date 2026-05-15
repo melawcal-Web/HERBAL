@@ -105,6 +105,8 @@ model TherapistProfile {
   socialLinks  Json     @map("social_links")
   /** שעות זמינות שבועיות לפגישות — JSON { "0": [{ "start": "09:00", "end": "12:00" }], ... } (0=ראשון) */
   weeklyAvailability Json? @map("weekly_availability")
+  /** עד תאריך זה ניתן לקבוע פגישות מהיומן הציבורי */
+  availabilityOpenUntil DateTime? @map("availability_open_until")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -212,6 +214,8 @@ model AppointmentRequest {
   slotStart    DateTime                 @map("slot_start")
   slotEnd      DateTime                 @map("slot_end")
   status       AppointmentRequestStatus @default(pending)
+  /** פגישה חוזרת בשבוע באותו מועד */
+  recurringWeekly Boolean @default(false) @map("recurring_weekly")
   note         String?                  @db.Text
   createdAt    DateTime                 @default(now()) @map("created_at")
   updatedAt    DateTime                 @updatedAt @map("updated_at")

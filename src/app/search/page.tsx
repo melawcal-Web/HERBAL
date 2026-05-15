@@ -9,7 +9,8 @@ import {
   filterTherapistRow,
   type ContentSearchParams,
 } from "@/lib/content-search";
-import type { ContentAudienceId } from "@/lib/content-audience";
+import { contentVisibleForViewer } from "@/lib/content-audience";
+import { getContentViewer } from "@/lib/content-viewer";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 
 export const metadata = {
@@ -19,19 +20,19 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string; tag?: string; type?: string; audience?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string; type?: string }>;
 };
 
 export default async function SearchPage({ searchParams }: Props) {
   const sp = await searchParams;
+  const viewer = await getContentViewer();
   const filters: ContentSearchParams = {
     q: sp.q,
     tag: sp.tag,
     type: (sp.type as ContentFilterType) || "all",
-    audience: (sp.audience as ContentAudienceId) || null,
   };
 
-  const hasFilter = Boolean(sp.q?.trim() || sp.tag?.trim() || sp.type || sp.audience);
+  const hasFilter = Boolean(sp.q?.trim() || sp.tag?.trim() || sp.type);
 
   const [therapists, products, articles] = await Promise.all([
     prisma.therapistProfile.findMany({
@@ -56,15 +57,19 @@ export default async function SearchPage({ searchParams }: Props) {
   ]);
 
   const therapistRows = therapists.filter((t) => filterTherapistRow(t, filters));
-  const productRows = products.filter((p) => filterProductRow(p, filters));
-  const articleRows = articles.filter((a) => filterArticleRow(a, filters));
+  const productRows = products
+    .filter((p) => contentVisibleForViewer(p.audience, viewer))
+    .filter((p) => filterProductRow(p, filters));
+  const articleRows = articles
+    .filter((a) => contentVisibleForViewer(a.audience, viewer))
+    .filter((a) => filterArticleRow(a, filters));
 
   const empty = !hasFilter || (therapistRows.length === 0 && productRows.length === 0 && articleRows.length === 0);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-2xl text-herbal-900">חיפוש באתר</h1>
-      <p className="mt-2 text-slate-600">סינון לפי תגית, קהל יעד וסוג תוכן — בכל האתר.</p>
+      <p className="mt-2 text-slate-600">סינון לפי תגית וסוג תוכן — בכל האתר. קורסים ומאמרים מוצגים לפי פרופיל המשתמש/ת המחובר/ת.</p>
 
       <Suspense fallback={<div className="mt-6 h-28 animate-pulse rounded-2xl bg-herbal-50" />}>
         <ContentSearchFilter className="mt-6" />

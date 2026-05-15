@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { WaitlistProductCard, type WaitlistProductModel } from "@/components/products/WaitlistProductCard";
 import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
 import { filterProductRow, type ContentSearchParams } from "@/lib/content-search";
-import type { ContentAudienceId } from "@/lib/content-audience";
+import { contentVisibleForViewer } from "@/lib/content-audience";
+import { getContentViewer } from "@/lib/content-viewer";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 
 export const metadata = {
@@ -13,16 +14,17 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string; tag?: string; type?: string; audience?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string; type?: string }>;
 };
 
 export default async function MarketplacePage({ searchParams }: Props) {
   const sp = await searchParams;
+  const viewer = await getContentViewer();
+
   const filters: ContentSearchParams = {
     q: sp.q,
     tag: sp.tag,
     type: (sp.type as ContentFilterType) || "product",
-    audience: (sp.audience as ContentAudienceId) || null,
   };
   if (filters.type === "all" || !sp.type) filters.type = "product";
 
@@ -32,6 +34,7 @@ export default async function MarketplacePage({ searchParams }: Props) {
   });
 
   const models: WaitlistProductModel[] = products
+    .filter((p) => contentVisibleForViewer(p.audience, viewer))
     .filter((p) => filterProductRow(p, filters))
     .map((p) => ({
       id: p.id,
@@ -56,7 +59,7 @@ export default async function MarketplacePage({ searchParams }: Props) {
       <p className="mt-2 text-slate-600">סדנאות, זום והשגחה — רשימת המתנה עד למינימום משתתפים.</p>
 
       <Suspense fallback={<div className="mt-6 h-28 animate-pulse rounded-2xl bg-herbal-50" />}>
-        <ContentSearchFilter className="mt-6" basePath="/marketplace" />
+        <ContentSearchFilter className="mt-6" basePath="/marketplace" variant="courses" />
       </Suspense>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2">

@@ -2,35 +2,59 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CONTENT_AUDIENCE_OPTIONS, type ContentAudienceId } from "@/lib/content-audience";
 
 export type ContentFilterType = "all" | "therapist" | "product" | "article";
 
-const TYPE_OPTIONS: { id: ContentFilterType; label: string }[] = [
+const ALL_TYPE_OPTIONS: { id: ContentFilterType; label: string }[] = [
   { id: "all", label: "הכל" },
   { id: "therapist", label: "מטפלים" },
   { id: "product", label: "קורסים וסדנאות" },
   { id: "article", label: "מאמרים" },
 ];
 
+const THERAPIST_TYPE_OPTIONS: { id: ContentFilterType; label: string }[] = [
+  { id: "all", label: "הכל" },
+  { id: "product", label: "קורסים וסדנאות" },
+  { id: "article", label: "מאמרים" },
+];
+
+const COURSES_TYPE_OPTIONS: { id: ContentFilterType; label: string }[] = [
+  { id: "product", label: "קורסים וסדנאות" },
+];
+
+export type ContentSearchFilterVariant = "site" | "therapist" | "courses";
+
 type Props = {
-  /** אם מוגדר — חיפוש ותגיות רק בתוכן של מטפל זה */
   therapistUserId?: string;
-  /** נתיב בסיס לניווט (ברירת מחדל /search או דף מטפל) */
   basePath?: string;
   className?: string;
+  variant?: ContentSearchFilterVariant;
 };
 
-export function ContentSearchFilter({ therapistUserId, basePath, className = "" }: Props) {
+export function ContentSearchFilter({
+  therapistUserId,
+  basePath,
+  className = "",
+  variant = therapistUserId ? "therapist" : "site",
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  const resolvedVariant: ContentSearchFilterVariant =
+    variant === "site" && therapistUserId ? "therapist" : variant;
+
+  const typeOptions =
+    resolvedVariant === "therapist"
+      ? THERAPIST_TYPE_OPTIONS
+      : resolvedVariant === "courses"
+        ? COURSES_TYPE_OPTIONS
+        : ALL_TYPE_OPTIONS;
+
   const qParam = searchParams.get("q") ?? "";
   const tagParam = searchParams.get("tag") ?? "";
-  const typeParam = (searchParams.get("type") as ContentFilterType) || "all";
-  const audienceParam = searchParams.get("audience") as ContentAudienceId | null;
+  const typeParam = (searchParams.get("type") as ContentFilterType) || typeOptions[0]!.id;
 
   const [q, setQ] = useState(qParam);
   const [tag, setTag] = useState(tagParam);
@@ -40,22 +64,20 @@ export function ContentSearchFilter({ therapistUserId, basePath, className = "" 
   const path = basePath ?? "/search";
 
   const pushFilters = useCallback(
-    (next: { q?: string; tag?: string; type?: ContentFilterType; audience?: string | null }) => {
+    (next: { q?: string; tag?: string; type?: ContentFilterType }) => {
       const params = new URLSearchParams();
       const nq = next.q !== undefined ? next.q : q;
       const nt = next.tag !== undefined ? next.tag : tag;
       const ntype = next.type !== undefined ? next.type : typeParam;
-      const naud = next.audience !== undefined ? next.audience : audienceParam;
 
       if (nq.trim()) params.set("q", nq.trim());
       if (nt.trim()) params.set("tag", nt.trim());
       if (ntype && ntype !== "all") params.set("type", ntype);
-      if (naud) params.set("audience", naud);
 
       const qs = params.toString();
       router.push(qs ? `${path}?${qs}` : path);
     },
-    [router, path, q, tag, typeParam, audienceParam],
+    [router, path, q, tag, typeParam],
   );
 
   useEffect(() => {
@@ -94,7 +116,7 @@ export function ContentSearchFilter({ therapistUserId, basePath, className = "" 
       dir="rtl"
     >
       <p className="text-xs font-bold uppercase tracking-wide text-herbal-800/80">
-        {therapistUserId ? "חיפוש בתוכן המטפל/ת" : "חיפוש באתר"}
+        {resolvedVariant === "therapist" ? "חיפוש בתוכן המטפל/ת" : "חיפוש"}
       </p>
 
       <form
@@ -121,7 +143,6 @@ export function ContentSearchFilter({ therapistUserId, basePath, className = "" 
             placeholder="מילת חיפוש או תגית…"
             className="w-full rounded-xl border border-herbal-200 px-3 py-2.5 text-sm text-herbal-900 outline-none focus:border-herbal-500 focus:ring-2 focus:ring-herbal-200/80"
             autoComplete="off"
-            list={showSuggest && suggestions.length ? `${listId}-datalist` : undefined}
           />
           {showSuggest && suggestions.length > 0 ? (
             <ul
@@ -156,41 +177,25 @@ export function ContentSearchFilter({ therapistUserId, basePath, className = "" 
         </button>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className="w-full text-xs font-semibold text-slate-500 sm:w-auto sm:py-1.5">סוג:</span>
-        {TYPE_OPTIONS.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => pushFilters({ type: o.id })}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-              typeParam === o.id
-                ? "border-herbal-600 bg-herbal-600 text-white"
-                : "border-herbal-200 text-herbal-800 hover:border-herbal-400"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="w-full text-xs font-semibold text-slate-500 sm:w-auto sm:py-1.5">קהל:</span>
-        {CONTENT_AUDIENCE_OPTIONS.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => pushFilters({ audience: audienceParam === o.id ? null : o.id })}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-              audienceParam === o.id
-                ? "border-sage bg-sage/90 text-white"
-                : "border-herbal-200 text-herbal-800 hover:border-herbal-400"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
+      {typeOptions.length > 1 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="w-full text-xs font-semibold text-slate-500 sm:w-auto sm:py-1.5">סוג:</span>
+          {typeOptions.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => pushFilters({ type: o.id })}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                typeParam === o.id
+                  ? "border-herbal-600 bg-herbal-600 text-white"
+                  : "border-herbal-200 text-herbal-800 hover:border-herbal-400"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {(qParam || tagParam) && (
         <p className="mt-3 text-xs text-slate-600">

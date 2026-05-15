@@ -9,8 +9,8 @@ import { assertTherapist } from "@/lib/formula";
 import { therapistPublicHref } from "@/lib/therapist-public";
 
 import { ProfileForm } from "./profile-form";
-import { WeeklyAvailabilityForm } from "@/components/dashboard/WeeklyAvailabilityForm";
-import { getTherapistAvailabilityForEdit } from "@/app/actions/appointments";
+import { TherapistSchedulePanel } from "@/components/dashboard/TherapistSchedulePanel";
+import { getTherapistScheduleDashboardData } from "@/app/actions/appointments";
 
 
 
@@ -68,7 +68,7 @@ export default async function TherapistProfilePage() {
 
   const rejected = session.user.role === "therapist" && session.user.therapistVerification === "rejected";
 
-  const weeklyAvailability = await getTherapistAvailabilityForEdit();
+  const schedule = await getTherapistScheduleDashboardData();
 
   return (
 
@@ -164,7 +164,11 @@ export default async function TherapistProfilePage() {
 
       </div>
 
-      <WeeklyAvailabilityForm initial={weeklyAvailability} />
+      <TherapistSchedulePanel
+        initialAvailability={schedule.availability}
+        initialOpenUntil={schedule.openUntil}
+        initialAppointments={schedule.appointments}
+      />
 
     </div>
 

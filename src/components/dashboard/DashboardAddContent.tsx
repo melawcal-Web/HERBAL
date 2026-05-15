@@ -9,6 +9,8 @@ import {
   createAdminZoomSession,
 } from "@/app/actions/admin-content";
 import { HebrewUnsplashPicker } from "@/components/dashboard/HebrewUnsplashPicker";
+import { AudienceMultiSelect } from "@/components/forms/AudienceMultiSelect";
+import type { ContentAudienceId } from "@/lib/content-audience";
 
 type Mode = null | "article" | "course" | "zoom" | "supervision";
 
@@ -306,6 +308,7 @@ function CourseForm({
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
   const [courseDetails, setCourseDetails] = useState("");
+  const [audience, setAudience] = useState<ContentAudienceId[]>([]);
 
   return (
     <form
@@ -313,6 +316,10 @@ function CourseForm({
       onSubmit={(e) => {
         e.preventDefault();
         onError(null);
+        if (audience.length === 0) {
+          onError("יש לבחור לפחות קהל יעד אחד");
+          return;
+        }
         startTransition(() => {
           void (async () => {
             try {
@@ -325,6 +332,7 @@ function CourseForm({
                 maxParticipants: Number(maxP),
                 imageUrl: img,
                 courseDetails: courseDetails.trim() || undefined,
+                audience,
               });
               onDone("הקורס נוסף לקורסים וסדנאות.");
             } catch (er) {
@@ -377,10 +385,11 @@ function CourseForm({
           placeholder="מה לומדים, למי מתאים, חומרים, משך…"
         />
       </div>
+      <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://")}
+        disabled={pending || !img.startsWith("https://") || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}
@@ -408,6 +417,7 @@ function ZoomForm({
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
   const [courseDetails, setCourseDetails] = useState("");
+  const [audience, setAudience] = useState<ContentAudienceId[]>([]);
 
   return (
     <form
@@ -415,6 +425,10 @@ function ZoomForm({
       onSubmit={(e) => {
         e.preventDefault();
         onError(null);
+        if (audience.length === 0) {
+          onError("יש לבחור לפחות קהל יעד אחד");
+          return;
+        }
         startTransition(() => {
           void (async () => {
             try {
@@ -427,6 +441,7 @@ function ZoomForm({
                 maxParticipants: Number(maxP),
                 imageUrl: img,
                 courseDetails: courseDetails.trim() || undefined,
+                audience,
               });
               onDone("מפגש הזום נוסף.");
             } catch (er) {
@@ -479,10 +494,11 @@ function ZoomForm({
           placeholder="מבנה המפגש, חומרים, דרישות מקדימות…"
         />
       </div>
+      <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://")}
+        disabled={pending || !img.startsWith("https://") || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}
@@ -508,6 +524,7 @@ function SupervisionForm({
   const [maxP, setMaxP] = useState("");
   const [img, setImg] = useState("");
   const [courseDetails, setCourseDetails] = useState("");
+  const [audience, setAudience] = useState<ContentAudienceId[]>([]);
 
   return (
     <form
@@ -515,6 +532,10 @@ function SupervisionForm({
       onSubmit={(e) => {
         e.preventDefault();
         onError(null);
+        if (audience.length === 0) {
+          onError("יש לבחור לפחות קהל יעד אחד");
+          return;
+        }
         startTransition(() => {
           void (async () => {
             try {
@@ -525,6 +546,7 @@ function SupervisionForm({
                 maxParticipants: Number(maxP),
                 imageUrl: img,
                 courseDetails: courseDetails.trim() || undefined,
+                audience,
               });
               onDone("מפגש ההשגחה נוסף.");
             } catch (er) {
@@ -561,10 +583,11 @@ function SupervisionForm({
           placeholder="מטרות, שאלות לדיון, הכנה…"
         />
       </div>
+      <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
       <HebrewUnsplashPicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://")}
+        disabled={pending || !img.startsWith("https://") || audience.length === 0}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירה"}
