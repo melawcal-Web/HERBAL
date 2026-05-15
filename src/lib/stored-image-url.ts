@@ -7,6 +7,12 @@ export function isStoredImageUrl(url: string | null | undefined): boolean {
   return u.startsWith("https://") || u.startsWith("/uploads/");
 }
 
+/** מחזיר כתובת תמונה תקינה או null — לשימוש ב-src של img */
+export function storedImageSrc(url: string | null | undefined): string | null {
+  if (!isStoredImageUrl(url)) return null;
+  return url!.trim();
+}
+
 export const storedImageUrlSchema = z
   .string()
   .min(1)

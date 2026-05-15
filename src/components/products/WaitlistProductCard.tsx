@@ -7,7 +7,7 @@ import { joinProductWaitlist } from "@/app/actions/waitlist";
 import { audienceLabels } from "@/lib/content-audience";
 import { parseProductMetadata, parseProductAudience } from "@/lib/product-metadata";
 import { productTypeToContentKind } from "@/lib/content-kind";
-import { isStoredImageUrl } from "@/lib/stored-image-url";
+import { storedImageSrc } from "@/lib/stored-image-url";
 import { ManualAccessRequestButton } from "@/components/products/ManualAccessRequestButton";
 import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
 import { chaptersFromProductMeta } from "@/lib/content-description-chapters";
@@ -52,12 +52,14 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
     ? new Date(meta.startsAt).toLocaleString("he-IL", { dateStyle: "medium", timeStyle: "short" })
     : null;
 
+  const coverImage = storedImageSrc(product.imageUrl);
+
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-200 hover:shadow-md">
-      {isStoredImageUrl(product.imageUrl) ? (
+      {coverImage ? (
         <div className="aspect-[16/10] w-full bg-herbal-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.imageUrl} alt="" className="h-full w-full object-cover" />
+          <img src={coverImage} alt="" className="h-full w-full object-cover" />
         </div>
       ) : (
         <div className="aspect-[16/10] w-full bg-gradient-to-br from-herbal-50 to-herbal-100" />
