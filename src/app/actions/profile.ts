@@ -87,7 +87,7 @@ export async function updateTherapistProfile(input: {
       },
       portfolioTimeline: input.portfolioTimeline?.length
         ? (input.portfolioTimeline as Prisma.InputJsonValue)
-        : null,
+        : Prisma.DbNull,
     },
   });
 
