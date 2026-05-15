@@ -45,9 +45,9 @@ export function filterProductRow<
   T extends {
     title: string;
     description: string;
-    tags: unknown;
-    audience: unknown;
-    therapistId: string | null;
+    tags?: unknown;
+    audience?: unknown;
+    therapistId?: string | null;
   },
 >(row: T, p: ContentSearchParams): boolean {
   if (p.therapistUserId && row.therapistId !== p.therapistUserId) return false;

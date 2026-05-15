@@ -77,7 +77,9 @@ export function TherapistPublicPageView({
     therapistUserId: profile.user.id,
   };
 
-  const filteredProducts = products.filter((p) => filterProductRow({ ...p, therapistId: profile.user.id }, filters));
+  const filteredProducts = products.filter((p) =>
+    filterProductRow({ ...p, therapistId: p.therapistId ?? profile.user.id }, filters),
+  );
   const filteredArticles = articles.filter((a) => filterArticleRow(a, filters));
 
   const showSupervision =

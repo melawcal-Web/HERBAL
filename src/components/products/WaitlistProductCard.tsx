@@ -19,7 +19,9 @@ export type WaitlistProductModel = {
   currentRegistered: number;
   isWaitlist: boolean;
   metadata: Prisma.JsonValue | null;
+  tags: Prisma.JsonValue | null;
   audience: Prisma.JsonValue | null;
+  therapistId?: string | null;
 };
 
 function money(n: unknown) {

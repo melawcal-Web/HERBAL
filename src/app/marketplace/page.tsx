@@ -45,7 +45,9 @@ export default async function MarketplacePage({ searchParams }: Props) {
       currentRegistered: p.currentRegistered,
       isWaitlist: p.isWaitlist,
       metadata: p.metadata,
+      tags: p.tags,
       audience: p.audience,
+      therapistId: p.therapistId,
     }));
 
   return (
