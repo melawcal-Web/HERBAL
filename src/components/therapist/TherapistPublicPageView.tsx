@@ -25,6 +25,7 @@ export type TherapistPublishedArticle = {
   title: string;
   slug: string;
   excerpt: string;
+  category: string | null;
   coverImageUrl: string | null;
   tags?: unknown;
   audience?: unknown;

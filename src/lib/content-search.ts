@@ -66,10 +66,10 @@ export function filterArticleRow<
   T extends {
     title: string;
     excerpt: string;
-    category: string | null;
-    tags: unknown;
-    audience: unknown;
-    therapistId: string;
+    category?: string | null;
+    tags?: unknown;
+    audience?: unknown;
+    therapistId?: string;
   },
 >(row: T, p: ContentSearchParams): boolean {
   if (p.therapistUserId && row.therapistId !== p.therapistUserId) return false;

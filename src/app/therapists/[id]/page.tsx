@@ -36,6 +36,7 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
         title: true,
         slug: true,
         excerpt: true,
+        category: true,
         coverImageUrl: true,
         tags: true,
         audience: true,
