@@ -6,6 +6,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertTherapist } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
+import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
+
+function portfolioTimelineJson(entries: PortfolioTimelineEntry[] | undefined): Prisma.InputJsonValue {
+  if (!entries?.length) return [];
+  return entries as unknown as Prisma.InputJsonValue;
+}
 
 export async function updateTherapistProfile(input: {
   slug: string;
@@ -28,7 +34,7 @@ export async function updateTherapistProfile(input: {
   instagram: string;
   facebook: string;
   tiktok: string;
-  portfolioTimeline?: { id: string; yearFrom: string; yearTo?: string; description: string }[];
+  portfolioTimeline?: PortfolioTimelineEntry[];
 }) {
   const session = await auth();
   if (!session?.user?.id || !assertTherapist(session.user.role)) {
@@ -85,9 +91,7 @@ export async function updateTherapistProfile(input: {
         facebook: input.facebook,
         tiktok: input.tiktok,
       },
-      portfolioTimeline: input.portfolioTimeline?.length
-        ? (input.portfolioTimeline as Prisma.InputJsonValue)
-        : Prisma.DbNull,
+      portfolioTimeline: portfolioTimelineJson(input.portfolioTimeline),
     },
   });
 

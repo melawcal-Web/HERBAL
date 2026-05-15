@@ -153,7 +153,7 @@ export async function createAdminFrontalCourse(input: {
       isWaitlist: true,
       minParticipants: p.data.maxParticipants > 0 ? Math.min(p.data.maxParticipants, 5) : 5,
       currentRegistered: 0,
-      audience: p.data.audience ?? [],
+      audience: (p.data.audience ?? []) as Prisma.InputJsonValue,
     },
   });
 
@@ -223,7 +223,7 @@ export async function createAdminZoomSession(input: {
       isWaitlist: true,
       minParticipants: 5,
       currentRegistered: 0,
-      audience: p.data.audience ?? [],
+      audience: (p.data.audience ?? []) as Prisma.InputJsonValue,
     },
   });
 
@@ -288,7 +288,7 @@ export async function createAdminSupervisionSession(input: {
       isWaitlist: true,
       minParticipants: Math.max(3, p.data.maxParticipants),
       currentRegistered: 0,
-      audience: p.data.audience ?? [],
+      audience: (p.data.audience ?? []) as Prisma.InputJsonValue,
     },
   });
 
