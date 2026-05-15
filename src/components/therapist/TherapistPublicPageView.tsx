@@ -131,7 +131,7 @@ export function TherapistPublicPageView({
         </Suspense>
 
         <div className="mb-10">
-          <TherapistPortfolioStats stats={stats} />
+          <TherapistPortfolioStats stats={stats} therapistProfileId={profile.id} />
         </div>
 
         <section aria-labelledby="about-heading">
