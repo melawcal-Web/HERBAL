@@ -52,17 +52,12 @@ export function ImagePicker({
     }
   }
 
-  function selectPending(full: string, thumb: string) {
-    setPendingUrl(full);
-    setPendingThumb(thumb);
-  }
-
-  function confirmSelection() {
-    if (!pendingUrl) return;
-    onChange(pendingUrl);
+  /** בחירת Unsplash — מיד מעדכנת את הטופס (ללא שלב «אישור» נפרד). */
+  function selectUnsplash(full: string) {
     setPendingUrl(null);
     setPendingThumb(null);
-    setHint("התמונה נשמרה לטופס — לחצו «שמירה» בטופס הראשי כדי לעדכן במסד.");
+    onChange(full);
+    setHint("התמונה נבחרה — לחצו «שמירה» בטופס הראשי כדי לעדכן במסד.");
   }
 
   async function onFileChange(file: File | null) {
@@ -81,9 +76,10 @@ export function ImagePicker({
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) throw new Error(data.error ?? "העלאה נכשלה");
       URL.revokeObjectURL(localPreview);
-      setPendingUrl(data.url);
-      setPendingThumb(data.url);
-      setHint("תצוגה מקדימה — אשרו את הבחירה לפני שמירת הטופס.");
+      setPendingUrl(null);
+      setPendingThumb(null);
+      onChange(data.url);
+      setHint("הקובץ הועלה — לחצו «שמירה» בטופס הראשי כדי לשמור במסד.");
     } catch (e) {
       setPendingUrl(null);
       setPendingThumb(null);
@@ -139,12 +135,12 @@ export function ImagePicker({
           {hits.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
               {hits.map((h) => {
-                const highlighted = pendingUrl === h.full || (!pendingUrl && value === h.full);
+                const highlighted = value === h.full;
                 return (
                   <button
                     key={h.id}
                     type="button"
-                    onClick={() => selectPending(h.full, h.thumb)}
+                    onClick={() => selectUnsplash(h.full)}
                     className={`overflow-hidden rounded-xl border-2 transition ${
                       highlighted
                         ? "border-herbal-600 ring-2 ring-herbal-400/70 scale-[1.02]"
@@ -188,23 +184,14 @@ export function ImagePicker({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewThumb} alt="" className="max-h-48 w-full object-cover" />
           </div>
-          {pendingUrl ? (
-            <button
-              type="button"
-              onClick={confirmSelection}
-              className="w-full rounded-full bg-herbal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-herbal-500"
-            >
-              אשר בחירת תמונה
-            </button>
-          ) : null}
         </div>
       ) : (
-        <p className="text-xs text-amber-800/90">בחרו תמונה ואשרו לפני שמירת הטופס.</p>
+        <p className="text-xs text-amber-800/90">בחרו תמונה — לאחר מכן לחצו «שמירה» בטופס הראשי כדי לעדכן במסד.</p>
       )}
 
-      {value && !pendingUrl ? (
+      {value.trim() ? (
         <p className="truncate text-xs text-slate-500" dir="ltr" title={value}>
-          שמור כרגע: {value.slice(0, 80)}
+          כתובת בטופס (תישמר במסד אחרי «שמירה»): {value.slice(0, 80)}
           {value.length > 80 ? "…" : ""}
         </p>
       ) : null}

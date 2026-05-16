@@ -109,12 +109,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id && typeof token.id === "string") {
         const live = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { role: true, therapistVerification: true, registrationPersona: true },
+          select: {
+            role: true,
+            therapistVerification: true,
+            registrationPersona: true,
+            image: true,
+            name: true,
+          },
         });
         if (live) {
           token.role = live.role;
           token.therapistVerification = live.therapistVerification;
           token.registrationPersona = live.registrationPersona;
+          token.picture = live.image;
+          token.name = live.name ?? undefined;
         }
       }
       return token;
@@ -126,6 +134,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.therapistVerification =
           (token.therapistVerification as TherapistVerificationStatus) ?? "none";
         session.user.registrationPersona = (token.registrationPersona as RegistrationPersona | null) ?? null;
+        if (typeof token.picture === "string") {
+          session.user.image = token.picture;
+        } else if (token.picture === null) {
+          session.user.image = null;
+        }
+        if (typeof token.name === "string" && token.name.length > 0) {
+          session.user.name = token.name;
+        }
       }
       return session;
     },

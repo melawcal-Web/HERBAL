@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { updateTherapistProfile } from "@/app/actions/profile";
 import { ImagePicker } from "@/components/dashboard/ImagePicker";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
@@ -33,6 +34,7 @@ type Initial = {
 
 export function ProfileForm({ initial }: { initial: Initial }) {
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +72,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           showPublicCalendar: form.showPublicCalendar,
         });
         setOk(true);
+        await updateSession?.();
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "שגיאה");
