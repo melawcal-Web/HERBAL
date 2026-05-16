@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 
 export type TherapistShowcaseItem = {
   id: string;
@@ -22,7 +23,7 @@ function specialtyLine(t: TherapistShowcaseItem) {
 /** תמונה לכרטיס ציבורי — תמיד https (תמונת משתמש או placeholder יציב). */
 function showcasePhotoUrl(t: TherapistShowcaseItem): string {
   const u = t.image?.trim();
-  if (u?.startsWith("https://")) return u;
+  if (u?.startsWith("https://")) return publicDisplayImageUrl(u);
   return pickDemoImage(`showcase-${t.id}`, "therapists");
 }
 

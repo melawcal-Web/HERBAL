@@ -12,6 +12,7 @@ export function ImagePicker({
   onChange,
   label = "תמונת כיסוי",
   uploadPrefix = "content",
+  uploadOnly = false,
   onBusyChange,
 }: {
   value: string;
@@ -19,11 +20,13 @@ export function ImagePicker({
   label?: string;
   /** profiles | content — נתיב שמירה ב-public/uploads */
   uploadPrefix?: "profiles" | "content";
+  /** רק העלאה מהמחשב — ללא Unsplash */
+  uploadOnly?: boolean;
   /** נקרא בעת העלאה (לחסום «שמירה» בטופס עד סיום) */
   onBusyChange?: (busy: boolean) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<Mode>("search");
+  const [mode, setMode] = useState<Mode>(uploadOnly ? "upload" : "search");
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<UnsplashHit[]>([]);
   const [loading, setLoading] = useState(false);
@@ -110,28 +113,30 @@ export function ImagePicker({
     <div className="space-y-4 rounded-2xl border border-herbal-100 bg-herbal-50/30 p-4">
       <p className="text-sm font-medium text-slate-700">{label}</p>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setMode("search")}
-          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-            mode === "search" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
-          }`}
-        >
-          חיפוש Unsplash
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("upload")}
-          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-            mode === "upload" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
-          }`}
-        >
-          העלאת תמונה מהמחשב
-        </button>
-      </div>
+      {!uploadOnly ? (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setMode("search")}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              mode === "search" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
+            }`}
+          >
+            חיפוש Unsplash
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("upload")}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              mode === "upload" ? "bg-herbal-600 text-white" : "border border-herbal-200 bg-white text-herbal-800"
+            }`}
+          >
+            העלאת תמונה מהמחשב
+          </button>
+        </div>
+      ) : null}
 
-      {mode === "search" ? (
+      {mode === "search" && !uploadOnly ? (
         <>
           <div className="flex flex-wrap gap-2">
             <input

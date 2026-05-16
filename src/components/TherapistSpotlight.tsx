@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 
 export type SpotlightTherapist = {
   id: string;
@@ -154,7 +155,7 @@ export function TherapistSpotlight({ therapists }: { therapists: SpotlightTherap
             >
               {t.image ? (
                 <Image
-                  src={t.image}
+                  src={publicDisplayImageUrl(t.image)}
                   alt=""
                   fill
                   className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"

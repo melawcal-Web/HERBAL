@@ -130,6 +130,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             label="תמונת פרופיל"
             value={form.profileImageUrl}
             uploadPrefix="profiles"
+            uploadOnly
             onBusyChange={setImageUploadBusy}
             onChange={(url) => setForm({ ...form, profileImageUrl: url })}
           />

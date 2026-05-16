@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
+import { put } from "@vercel/blob";
+import { serverBlobPutAccess } from "@/lib/vercel-blob-mode";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -30,12 +32,12 @@ export async function saveUploadedImageBuffer(buffer: Buffer, mime: string, pref
 
   const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
   if (hasBlobToken) {
-    const { put } = await import("@vercel/blob");
-    const blob = await put(blobKey, buffer, {
-      access: "public",
+    const blobAccess = serverBlobPutAccess();
+    const { url } = await put(blobKey, buffer, {
+      access: blobAccess,
       contentType: mime,
     });
-    return blob.url;
+    return url;
   }
 
   const dir = path.join(process.cwd(), "public", "uploads", prefix);

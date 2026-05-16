@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pickDemoImage } from "@/lib/demo-placeholders";
+import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 
 export type BlogStyleListItem = {
   id: string;
@@ -14,7 +15,7 @@ export type BlogStyleListItem = {
 
 function cardImageUrl(url: string | null | undefined, seed: string): string {
   const u = url?.trim();
-  if (u?.startsWith("https://")) return u;
+  if (u?.startsWith("https://")) return publicDisplayImageUrl(u);
   return pickDemoImage(seed, "herbal");
 }
 

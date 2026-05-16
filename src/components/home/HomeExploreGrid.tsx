@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 
 export type ExploreCategory = "all" | "therapists" | "courses_workshops" | "herbal";
 
@@ -43,8 +44,10 @@ export function ExploreCardImage({
   /** מטפלים: שחור־לבן עדין לפי שפת העיצוב */
   variant?: "default" | "therapist";
 }) {
-  const primary = imageUrl?.trim() || null;
-  const backup = backupImageUrl?.trim() || null;
+  const primaryRaw = imageUrl?.trim() || null;
+  const backupRaw = backupImageUrl?.trim() || null;
+  const primary = primaryRaw ? publicDisplayImageUrl(primaryRaw) : null;
+  const backup = backupRaw ? publicDisplayImageUrl(backupRaw) : null;
   /** 0 = primary, 1 = backup, 2 = give up → placeholder */
   const [attempt, setAttempt] = useState<0 | 1 | 2>(0);
 

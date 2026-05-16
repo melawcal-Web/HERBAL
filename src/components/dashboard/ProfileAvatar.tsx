@@ -1,7 +1,9 @@
 import { pickDemoImage } from "@/lib/demo-placeholders";
+import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 
 function resolveImageSrc(url: string | null | undefined, seed: string): string {
-  const u = url?.trim();
+  const raw = url?.trim();
+  const u = raw ? publicDisplayImageUrl(raw) : "";
   if (!u) return pickDemoImage(seed, "therapists");
   if (u.startsWith("https://") || u.startsWith("http://")) return u.startsWith("http://") ? u.replace("http://", "https://") : u;
   if (u.startsWith("/")) return u;
