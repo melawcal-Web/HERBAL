@@ -170,6 +170,8 @@ export default async function TherapistProfilePage() {
 
             portfolioTimeline: parsePortfolioTimeline(profile.portfolioTimeline),
 
+            showPublicCalendar: profile.showPublicCalendar ?? false,
+
           }}
 
         />

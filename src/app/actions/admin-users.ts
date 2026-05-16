@@ -206,6 +206,7 @@ export async function duplicateTherapistProfile(sourceUserId: string): Promise<{
           socialLinks: p.socialLinks as object,
           weeklyAvailability: p.weeklyAvailability ?? undefined,
           availabilityOpenUntil: p.availabilityOpenUntil,
+          showPublicCalendar: p.showPublicCalendar,
           portfolioTimeline: p.portfolioTimeline ?? undefined,
         },
       },
@@ -226,4 +227,92 @@ export async function duplicateTherapistProfile(sourceUserId: string): Promise<{
   revalidatePath("/therapists");
 
   return { email, profileId: created.therapistProfile!.id };
+}
+
+export async function updateAdminUser(input: {
+  userId: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}) {
+  const session = await requireAdmin();
+  const name = input.name.trim();
+  const email = input.email.trim().toLowerCase();
+  if (!name.length) throw new Error("שם חובה");
+  if (!email.length) throw new Error("אימייל חובה");
+
+  const target = await prisma.user.findUnique({
+    where: { id: input.userId },
+    include: { therapistProfile: { select: { id: true } } },
+  });
+  if (!target) throw new Error("משתמש/ת לא נמצא/ה");
+
+  const taken = await prisma.user.findFirst({
+    where: { email, NOT: { id: input.userId } },
+  });
+  if (taken) throw new Error("אימייל כבר בשימוש");
+
+  if (input.userId === session.user.id && input.role !== "admin") {
+    const otherAdmins = await prisma.user.count({
+      where: { role: "admin", NOT: { id: session.user.id } },
+    });
+    if (otherAdmins === 0) throw new Error("לא ניתן להסיר הרשאת מנהל מעצמך כשאתם המנהלים היחידים");
+  }
+
+  if (input.role === "therapist" && !target.therapistProfile) {
+    throw new Error("לא ניתן להגדיר כמטפל/ת בלי פרופיל מטפל — צרו פרופיל תחילה");
+  }
+
+  await prisma.user.update({
+    where: { id: input.userId },
+    data: { name, email, role: input.role },
+  });
+
+  await writeAudit({
+    actorId: session.user.id,
+    action: "admin.user.update",
+    entityType: "User",
+    entityId: input.userId,
+    metadata: { email, role: input.role },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/therapist-approvals");
+  revalidatePath("/dashboard");
+  revalidatePath("/therapists");
+  revalidatePath("/");
+}
+
+export async function deleteAdminUser(targetUserId: string) {
+  const session = await requireAdmin();
+  if (targetUserId === session.user.id) {
+    throw new Error("לא ניתן למחוק את החשבון שאתם מחוברים אליו");
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    select: { id: true, role: true, email: true, therapistProfile: { select: { id: true } } },
+  });
+  if (!target) throw new Error("משתמש/ת לא נמצא/ה");
+
+  if (target.role === "admin") {
+    const admins = await prisma.user.count({ where: { role: "admin" } });
+    if (admins <= 1) throw new Error("לא ניתן למחוק את מנהל/ת המערכת האחרון/ה");
+  }
+
+  await prisma.user.delete({ where: { id: targetUserId } });
+
+  await writeAudit({
+    actorId: session.user.id,
+    action: "admin.user.delete",
+    entityType: "User",
+    entityId: targetUserId,
+    metadata: { email: target.email },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/therapist-approvals");
+  revalidatePath("/therapists");
+  revalidatePath("/");
+  if (target.therapistProfile?.id) revalidatePath(`/therapists/${target.therapistProfile.id}`);
 }

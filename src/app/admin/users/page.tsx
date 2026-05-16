@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRoleToggle } from "./user-role-toggle";
 import { DuplicateTherapistButton } from "./DuplicateTherapistButton";
+import { AdminUserActions } from "./AdminUserActions";
 
 export const metadata = {
   title: "ניהול משתמשים",
@@ -30,13 +31,14 @@ export default async function AdminUsersPage() {
       </p>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-herbal-100 bg-white/90 shadow-sm">
-        <table className="w-full min-w-[640px] text-right text-sm">
+        <table className="w-full min-w-[720px] text-right text-sm">
           <thead>
             <tr className="border-b border-herbal-100 bg-herbal-50/80 text-xs uppercase tracking-wide text-slate-600">
               <th className="px-4 py-3 font-semibold">שם</th>
               <th className="px-4 py-3 font-semibold">אימייל</th>
               <th className="px-4 py-3 font-semibold">תפקיד</th>
               <th className="px-4 py-3 font-semibold">USER / ADMIN</th>
+              <th className="px-4 py-3 font-semibold">פעולות</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-herbal-100">
@@ -57,6 +59,9 @@ export default async function AdminUsersPage() {
                   {u.therapistProfile ? (
                     <DuplicateTherapistButton userId={u.id} userName={u.name} />
                   ) : null}
+                </td>
+                <td className="px-4 py-3 align-top">
+                  <AdminUserActions user={{ id: u.id, name: u.name, email: u.email, role: u.role }} isSelf={selfId === u.id} />
                 </td>
               </tr>
             ))}

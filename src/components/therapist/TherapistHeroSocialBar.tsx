@@ -7,13 +7,12 @@ import {
   buildMailto,
   buildTelHref,
   buildTikTokHref,
+  buildWebsiteHref,
   buildWhatsAppHref,
   isProbablyValidEmail,
   type ParsedContactInfo,
   type ParsedSocialLinks,
 } from "@/lib/therapist-contact";
-
-import { buildWebsiteHref } from "@/lib/therapist-contact";
 
 const iconClass =
   "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/35 bg-black/40 text-white shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:bg-black/55 hover:border-white/50 motion-reduce:transition-none sm:h-11 sm:w-11";

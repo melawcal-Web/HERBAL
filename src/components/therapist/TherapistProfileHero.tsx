@@ -83,7 +83,7 @@ export function TherapistProfileHero({
                 name={therapistName}
                 seed={profileImageSeed}
                 size="xl"
-                className="mb-4 shadow-2xl"
+                className="mb-4 !aspect-square shadow-2xl ring-4 ring-white/25"
               />
               <span className={titleLine}>{roleHe}</span>
               <span className="mt-2 font-display text-2xl font-bold leading-tight text-white sm:text-3xl md:text-[clamp(1.85rem,3.2vw,2.75rem)]">

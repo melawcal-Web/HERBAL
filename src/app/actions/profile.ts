@@ -47,6 +47,8 @@ export async function updateTherapistProfile(input: {
   facebook: string;
   tiktok: string;
   portfolioTimeline?: PortfolioTimelineEntry[];
+  /** הצגת יומן ציבורי בדף המטפל */
+  showPublicCalendar: boolean;
 }) {
   const session = await auth();
   if (!session?.user?.id || !assertTherapist(session.user.role)) {
@@ -104,6 +106,7 @@ export async function updateTherapistProfile(input: {
         tiktok: input.tiktok,
       },
       portfolioTimeline: portfolioTimelineJson(input.portfolioTimeline),
+      showPublicCalendar: input.showPublicCalendar,
     },
   });
 

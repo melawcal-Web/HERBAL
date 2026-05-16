@@ -28,6 +28,7 @@ type Initial = {
   facebook: string;
   tiktok: string;
   portfolioTimeline: PortfolioTimelineEntry[];
+  showPublicCalendar: boolean;
 };
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -66,6 +67,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           facebook: form.facebook,
           tiktok: form.tiktok,
           portfolioTimeline: form.portfolioTimeline,
+          showPublicCalendar: form.showPublicCalendar,
         });
         setOk(true);
         router.refresh();
@@ -145,6 +147,17 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           value={form.clinicalExperience}
           onChange={(e) => setForm({ ...form, clinicalExperience: e.target.value })}
         />
+      </div>
+      <div className="rounded-2xl border border-herbal-200/80 bg-herbal-50/40 p-4">
+        <label className="flex cursor-pointer items-start gap-3 text-sm font-medium text-herbal-900">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-herbal-300 text-herbal-700"
+            checked={form.showPublicCalendar}
+            onChange={(e) => setForm({ ...form, showPublicCalendar: e.target.checked })}
+          />
+          <span>להציג בדף הציבורי יומן / מועדים פנויים (אם הוגדרו שעות זמינות)</span>
+        </label>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {(["specialty1", "specialty2", "specialty3"] as const).map((k, idx) => (

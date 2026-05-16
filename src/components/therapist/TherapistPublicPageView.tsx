@@ -5,7 +5,7 @@ import { TherapistProfileHero } from "@/components/therapist/TherapistProfileHer
 import { TherapistOfferingSections } from "@/components/therapist/TherapistOfferingSections";
 import { TherapistAppointmentCalendar } from "@/components/therapist/TherapistAppointmentCalendar";
 import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
-import { parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
+import { buildMailto, isProbablyValidEmail, parseContactInfo, parseSocialLinks } from "@/lib/therapist-contact";
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
 import { expandBookedAppointments, parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
@@ -17,7 +17,7 @@ import {
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 import { TherapistPortfolioStats } from "@/components/therapist/TherapistPortfolioStats";
-import { TherapistPortfolioTimeline } from "@/components/therapist/TherapistPortfolioTimeline";
+import { TherapistPublicQuickInfo } from "@/components/therapist/TherapistPublicQuickInfo";
 import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
@@ -101,6 +101,13 @@ export function TherapistPublicPageView({
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
 
   const portfolioTimeline = parsePortfolioTimeline(profile.portfolioTimeline);
+  const clinicalTeaser = profile.clinicalExperience?.trim() ? profile.clinicalExperience.trim().slice(0, 320) : null;
+  const publicEmail = contact.email?.trim();
+  const requestMailto =
+    publicEmail && isProbablyValidEmail(publicEmail)
+      ? `${buildMailto(publicEmail)}?subject=${encodeURIComponent("בקשת פגישה")}`
+      : null;
+
   const stats = {
     articles: visibleArticles.length,
     courses: visibleProducts.filter((p) => p.type === "workshop" || p.type === "zoom").length,
@@ -124,6 +131,15 @@ export function TherapistPublicPageView({
         />
       </header>
 
+      <TherapistPublicQuickInfo
+        roleLabel={publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא"}
+        therapistName={profile.user.name}
+        city={city}
+        specialties={specs}
+        portfolioTimeline={portfolioTimeline}
+        clinicalTeaser={clinicalTeaser}
+      />
+
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
         <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-herbal-50" />}>
           <ContentSearchFilter
@@ -138,21 +154,24 @@ export function TherapistPublicPageView({
           <TherapistPortfolioStats stats={stats} therapistProfileId={profile.id} />
         </div>
 
-        <section aria-labelledby="about-heading">
+        <section aria-labelledby="about-heading" className="rounded-2xl border border-herbal-100/80 bg-white/90 p-5 shadow-sm sm:p-7">
           <p className={sectionLabel}>ביוגרפיה</p>
           <h2 id="about-heading" className="sr-only">
             ביוגרפיה — {profile.user.name}
           </h2>
-          <p className="mt-5 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio}</p>
-          {portfolioTimeline.length > 0 ? (
-            <TherapistPortfolioTimeline entries={portfolioTimeline} />
-          ) : profile.clinicalExperience?.trim() ? (
-            <div className="mt-8">
-              <p className={sectionLabel}>ניסיון והשכלה</p>
-              <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-neutral-700">
-                {profile.clinicalExperience}
-              </p>
-            </div>
+          <details className="group mt-4 rounded-xl border border-herbal-100 bg-herbal-50/40 p-4 open:border-herbal-200 open:bg-white">
+            <summary className="cursor-pointer list-none text-sm font-bold text-herbal-900 marker:content-none [&::-webkit-details-marker]:hidden">
+              <span className="underline-offset-4 group-open:underline">פתיחה — הטקסט המלא</span>
+            </summary>
+            <p className="mt-4 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio}</p>
+          </details>
+          {profile.clinicalExperience?.trim() && profile.clinicalExperience.trim().length > 320 ? (
+            <details className="group mt-4 rounded-xl border border-herbal-100 bg-herbal-50/40 p-4 open:border-herbal-200 open:bg-white">
+              <summary className="cursor-pointer list-none text-sm font-bold text-herbal-900 marker:content-none [&::-webkit-details-marker]:hidden">
+                <span className="underline-offset-4 group-open:underline">ניסיון והשכלה — טקסט מלא</span>
+              </summary>
+              <p className="mt-4 whitespace-pre-wrap text-base leading-relaxed text-neutral-700">{profile.clinicalExperience}</p>
+            </details>
           ) : null}
         </section>
 
@@ -165,6 +184,8 @@ export function TherapistPublicPageView({
             availability={availability}
             openUntil={openUntil}
             booked={booked}
+            enabled={profile.showPublicCalendar}
+            requestMailto={requestMailto}
           />
         </Suspense>
 
