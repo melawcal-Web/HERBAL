@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { pickDemoImage } from "@/lib/demo-placeholders";
+import { pickDemoImage, pickDistinctDemoImage } from "@/lib/demo-placeholders";
 import { getHomeHeroCopy, getVisionSlides } from "@/lib/site-config";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { HomeTherapistsRandomGrid, type HomeTherapistCard } from "@/components/home/HomeTherapistsRandomGrid";
@@ -24,7 +24,18 @@ function gridCardImageUrl(url: string | null | undefined, fallback: string): str
   return fallback;
 }
 
+function hasStoredProfileImage(url: string | null | undefined): boolean {
+  const u = url?.trim();
+  if (!u) return false;
+  if (u.startsWith("//")) return true;
+  if (u.startsWith("https://")) return true;
+  if (u.startsWith("http://")) return true;
+  if (u.startsWith("/uploads/")) return true;
+  return false;
+}
+
 const HOME_THERAPIST_LIMIT = 4;
+const HOME_THERAPIST_FETCH_POOL = 48;
 
 export default async function HomePage() {
   const [therapists, visionSlides, homeHero] = await Promise.all([
@@ -36,22 +47,32 @@ export default async function HomePage() {
       },
       include: { user: { select: { name: true, image: true } } },
       orderBy: { updatedAt: "desc" },
-      take: HOME_THERAPIST_LIMIT,
+      take: HOME_THERAPIST_FETCH_POOL,
     }),
     getVisionSlides(),
     getHomeHeroCopy(),
   ]);
 
-  const therapistCards: HomeTherapistCard[] = therapists.map((p) => {
+  const sortedTherapists = [...therapists].sort((a, b) => {
+    const pa = hasStoredProfileImage(a.user.image) ? 1 : 0;
+    const pb = hasStoredProfileImage(b.user.image) ? 1 : 0;
+    if (pa !== pb) return pb - pa;
+    return b.updatedAt.getTime() - a.updatedAt.getTime();
+  });
+
+  const therapistCards: HomeTherapistCard[] = sortedTherapists.slice(0, HOME_THERAPIST_LIMIT).map((p) => {
     const spec = [p.specialty1, p.specialty2, p.specialty3].map((s) => s.trim()).filter(Boolean).join(" · ");
     const roleLabel = p.publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
+    const primary = gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists"));
+    const backupImageUrl = pickDistinctDemoImage(p.id, "therapists", primary);
     return {
       id: p.id,
       name: p.user.name,
       roleLabel,
       specialties: clip(spec, 180),
       href: therapistPublicHref(p.id),
-      imageUrl: gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists")),
+      imageUrl: primary,
+      backupImageUrl,
     };
   });
 

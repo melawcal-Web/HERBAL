@@ -9,7 +9,8 @@ export type HomeTherapistCard = {
   /** תחומי התמחות (מומחיות) */
   specialties: string;
   href: string;
-  imageUrl: string | null;
+  imageUrl: string;
+  backupImageUrl?: string;
 };
 
 const DISPLAY_COUNT = 4;
@@ -32,7 +33,7 @@ export function HomeTherapistsRandomGrid({ therapists }: { therapists: HomeThera
           מטפלים
         </h2>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {shown.map((item) => (
             <Link
               key={item.id}
@@ -40,7 +41,12 @@ export function HomeTherapistsRandomGrid({ therapists }: { therapists: HomeThera
               className="group relative overflow-hidden rounded-2xl border border-herbal-100/90 bg-white/90 shadow-glass transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none hover:-translate-y-1 hover:border-herbal-200 hover:shadow-lift"
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-herbal-50">
-                <ExploreCardImage imageUrl={item.imageUrl} placeholderSeed={item.id} variant="therapist" />
+                <ExploreCardImage
+                  imageUrl={item.imageUrl}
+                  backupImageUrl={item.backupImageUrl}
+                  placeholderSeed={item.id}
+                  variant="therapist"
+                />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-right text-white sm:p-4" dir="rtl">
                   <h3 className="font-display text-base font-bold leading-snug drop-shadow-md sm:text-lg">{item.name}</h3>

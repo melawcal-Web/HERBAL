@@ -37,3 +37,17 @@ export function pickDemoImage(
   const pool = category === "therapists" ? THERAPIST : category === "courses_workshops" ? COURSES_WORKSHOPS : HERBAL;
   return pool[hashToIndex(key, pool.length)] ?? pool[0]!;
 }
+
+/** תמונת דמו שונה מ־`avoidUrl` (לגיבוי כש־`onError` על הראשית). */
+export function pickDistinctDemoImage(
+  key: string,
+  category: "therapists" | "courses_workshops" | "herbal",
+  avoidUrl: string,
+): string {
+  const suffixes = ["fb1", "fb2", "fb3", "fb4", "fb5", "fb6"];
+  for (const s of suffixes) {
+    const u = pickDemoImage(`${s}-${key}`, category);
+    if (u !== avoidUrl) return u;
+  }
+  return pickDemoImage(`fbx-${key}-${avoidUrl.length}`, category);
+}

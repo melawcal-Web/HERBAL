@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type ExploreCategory = "all" | "therapists" | "courses_workshops" | "herbal";
 
@@ -32,16 +32,33 @@ function placeholderGradient(seed: string) {
 
 export function ExploreCardImage({
   imageUrl,
+  backupImageUrl,
   placeholderSeed,
   variant = "default",
 }: {
   imageUrl: string | null;
+  /** כשהכתובת הראשית נכשלת בטעינה — מנסים גיבוי לפני placeholder */
+  backupImageUrl?: string | null;
   placeholderSeed: string;
   /** מטפלים: שחור־לבן עדין לפי שפת העיצוב */
   variant?: "default" | "therapist";
 }) {
-  const [broken, setBroken] = useState(false);
-  const showImg = Boolean(imageUrl) && !broken;
+  const primary = imageUrl?.trim() || null;
+  const backup = backupImageUrl?.trim() || null;
+  /** 0 = primary, 1 = backup, 2 = give up → placeholder */
+  const [attempt, setAttempt] = useState<0 | 1 | 2>(0);
+
+  useEffect(() => {
+    setAttempt(0);
+  }, [primary, backup]);
+
+  const src = attempt === 0 ? primary : attempt === 1 ? backup : null;
+  const showImg = Boolean(src) && attempt < 2;
+
+  const imgTone =
+    variant === "therapist"
+      ? "therapist-photo-bw h-full w-full object-cover contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
+      : "h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]";
 
   if (!showImg) {
     return (
@@ -55,19 +72,17 @@ export function ExploreCardImage({
     );
   }
 
-  const imgTone =
-    variant === "therapist"
-      ? "therapist-photo-bw h-full w-full object-cover contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
-      : "h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]";
-
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={imageUrl!}
+      src={src}
       alt=""
       className={imgTone}
       draggable={false}
-      onError={() => setBroken(true)}
+      onError={() => {
+        if (attempt === 0 && backup && backup !== primary) setAttempt(1);
+        else setAttempt(2);
+      }}
     />
   );
 }
