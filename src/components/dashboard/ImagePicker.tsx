@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { uploadUserImage } from "@/app/actions/upload-user-image";
 
 export type UnsplashHit = { id: string; thumb: string; full: string };
 
@@ -11,12 +12,15 @@ export function ImagePicker({
   onChange,
   label = "תמונת כיסוי",
   uploadPrefix = "content",
+  onBusyChange,
 }: {
   value: string;
   onChange: (url: string) => void;
   label?: string;
   /** profiles | content — נתיב שמירה ב-public/uploads */
   uploadPrefix?: "profiles" | "content";
+  /** נקרא בעת העלאה (לחסום «שמירה» בטופס עד סיום) */
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>("search");
@@ -27,6 +31,7 @@ export function ImagePicker({
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [pendingThumb, setPendingThumb] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const previewUrl = pendingUrl ?? (value || null);
   const previewThumb = pendingThumb ?? previewUrl;
@@ -34,6 +39,7 @@ export function ImagePicker({
   async function search() {
     setLoading(true);
     setHint(null);
+    setUploadError(null);
     try {
       const res = await fetch("/api/image-search", {
         method: "POST",
@@ -56,6 +62,7 @@ export function ImagePicker({
   function selectUnsplash(full: string) {
     setPendingUrl(null);
     setPendingThumb(null);
+    setUploadError(null);
     onChange(full);
     setHint("התמונה נבחרה — לחצו «שמירה» בטופס הראשי כדי לעדכן במסד.");
   }
@@ -63,29 +70,39 @@ export function ImagePicker({
   async function onFileChange(file: File | null) {
     if (!file) return;
     setUploading(true);
+    setUploadError(null);
+    onBusyChange?.(true);
     setHint(null);
+    let localPreview: string | null = null;
     try {
-      const localPreview = URL.createObjectURL(file);
+      localPreview = URL.createObjectURL(file);
       setPendingUrl(localPreview);
       setPendingThumb(localPreview);
 
       const fd = new FormData();
       fd.set("file", file);
       fd.set("prefix", uploadPrefix);
-      const res = await fetch("/api/upload/image", { method: "POST", body: fd });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !data.url) throw new Error(data.error ?? "העלאה נכשלה");
+      const result = await uploadUserImage(fd);
+      if ("error" in result) {
+        throw new Error(result.error);
+      }
       URL.revokeObjectURL(localPreview);
+      localPreview = null;
       setPendingUrl(null);
       setPendingThumb(null);
-      onChange(data.url);
+      onChange(result.url);
       setHint("הקובץ הועלה — לחצו «שמירה» בטופס הראשי כדי לשמור במסד.");
     } catch (e) {
+      if (localPreview) URL.revokeObjectURL(localPreview);
       setPendingUrl(null);
       setPendingThumb(null);
-      setHint(e instanceof Error ? e.message : "שגיאה");
+      const msg = e instanceof Error ? e.message : "שגיאה";
+      setUploadError(msg);
+      setHint(null);
     } finally {
       setUploading(false);
+      onBusyChange?.(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -176,6 +193,7 @@ export function ImagePicker({
       )}
 
       {hint ? <p className="text-xs text-slate-600">{hint}</p> : null}
+      {uploadError ? <p className="text-sm font-medium text-rose-700">{uploadError}</p> : null}
 
       {previewThumb ? (
         <div className="space-y-3 rounded-xl border border-herbal-200 bg-white p-3">

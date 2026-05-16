@@ -39,6 +39,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const [imageUploadBusy, setImageUploadBusy] = useState(false);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,7 +73,11 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           showPublicCalendar: form.showPublicCalendar,
         });
         setOk(true);
-        await updateSession?.();
+        try {
+          await updateSession?.();
+        } catch {
+          /* רענון סשן אופציונלי — לא לכשל שמירה */
+        }
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "שגיאה");
@@ -125,6 +130,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             label="תמונת פרופיל"
             value={form.profileImageUrl}
             uploadPrefix="profiles"
+            onBusyChange={setImageUploadBusy}
             onChange={(url) => setForm({ ...form, profileImageUrl: url })}
           />
         </div>
@@ -291,10 +297,10 @@ export function ProfileForm({ initial }: { initial: Initial }) {
       {ok && <p className="text-sm text-herbal-700">הפרופיל עודכן.</p>}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || imageUploadBusy}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 font-medium text-white hover:bg-herbal-500 disabled:opacity-50"
       >
-        {pending ? "שומרים…" : "שמירה"}
+        {pending ? "שומרים…" : imageUploadBusy ? "ממתינים לסיום העלאת תמונה…" : "שמירה"}
       </button>
     </form>
   );

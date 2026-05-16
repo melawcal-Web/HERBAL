@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { assertAdmin, assertTherapist } from "@/lib/formula";
 import { saveUploadedImageBuffer } from "@/lib/save-uploaded-image";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {

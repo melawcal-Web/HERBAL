@@ -25,6 +25,21 @@ function portfolioTimelineJson(entries: PortfolioTimelineEntry[] | undefined): P
   return out as unknown as Prisma.InputJsonValue;
 }
 
+/** כתובת תמונה לשמירה — מאחדים URL מלא עם pathname של /uploads/ */
+function normalizeProfileImageUrl(raw: string): string {
+  const t = raw.trim();
+  if (!t) return "";
+  if (t.startsWith("/uploads/") || t.startsWith("https://")) return t;
+  if (t.startsWith("http://")) return `https://${t.slice(7)}`;
+  try {
+    const u = new URL(t);
+    if (u.pathname.startsWith("/uploads/")) return `${u.pathname}${u.search}`;
+  } catch {
+    /* לא URL מלא */
+  }
+  return t;
+}
+
 export async function updateTherapistProfile(input: {
   slug: string;
   bio: string;
@@ -68,7 +83,7 @@ export async function updateTherapistProfile(input: {
     }
   }
 
-  const img = (input.profileImageUrl ?? "").trim();
+  const img = normalizeProfileImageUrl(input.profileImageUrl ?? "");
   if (img.length > 0 && !img.startsWith("https://") && !img.startsWith("/uploads/")) {
     throw new Error("תמונת פרופיל חייבת להיות כתובת https או קובץ שהועלה למערכת");
   }
