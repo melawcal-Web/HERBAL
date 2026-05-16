@@ -14,8 +14,11 @@ import {
   type ParsedSocialLinks,
 } from "@/lib/therapist-contact";
 
-const iconClass =
+const iconClassDark =
   "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/35 bg-black/40 text-white shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:bg-black/55 hover:border-white/50 motion-reduce:transition-none sm:h-11 sm:w-11";
+
+const iconClassLight =
+  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-400/45 bg-white/95 text-emerald-900 shadow-sm transition hover:border-emerald-500 hover:bg-white motion-reduce:transition-none sm:h-11 sm:w-11";
 
 function IconGlobe({ className }: { className?: string }) {
   return (
@@ -26,7 +29,8 @@ function IconGlobe({ className }: { className?: string }) {
   );
 }
 
-function iconWrap(href: string, label: string, children: React.ReactNode) {
+function iconWrap(href: string, label: string, children: React.ReactNode, surface: "dark" | "light") {
+  const cls = surface === "dark" ? iconClassDark : iconClassLight;
   return (
     <a
       href={href}
@@ -34,7 +38,7 @@ function iconWrap(href: string, label: string, children: React.ReactNode) {
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className={iconClass}
+      className={cls}
     >
       {children}
     </a>
@@ -98,10 +102,13 @@ export function TherapistHeroSocialBar({
   contact,
   social,
   className = "",
+  surface = "dark",
 }: {
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
   className?: string;
+  /** "light" — רקע ירוק/בהיר ב־hero */
+  surface?: "dark" | "light";
 }) {
   const wa = contact.whatsapp ? buildWhatsAppHref(contact.whatsapp) : null;
   const phone = contact.phone?.trim();
@@ -112,21 +119,21 @@ export function TherapistHeroSocialBar({
   const tt = social.tiktok ? buildTikTokHref(social.tiktok) : null;
 
   const items: ReactNode[] = [];
-  if (site) items.push(iconWrap(site, "אתר אינטרנט", <IconGlobe className="h-5 w-5" />));
-  if (tt) items.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />));
-  if (ig) items.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />));
-  if (fb) items.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />));
-  if (wa) items.push(iconWrap(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />));
-  if (phone) items.push(iconWrap(buildTelHref(phone), "טלפון", <IconPhone className="h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5" />));
+  if (site) items.push(iconWrap(site, "אתר אינטרנט", <IconGlobe className="h-5 w-5" />, surface));
+  if (tt) items.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />, surface));
+  if (ig) items.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />, surface));
+  if (fb) items.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />, surface));
+  if (wa) items.push(iconWrap(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />, surface));
+  if (phone) items.push(iconWrap(buildTelHref(phone), "טלפון", <IconPhone className="h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5" />, surface));
   if (email && isProbablyValidEmail(email)) {
-    items.push(iconWrap(buildMailto(email), "אימייל", <IconMail className="h-5 w-5" />));
+    items.push(iconWrap(buildMailto(email), "אימייל", <IconMail className="h-5 w-5" />, surface));
   }
 
   if (items.length === 0) return null;
 
   return (
     <div
-      className={`flex flex-nowrap items-center gap-2 overflow-x-auto py-1 [-webkit-overflow-scrolling:touch] ${className}`}
+      className={`flex flex-wrap items-center gap-2 py-1 ${className}`}
       aria-label="יצירת קשר"
       dir="ltr"
     >

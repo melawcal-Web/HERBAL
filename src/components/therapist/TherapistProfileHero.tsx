@@ -1,15 +1,11 @@
-"use client";
-
 import type { ParsedContactInfo, ParsedSocialLinks } from "@/lib/therapist-contact";
+import { formatTimelineYears, type PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
 import { TherapistHeroSocialBar } from "@/components/therapist/TherapistHeroSocialBar";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
-import { useState } from "react";
 
 type Props = {
-  /** תמונת רקע — תמיד כתובת https (כולל placeholder מהשרת) */
+  /** תמונת כיסוי — גם העיגול מציג אותה בצבע מלא */
   heroCoverUrl: string;
-  /** תמונת פרופיל עגולה — מוצגת בדף הציבורי */
-  profileImageUrl?: string | null;
   profileImageSeed: string;
   therapistName: string;
   /** שם העיר בלבד */
@@ -18,19 +14,24 @@ type Props = {
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
   publicTherapistTitle: "male" | "female";
+  portfolioTimeline: PortfolioTimelineEntry[];
 };
 
-const titleLine =
-  "text-[10px] font-black uppercase tracking-[0.22em] text-herbal-300 drop-shadow-[0_0_16px_rgba(74,222,128,0.9)] sm:text-[11px]";
+function clip(s: string, max: number) {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
+}
+
+const roleLine =
+  "text-[10px] font-black uppercase tracking-[0.22em] text-herbal-600 sm:text-[11px]";
 
 /**
- * Hero: תמונת רקע + שני טורים בתחתית (RTL):
- * ימין — כותרת מקצועית בירוק, שם, עיר.
- * שמאל — פילי התמחות, מתחתיהם כל אייקוני הקשר כולל טלפון בשורה אחת.
+ * Hero דו־עמודתי (RTL): ימין — שם, תפקיד, עיר, תמונה בעיגול מתוך כיסוי הצבע.
+ * שמאל — פאנל ירוק עם ציר זמן ואייקונים (ללא גלילה אופקית).
  */
 export function TherapistProfileHero({
   heroCoverUrl,
-  profileImageUrl,
   profileImageSeed,
   therapistName,
   serviceCity,
@@ -38,77 +39,80 @@ export function TherapistProfileHero({
   contact,
   social,
   publicTherapistTitle,
+  portfolioTimeline,
 }: Props) {
-  const [showColor, setShowColor] = useState(false);
-
-  const toneClass = showColor ? "grayscale-0" : "therapist-photo-bw";
   const roleHe = publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
 
   return (
-    <div className="relative min-h-[min(68vh,560px)] w-full overflow-hidden bg-neutral-950 md:min-h-[min(72vh,640px)]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={heroCoverUrl}
-        alt=""
-        className={`absolute inset-0 h-full w-full object-cover object-[center_22%] transition-[filter] duration-500 ease-out motion-reduce:transition-none ${toneClass}`}
-      />
-
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/55 via-45% to-black/25" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-black/50 via-transparent to-transparent opacity-90 md:opacity-100" />
-
-      <div className="absolute end-3 top-3 z-20 sm:end-5 sm:top-5">
-        <button
-          type="button"
-          aria-pressed={showColor}
-          onClick={() => setShowColor((v) => !v)}
-          className="pointer-events-auto rounded-full border border-white/35 bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm backdrop-blur-md transition hover:bg-black/55 sm:text-xs"
-        >
-          {showColor ? "שחור־לבן" : "צבע מלא"}
-        </button>
+    <div
+      className="relative flex min-h-[min(52vh,480px)] w-full flex-col overflow-hidden bg-neutral-50 md:min-h-[min(58vh,540px)] md:flex-row"
+      dir="rtl"
+    >
+      {/* עמודת שם — מוצגת מימין (פריט ראשון ב־RTL) */}
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-6 py-10 text-center sm:items-end sm:px-10 sm:py-12 sm:text-right md:py-14">
+        <ProfileAvatar
+          imageUrl={heroCoverUrl}
+          name={therapistName}
+          seed={profileImageSeed}
+          size="xl"
+          imageTreatment="natural"
+          className="mb-3 shadow-xl ring-4 ring-herbal-200/80 !aspect-square"
+        />
+        <span className={roleLine}>{roleHe}</span>
+        <span className="mt-1.5 font-display text-2xl font-bold leading-tight text-herbal-950 sm:text-3xl md:text-[clamp(1.85rem,3vw,2.65rem)]">
+          {therapistName}
+        </span>
+        {serviceCity ? <span className="mt-1 text-base font-semibold text-herbal-800 sm:text-lg">{serviceCity}</span> : null}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-5 pb-8 pt-20 text-right sm:px-8 sm:pb-10 sm:pt-24 md:px-12 md:pb-12">
-        <div className="mx-auto max-w-5xl">
-          {/*
-            ב־RTL: פריט ראשון בשורה = צד ימין של המסך — בלוק השם.
-            פריט שני = צד שמאל — פילים + אייקונים.
-          */}
-          <div className="pointer-events-auto flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div
-              className="flex min-w-0 flex-col items-end text-right"
-              style={{ textShadow: "0 2px 18px rgba(0,0,0,0.88)" }}
-            >
-              <ProfileAvatar
-                imageUrl={profileImageUrl}
-                name={therapistName}
-                seed={profileImageSeed}
-                size="xl"
-                className="mb-4 !aspect-square shadow-2xl ring-4 ring-white/25"
-              />
-              <span className={titleLine}>{roleHe}</span>
-              <span className="mt-2 font-display text-2xl font-bold leading-tight text-white sm:text-3xl md:text-[clamp(1.85rem,3.2vw,2.75rem)]">
-                {therapistName}
-              </span>
-              {serviceCity ? (
-                <span className="mt-1.5 text-base font-semibold text-white/95 sm:text-lg">{serviceCity}</span>
-              ) : null}
-            </div>
+      {/* עמודה ירוקה — משמאל; תוכן מצומצם לרוחב ומיושר לקצה הפנימי */}
+      <div
+        className="relative flex min-h-[min(40vh,360px)] flex-1 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 pb-8 pt-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:min-h-0 sm:max-w-[min(100%,26rem)] sm:border-t-0 sm:border-s sm:border-emerald-200/70 sm:px-7 sm:pb-10 sm:pt-12 md:max-w-[min(100%,28rem)]"
+        dir="rtl"
+      >
+        <div className="pointer-events-none absolute -left-16 -top-12 h-44 w-44 rounded-full bg-lime-300/25 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-10 -right-8 h-36 w-36 rounded-full bg-emerald-400/20 blur-3xl" aria-hidden />
 
-            <div className="flex min-w-0 max-w-full flex-col items-start gap-3 sm:max-w-[min(100%,22rem)]">
-              {specialties.length > 0 ? (
-                <ul className="flex flex-wrap justify-start gap-1.5">
-                  {specialties.map((s) => (
+        <div className="relative z-10 flex w-full flex-col items-end gap-5">
+          <div className="w-full max-w-md">
+            {specialties.length > 0 ? (
+              <ul className="flex flex-wrap justify-end gap-1.5 sm:gap-2">
+                {specialties.map((s) => (
+                  <li
+                    key={s}
+                    className="rounded-full border border-emerald-300/60 bg-white/75 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-900 shadow-sm backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs"
+                  >
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {portfolioTimeline.length > 0 ? (
+              <div className={specialties.length > 0 ? "mt-4" : ""}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-emerald-900/65">ציר זמן — תקופות</p>
+                <ul className="mt-3 space-y-2 text-sm text-emerald-950">
+                  {portfolioTimeline.map((e) => (
                     <li
-                      key={s}
-                      className="rounded-full border border-white/35 bg-black/35 px-2.5 py-0.5 text-[10px] font-semibold text-white/95 backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs"
-                      style={{ textShadow: "0 1px 8px rgba(0,0,0,0.75)" }}
+                      key={e.id}
+                      className="flex flex-wrap items-baseline gap-2 border-b border-emerald-200/40 pb-2 text-right last:border-0 last:pb-0"
                     >
-                      {s}
+                      <span className="shrink-0 font-mono text-xs font-bold text-emerald-800" dir="ltr">
+                        {formatTimelineYears(e) || "—"}
+                      </span>
+                      {e.description.trim() ? (
+                        <span className="text-xs leading-snug text-emerald-900/90">{clip(e.description, 80)}</span>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
-              ) : null}
-              <TherapistHeroSocialBar contact={contact} social={social} className="w-full justify-start" />
+              </div>
+            ) : (
+              <p className={`text-sm text-emerald-900/75 ${specialties.length > 0 ? "mt-4" : ""}`}>אין תקופות שסומנו בציר הזמן.</p>
+            )}
+
+            <div className="mt-4 w-full" dir="ltr">
+              <TherapistHeroSocialBar contact={contact} social={social} className="justify-start" surface="light" />
             </div>
           </div>
         </div>

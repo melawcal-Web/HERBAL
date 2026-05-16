@@ -14,12 +14,15 @@ export function ProfileAvatar({
   seed,
   size = "md",
   className = "",
+  /** "natural" — ללא שחור־לבן (למשל תמונת כיסוי בדף ציבורי) */
+  imageTreatment = "default",
 }: {
   imageUrl: string | null | undefined;
   name: string;
   seed: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  imageTreatment?: "default" | "natural";
 }) {
   const src = resolveImageSrc(imageUrl, seed);
   const sizeClass =
@@ -31,6 +34,11 @@ export function ProfileAvatar({
           ? "h-32 w-32 ring-4 sm:h-36 sm:w-36"
           : "h-16 w-16 ring-2";
 
+  const imgClass =
+    imageTreatment === "natural"
+      ? "h-full w-full object-cover object-center"
+      : "therapist-photo-bw h-full w-full object-cover object-center";
+
   return (
     <div
       className={`relative aspect-square shrink-0 overflow-hidden rounded-full border border-white/40 bg-herbal-100 shadow-md ring-herbal-200/80 ${sizeClass} ${className}`}
@@ -39,7 +47,7 @@ export function ProfileAvatar({
       <img
         src={src}
         alt={name}
-        className="therapist-photo-bw h-full w-full object-cover object-center"
+        className={imgClass}
       />
     </div>
   );

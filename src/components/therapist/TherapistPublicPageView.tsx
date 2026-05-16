@@ -17,7 +17,6 @@ import {
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 import { TherapistPortfolioStats } from "@/components/therapist/TherapistPortfolioStats";
-import { TherapistPublicQuickInfo } from "@/components/therapist/TherapistPublicQuickInfo";
 import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
@@ -120,7 +119,6 @@ export function TherapistPublicPageView({
       <header className="overflow-hidden rounded-none shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:shadow-xl">
         <TherapistProfileHero
           heroCoverUrl={heroCoverUrl}
-          profileImageUrl={profile.user.image}
           profileImageSeed={`therapist-${profile.id}`}
           therapistName={profile.user.name}
           serviceCity={city}
@@ -128,17 +126,9 @@ export function TherapistPublicPageView({
           contact={contact}
           social={social}
           publicTherapistTitle={publicTherapistTitle}
+          portfolioTimeline={portfolioTimeline}
         />
       </header>
-
-      <TherapistPublicQuickInfo
-        roleLabel={publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא"}
-        therapistName={profile.user.name}
-        city={city}
-        specialties={specs}
-        portfolioTimeline={portfolioTimeline}
-        clinicalTeaser={clinicalTeaser}
-      />
 
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
         <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-herbal-50" />}>
@@ -159,6 +149,12 @@ export function TherapistPublicPageView({
           <h2 id="about-heading" className="sr-only">
             ביוגרפיה — {profile.user.name}
           </h2>
+          {clinicalTeaser ? (
+            <>
+              <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.24em] text-herbal-800/70">ניסיון והשכלה — תקציר</p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{clinicalTeaser}</p>
+            </>
+          ) : null}
           <details className="group mt-4 rounded-xl border border-herbal-100 bg-herbal-50/40 p-4 open:border-herbal-200 open:bg-white">
             <summary className="cursor-pointer list-none text-sm font-bold text-herbal-900 marker:content-none [&::-webkit-details-marker]:hidden">
               <span className="underline-offset-4 group-open:underline">פתיחה — הטקסט המלא</span>
