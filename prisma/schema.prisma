@@ -145,6 +145,8 @@ model TherapistProfile {
   weeklyAvailability Json? @map("weekly_availability")
   /** עד תאריך זה ניתן לקבוע פגישות מהיומן הציבורי */
   availabilityOpenUntil DateTime? @map("availability_open_until")
+  /** האם להציג בדף הציבורי את לוח הזמנים / מועדים פנויים */
+  showPublicCalendar Boolean @default(false) @map("show_public_calendar")
   /** ציר זמן ניסיון והשכלה — [{ yearFrom, yearTo?, description }] */
   portfolioTimeline Json? @map("portfolio_timeline")
   createdAt    DateTime @default(now()) @map("created_at")

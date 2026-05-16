@@ -13,8 +13,19 @@ import {
   type ParsedSocialLinks,
 } from "@/lib/therapist-contact";
 
+import { buildWebsiteHref } from "@/lib/therapist-contact";
+
 const iconClass =
   "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/35 bg-black/40 text-white shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:bg-black/55 hover:border-white/50 motion-reduce:transition-none sm:h-11 sm:w-11";
+
+function IconGlobe({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+    </svg>
+  );
+}
 
 function iconWrap(href: string, label: string, children: React.ReactNode) {
   return (
@@ -96,11 +107,13 @@ export function TherapistHeroSocialBar({
   const wa = contact.whatsapp ? buildWhatsAppHref(contact.whatsapp) : null;
   const phone = contact.phone?.trim();
   const email = contact.email?.trim();
+  const site = social.website?.trim() ? buildWebsiteHref(social.website) : null;
   const ig = social.instagram ? buildInstagramHref(social.instagram) : null;
   const fb = social.facebook ? buildFacebookHref(social.facebook) : null;
   const tt = social.tiktok ? buildTikTokHref(social.tiktok) : null;
 
   const items: ReactNode[] = [];
+  if (site) items.push(iconWrap(site, "אתר אינטרנט", <IconGlobe className="h-5 w-5" />));
   if (tt) items.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />));
   if (ig) items.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />));
   if (fb) items.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />));

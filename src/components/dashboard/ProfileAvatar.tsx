@@ -33,7 +33,7 @@ export function ProfileAvatar({
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-full border border-white/40 bg-herbal-100 shadow-md ring-herbal-200/80 ${sizeClass} ${className}`}
+      className={`relative aspect-square shrink-0 overflow-hidden rounded-full border border-white/40 bg-herbal-100 shadow-md ring-herbal-200/80 ${sizeClass} ${className}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

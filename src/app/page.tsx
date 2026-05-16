@@ -4,6 +4,7 @@ import { getHomeHeroCopy, getVisionSlides } from "@/lib/site-config";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { HomeTherapistsRandomGrid, type HomeTherapistCard } from "@/components/home/HomeTherapistsRandomGrid";
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
+import { shuffleArray } from "@/lib/shuffle-array";
 
 export const dynamic = "force-dynamic";
 
@@ -53,17 +54,20 @@ export default async function HomePage() {
     getHomeHeroCopy(),
   ]);
 
-  const sortedTherapists = [...therapists].sort((a, b) => {
+  const sortedPool = [...therapists].sort((a, b) => {
     const pa = hasStoredProfileImage(a.user.image) ? 1 : 0;
     const pb = hasStoredProfileImage(b.user.image) ? 1 : 0;
     if (pa !== pb) return pb - pa;
     return b.updatedAt.getTime() - a.updatedAt.getTime();
   });
 
+  /** בכל רענון — 4 מטפלים אקראיים מתוך המאגר (אחרי ערבוב). */
+  const randomizedPick = shuffleArray(sortedPool).slice(0, HOME_THERAPIST_LIMIT);
+
   /** מונע שני כרטיסים עם אותה תמונה (אותו URL בפרופיל או התנגשות ב־hash). */
   const usedHomeTherapistImageUrls = new Set<string>();
 
-  const therapistCards: HomeTherapistCard[] = sortedTherapists.slice(0, HOME_THERAPIST_LIMIT).map((p) => {
+  const therapistCards: HomeTherapistCard[] = randomizedPick.map((p) => {
     const spec = [p.specialty1, p.specialty2, p.specialty3].map((s) => s.trim()).filter(Boolean).join(" · ");
     const roleLabel = p.publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
     let primary = gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists"));

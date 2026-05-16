@@ -18,10 +18,15 @@ const DISPLAY_COUNT = 4;
 export function HomeTherapistsRandomGrid({ therapists }: { therapists: HomeTherapistCard[] }) {
   const shown = therapists.slice(0, DISPLAY_COUNT);
   const n = shown.length;
-  /** עד 4 עמודות; במסכים צרים 2 — כשיש פחות מ־4 כרטיסים, מספר עמודות = מספר הכרטיסים (עד 4) כדי שלא יידחקו כולם לצד אחד ב־RTL */
-  const desktopCols = n <= 1 ? 1 : Math.min(4, n);
 
-  if (shown.length === 0) {
+  const gridClass =
+    n <= 1
+      ? "mx-auto grid w-full max-w-md grid-cols-1 gap-4"
+      : n === 2
+        ? "mx-auto grid w-full max-w-[720px] grid-cols-2 gap-3 sm:gap-4"
+        : n === 3
+          ? "mx-auto grid w-full max-w-[1040px] grid-cols-2 gap-3 min-[560px]:grid-cols-3 sm:gap-4"
+          : "mx-auto grid w-full max-w-[1320px] grid-cols-2 gap-2.5 min-[480px]:grid-cols-4 min-[480px]:gap-3 sm:gap-4";
     return (
       <p className="rounded-2xl border border-dashed border-herbal-200 bg-white/60 py-10 text-center text-slate-600">
         אין מטפלים רשומים להצגה כרגע.
@@ -36,10 +41,7 @@ export function HomeTherapistsRandomGrid({ therapists }: { therapists: HomeThera
           מטפלים
         </h2>
 
-        <div
-          className={`mx-auto grid w-full max-w-[1320px] gap-3 sm:gap-4 min-[480px]:[grid-template-columns:repeat(var(--home-therapist-cols),minmax(0,1fr))] ${n === 1 ? "grid-cols-1" : "grid-cols-2"}`}
-          style={{ ["--home-therapist-cols" as string]: String(desktopCols) }}
-        >
+        <div className={gridClass}>
           {shown.map((item) => (
             <Link
               key={item.id}
