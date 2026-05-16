@@ -15,6 +15,8 @@ type Props = {
   social: ParsedSocialLinks;
   publicTherapistTitle: "male" | "female";
   portfolioTimeline: PortfolioTimelineEntry[];
+  /** יומן (#therapist-booking), mailto, וואטסאפ או טלפון */
+  bookAppointmentHref: string | null;
 };
 
 function clip(s: string, max: number) {
@@ -40,34 +42,43 @@ export function TherapistProfileHero({
   social,
   publicTherapistTitle,
   portfolioTimeline,
+  bookAppointmentHref,
 }: Props) {
   const roleHe = publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
 
   return (
     <div
-      className="relative flex min-h-[min(52vh,480px)] w-full flex-col overflow-hidden bg-neutral-50 md:min-h-[min(58vh,540px)] md:flex-row"
+      className="relative mx-auto flex min-h-[min(48vh,440px)] w-full max-w-[920px] flex-col overflow-hidden bg-neutral-50 md:min-h-[min(52vh,500px)] md:flex-row"
       dir="rtl"
     >
-      {/* עמודת שם — מוצגת מימין (פריט ראשון ב־RTL) */}
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-6 py-10 text-center sm:items-end sm:px-10 sm:py-12 sm:text-right md:py-14">
+      {/* עמודת שם — צרה, צמודה לימין */}
+      <div className="relative z-10 flex w-full shrink-0 flex-col items-center gap-1 px-5 py-8 text-center sm:w-[min(100%,260px)] sm:items-end sm:justify-center sm:px-6 sm:py-10 sm:text-right md:w-[min(100%,280px)] md:px-8 md:py-12">
         <ProfileAvatar
           imageUrl={heroCoverUrl}
           name={therapistName}
           seed={profileImageSeed}
           size="xl"
           imageTreatment="natural"
-          className="mb-3 shadow-xl ring-4 ring-herbal-200/80 !aspect-square"
+          className="mb-2 shadow-xl ring-4 ring-herbal-200/80 !aspect-square"
         />
         <span className={roleLine}>{roleHe}</span>
-        <span className="mt-1.5 font-display text-2xl font-bold leading-tight text-herbal-950 sm:text-3xl md:text-[clamp(1.85rem,3vw,2.65rem)]">
+        <span className="mt-1 font-display text-2xl font-bold leading-tight text-herbal-950 sm:text-3xl">
           {therapistName}
         </span>
         {serviceCity ? <span className="mt-1 text-base font-semibold text-herbal-800 sm:text-lg">{serviceCity}</span> : null}
+        {bookAppointmentHref ? (
+          <a
+            href={bookAppointmentHref}
+            className="mt-4 inline-flex min-h-[44px] w-full max-w-[220px] items-center justify-center rounded-full bg-herbal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-herbal-500 sm:max-w-none sm:self-end"
+          >
+            קבע פגישה
+          </a>
+        ) : null}
       </div>
 
-      {/* עמודה ירוקה — משמאל; תוכן מצומצם לרוחב ומיושר לקצה הפנימי */}
+      {/* עמודה ירוקה — תופסת את שאר הרוחב */}
       <div
-        className="relative flex min-h-[min(40vh,360px)] flex-1 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 pb-8 pt-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:min-h-0 sm:max-w-[min(100%,26rem)] sm:border-t-0 sm:border-s sm:border-emerald-200/70 sm:px-7 sm:pb-10 sm:pt-12 md:max-w-[min(100%,28rem)]"
+        className="relative flex min-h-[min(36vh,320px)] min-w-0 flex-1 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 pb-7 pt-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:min-h-0 sm:border-t-0 sm:border-s sm:border-emerald-200/70 sm:px-6 sm:pb-9 sm:pt-10 md:px-7 md:pb-10 md:pt-12"
         dir="rtl"
       >
         <div className="pointer-events-none absolute -left-16 -top-12 h-44 w-44 rounded-full bg-lime-300/25 blur-3xl" aria-hidden />

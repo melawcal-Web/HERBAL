@@ -64,7 +64,7 @@ export function TherapistAppointmentCalendar({
   if (!enabled) return null;
 
   return (
-    <section className="mt-14 border-t border-neutral-200/90 pt-12" aria-labelledby="calendar-heading">
+    <section id="therapist-booking" className="mt-14 scroll-mt-24 border-t border-neutral-200/90 pt-12" aria-labelledby="calendar-heading">
       <div className="flex flex-wrap items-center gap-3">
         <svg className="h-8 w-8 shrink-0 text-herbal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
