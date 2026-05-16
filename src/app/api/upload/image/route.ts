@@ -23,7 +23,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "לא נבחר קובץ" }, { status: 400 });
   }
 
-  const prefix = form.get("prefix") === "profile" ? "profiles" : "content";
+  const rawPrefix = form.get("prefix");
+  const prefix =
+    rawPrefix === "profiles" || rawPrefix === "profile" ? "profiles" : "content";
   const buf = Buffer.from(await file.arrayBuffer());
   const mime = file.type || "image/jpeg";
 

@@ -60,11 +60,27 @@ export default async function HomePage() {
     return b.updatedAt.getTime() - a.updatedAt.getTime();
   });
 
+  /** מונע שני כרטיסים עם אותה תמונה (אותו URL בפרופיל או התנגשות ב־hash). */
+  const usedHomeTherapistImageUrls = new Set<string>();
+
   const therapistCards: HomeTherapistCard[] = sortedTherapists.slice(0, HOME_THERAPIST_LIMIT).map((p) => {
     const spec = [p.specialty1, p.specialty2, p.specialty3].map((s) => s.trim()).filter(Boolean).join(" · ");
     const roleLabel = p.publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
-    const primary = gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists"));
-    const backupImageUrl = pickDistinctDemoImage(p.id, "therapists", primary);
+    let primary = gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists"));
+    let tries = 0;
+    while (usedHomeTherapistImageUrls.has(primary) && tries < 64) {
+      primary = pickDemoImage(`home-uniq-${p.id}-${tries}`, "therapists");
+      tries += 1;
+    }
+    usedHomeTherapistImageUrls.add(primary);
+
+    let backupImageUrl = pickDistinctDemoImage(p.id, "therapists", primary);
+    let triesB = 0;
+    while (backupImageUrl === primary && triesB < 32) {
+      backupImageUrl = pickDemoImage(`home-bak-${p.id}-${triesB}`, "therapists");
+      triesB += 1;
+    }
+
     return {
       id: p.id,
       name: p.user.name,

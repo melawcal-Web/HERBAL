@@ -69,7 +69,16 @@ export default async function TherapistProfilePage() {
 
   const rejected = session.user.role === "therapist" && session.user.therapistVerification === "rejected";
 
-  const schedule = await getTherapistScheduleDashboardData();
+  let schedule: Awaited<ReturnType<typeof getTherapistScheduleDashboardData>> = {
+    availability: {},
+    openUntil: null,
+    appointments: [],
+  };
+  try {
+    schedule = await getTherapistScheduleDashboardData();
+  } catch {
+    // נתוני יומן לא קריטיים לטעינת הפרופיל — מונעים כשל RSC אם יש שורות עם תאריכים פגומים ב־DB
+  }
 
   return (
 

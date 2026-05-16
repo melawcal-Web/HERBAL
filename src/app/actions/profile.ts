@@ -8,9 +8,21 @@ import { assertTherapist } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
 import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
 
+/** JSON נקי ל־Prisma — ללא ערכים לא־סריאליים (מונע כשלים אחרי שמירה / רענון RSC). */
 function portfolioTimelineJson(entries: PortfolioTimelineEntry[] | undefined): Prisma.InputJsonValue {
   if (!entries?.length) return [];
-  return entries as unknown as Prisma.InputJsonValue;
+  const out: { id: string; yearFrom: string; yearTo?: string; description: string }[] = [];
+  for (const e of entries) {
+    const id = typeof e.id === "string" && e.id.trim() ? e.id.trim().slice(0, 80) : `tl-${out.length}`;
+    const yearFrom = typeof e.yearFrom === "string" ? e.yearFrom.trim().slice(0, 8) : "";
+    const yearTo = typeof e.yearTo === "string" ? e.yearTo.trim().slice(0, 8) : "";
+    const description = typeof e.description === "string" ? e.description.trim().slice(0, 4000) : "";
+    if (!yearFrom && !description) continue;
+    const row: { id: string; yearFrom: string; yearTo?: string; description: string } = { id, yearFrom, description };
+    if (yearTo) row.yearTo = yearTo;
+    out.push(row);
+  }
+  return out as unknown as Prisma.InputJsonValue;
 }
 
 export async function updateTherapistProfile(input: {

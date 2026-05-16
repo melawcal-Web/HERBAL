@@ -131,20 +131,37 @@ export async function getTherapistScheduleDashboardData(): Promise<{
     },
   });
 
+  function safeIso(d: Date, fallback: string): string {
+    const t = d.getTime();
+    if (Number.isNaN(t)) return fallback;
+    try {
+      return d.toISOString();
+    } catch {
+      return fallback;
+    }
+  }
+
   return {
     availability: parseWeeklyAvailability(profile?.weeklyAvailability),
     openUntil: profile?.availabilityOpenUntil
-      ? profile.availabilityOpenUntil.toISOString().slice(0, 10)
+      ? safeIso(profile.availabilityOpenUntil, "").slice(0, 10) || null
       : null,
-    appointments: appointments.map((a) => ({
-      id: a.id,
-      guestName: a.guestName,
-      guestEmail: a.guestEmail,
-      slotStart: a.slotStart.toISOString(),
-      slotEnd: a.slotEnd.toISOString(),
-      status: a.status,
-      recurringWeekly: a.recurringWeekly,
-    })),
+    appointments: appointments
+      .map((a) => {
+        const slotStart = safeIso(a.slotStart, "");
+        const slotEnd = safeIso(a.slotEnd, "");
+        if (!slotStart || !slotEnd) return null;
+        return {
+          id: a.id,
+          guestName: a.guestName,
+          guestEmail: a.guestEmail,
+          slotStart,
+          slotEnd,
+          status: a.status,
+          recurringWeekly: a.recurringWeekly,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row != null),
   };
 }
 
