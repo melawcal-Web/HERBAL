@@ -27,6 +27,8 @@ export function HomeTherapistsRandomGrid({ therapists }: { therapists: HomeThera
         : n === 3
           ? "mx-auto grid w-full max-w-[1040px] grid-cols-2 gap-3 min-[560px]:grid-cols-3 sm:gap-4"
           : "mx-auto grid w-full max-w-[1320px] grid-cols-2 gap-2.5 min-[480px]:grid-cols-4 min-[480px]:gap-3 sm:gap-4";
+
+  if (shown.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-herbal-200 bg-white/60 py-10 text-center text-slate-600">
         אין מטפלים רשומים להצגה כרגע.
