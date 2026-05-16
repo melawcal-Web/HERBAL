@@ -60,7 +60,7 @@ export function ExploreCardImage({
       ? "therapist-photo-bw h-full w-full object-cover contrast-[1.06] transition duration-500 group-hover:scale-[1.04]"
       : "h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]";
 
-  if (!showImg) {
+  if (!showImg || src == null || src === "") {
     return (
       <div
         className="flex h-full w-full items-center justify-center text-4xl text-herbal-700/35"
