@@ -14,7 +14,7 @@ const CHANNEL_LABEL: Record<ReferralChannel, string> = {
   whatsapp: "וואטסאפ",
 };
 
-type Search = { from?: string; to?: string; therapist?: string };
+type Search = { from: string; to: string; therapist: string };
 
 function parseSearch(sp: Record<string, string | string[] | undefined> | undefined): Search {
   const g = (k: string) => {
