@@ -12,6 +12,9 @@ import {
 import { contentVisibleForViewer } from "@/lib/content-audience";
 import { getContentViewer } from "@/lib/content-viewer";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
+import { auth } from "@/auth";
+import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
+import { memberCallbackPathFromSearch } from "@/lib/member-callback-path";
 
 export const metadata = {
   title: "חיפוש",
@@ -24,7 +27,12 @@ type Props = {
 };
 
 export default async function SearchPage({ searchParams }: Props) {
+  const session = await auth();
   const sp = await searchParams;
+  if (!session?.user) {
+    return <MemberAuthWall callbackPath={memberCallbackPathFromSearch("/search", sp, ["q", "tag", "type"])} />;
+  }
+
   const viewer = await getContentViewer();
   const filters: ContentSearchParams = {
     q: sp.q,

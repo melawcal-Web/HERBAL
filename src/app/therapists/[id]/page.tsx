@@ -4,6 +4,8 @@ import { findTherapistProfileForPublicRoute } from "@/lib/therapist-public";
 import { TherapistPublicPageView } from "@/components/therapist/TherapistPublicPageView";
 import { getContentViewer } from "@/lib/content-viewer";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
+import { auth } from "@/auth";
+import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -22,7 +24,10 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function TherapistByIdPage({ params, searchParams }: Props) {
+  const session = await auth();
   const { id } = await params;
+  if (!session?.user) return <MemberAuthWall callbackPath={`/therapists/${id}`} />;
+
   const sp = await searchParams;
   const profile = await findTherapistProfileForPublicRoute(id);
   if (!profile) notFound();

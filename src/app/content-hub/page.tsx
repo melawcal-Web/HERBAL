@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { listContentHubItems } from "@/lib/content-hub";
+import { auth } from "@/auth";
+import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 
 export const metadata = {
   title: "מרכז תוכן",
@@ -9,6 +11,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ContentHubPage() {
+  const session = await auth();
+  if (!session?.user) return <MemberAuthWall callbackPath="/content-hub" />;
+
   const items = await listContentHubItems(100);
 
   return (

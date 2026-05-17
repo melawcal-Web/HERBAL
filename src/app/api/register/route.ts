@@ -13,6 +13,7 @@ const schema = z
     password: z.string().min(8),
     persona: personaSchema,
     certificateUrl: z.string().optional(),
+    phone: z.string().max(64).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.persona !== "therapist") return;
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { name, email, password, persona, certificateUrl } = parsed.data;
+  const { name, email, password, persona, certificateUrl, phone } = parsed.data;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return Response.json({ error: "כתובת האימייל כבר בשימוש" }, { status: 409 });
@@ -48,6 +49,8 @@ export async function POST(req: Request) {
   const therapistVerification = persona === "therapist" ? "pending_approval" : "none";
   const certTrim = persona === "therapist" ? (certificateUrl ?? "").trim() : null;
 
+  const phoneTrim = (phone ?? "").trim().slice(0, 64) || null;
+
   const user = await prisma.user.create({
     data: {
       name,
@@ -57,6 +60,7 @@ export async function POST(req: Request) {
       registrationPersona: persona,
       therapistVerification,
       certificateUrl: certTrim,
+      phone: phoneTrim,
     },
   });
 

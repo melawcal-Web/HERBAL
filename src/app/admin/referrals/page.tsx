@@ -72,7 +72,7 @@ export default async function AdminReferralsPage({
     <div>
       <h2 className="font-display text-xl font-bold text-herbal-900 sm:text-2xl">דוח פניות לקוחות מול מטפלים</h2>
       <p className="mt-2 text-sm text-slate-600">
-        נרשמות פניות של משתמשים מחוברים (לא אדמין) בלחיצה על טלפון, מייל או וואטסאפ בדף הציבורי של מטפל/ת.
+        נרשמות פניות של לקוחות מחוברים בלחיצה על טלפון, מייל או וואטסאפ בדף הציבורי של מטפל/ת. מספר טלפון בדוח מגיע מהפרופיל אם הוזן בהרשמה.
       </p>
 
       <form

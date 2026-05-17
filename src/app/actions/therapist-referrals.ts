@@ -64,7 +64,7 @@ export async function logTherapistContactReferral(input: {
   if (shouldLog) {
     const clientRow = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { name: true, email: true },
+      select: { name: true, email: true, phone: true },
     });
     if (clientRow) {
       const displayName = (session.user.name?.trim() || clientRow.name || clientRow.email || "לקוח/ה").slice(0, 200);
@@ -77,7 +77,9 @@ export async function logTherapistContactReferral(input: {
           clientUserId: session.user.id,
           clientNameSnapshot: displayName,
           clientEmailSnapshot: clientRow.email.slice(0, 320),
-          clientPhoneSnapshot: null,
+          clientPhoneSnapshot: clientRow.phone?.trim()
+            ? clientRow.phone.trim().slice(0, 64)
+            : null,
           clientAdminPath: clientAdminPathFor(session.user.id).slice(0, 320),
           channel: input.channel,
         },

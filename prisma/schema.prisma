@@ -111,6 +111,8 @@ model User {
   therapistVerification TherapistVerificationStatus @default(none) @map("therapist_verification")
   /** קישור https לתעודה / קובץ שהועלה (מטפל ממתין) */
   certificateUrl   String?              @map("certificate_url") @db.VarChar(512)
+  /** טלפון לקוח/ת (אופציונלי) — לדוחות פניות ויצירת קשר */
+  phone            String?              @map("phone") @db.VarChar(64)
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 

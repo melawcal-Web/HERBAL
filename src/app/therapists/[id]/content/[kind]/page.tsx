@@ -12,6 +12,8 @@ import {
   productsToBlogList,
 } from "@/lib/therapist-portfolio-content";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 
 type Props = {
   params: Promise<{ id: string; kind: string }>;
@@ -30,7 +32,12 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function TherapistContentListPage({ params }: Props) {
+  const session = await auth();
   const { id, kind: kindParam } = await params;
+  if (!session?.user) {
+    return <MemberAuthWall callbackPath={`/therapists/${id}/content/${encodeURIComponent(kindParam)}`} />;
+  }
+
   if (!isPortfolioContentKind(kindParam)) notFound();
 
   const profile = await findTherapistProfileForPublicRoute(id);

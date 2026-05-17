@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [persona, setPersona] = useState<Persona>("interested");
   const [certificateUrl, setCertificateUrl] = useState("");
@@ -24,7 +25,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, persona, certificateUrl }),
+      body: JSON.stringify({ name, email, password, persona, certificateUrl, phone }),
     });
     const data = (await res.json().catch(() => ({}))) as { error?: string; pendingTherapistApproval?: boolean };
     if (!res.ok) {
@@ -72,6 +73,20 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700">טלפון (אופציונלי)</label>
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2 font-mono text-sm"
+            dir="ltr"
+            placeholder="050-0000000"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-slate-500">משמש לדוחות פניות ויצירת קשר כשתפנו למטפלים.</p>
         </div>
         <div>
           <label className="text-sm font-medium text-slate-700">סיסמה</label>

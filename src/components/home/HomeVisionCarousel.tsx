@@ -145,7 +145,16 @@ function VisionSlideCard({ slide, loopIndex, isFocused }: { slide: VisionSlide; 
   );
 }
 
-export function HomeVisionCarousel({ slides, heroCopy }: { slides: VisionSlide[]; heroCopy: HomeHeroCopy }) {
+export function HomeVisionCarousel({
+  slides,
+  heroCopy,
+  /** כש־false — מוצגות רק כותרות הבית ללא רצועת השקופיות (למשל אורחים / לקוחות) */
+  showSlides = true,
+}: {
+  slides: VisionSlide[];
+  heroCopy: HomeHeroCopy;
+  showSlides?: boolean;
+}) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [realIndex, setRealIndex] = useState(() => (slides.length <= 1 ? 0 : Math.floor((slides.length - 1) / 2)));
   const [focusedLoopIndex, setFocusedLoopIndex] = useState(0);
@@ -262,7 +271,7 @@ export function HomeVisionCarousel({ slides, heroCopy }: { slides: VisionSlide[]
     [n, reducedMotion],
   );
 
-  if (!n) return null;
+  const showScroller = showSlides && n > 0;
 
   return (
     <section className="relative w-full max-w-full [container-type:inline-size]" aria-label="הקדמה — חזון המרכז">
@@ -273,6 +282,8 @@ export function HomeVisionCarousel({ slides, heroCopy }: { slides: VisionSlide[]
           <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">{heroCopy.sliderHint}</p>
         </div>
 
+        {showScroller ? (
+        <>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--herbal-bg)] to-transparent sm:w-16" />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[var(--herbal-bg)] to-transparent sm:w-16" />
@@ -335,6 +346,8 @@ export function HomeVisionCarousel({ slides, heroCopy }: { slides: VisionSlide[]
             ))}
           </div>
         )}
+        </>
+        ) : null}
       </div>
     </section>
   );
