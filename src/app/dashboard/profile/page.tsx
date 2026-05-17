@@ -127,7 +127,7 @@ export default async function TherapistProfilePage() {
       <div className="mt-8">
 
         <ProfileForm
-
+          key={profile.updatedAt.toISOString()}
           initial={{
 
             slug: profile.slug,

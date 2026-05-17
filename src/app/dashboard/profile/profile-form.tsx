@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { updateTherapistProfile } from "@/app/actions/profile";
@@ -32,14 +32,57 @@ type Initial = {
   showPublicCalendar: boolean;
 };
 
+function profileFormSnapshot(i: Initial): string {
+  return JSON.stringify({
+    slug: i.slug,
+    bio: i.bio,
+    clinicalExperience: i.clinicalExperience,
+    specialty1: i.specialty1,
+    specialty2: i.specialty2,
+    specialty3: i.specialty3,
+    publicTherapistTitle: i.publicTherapistTitle,
+    profileImageUrl: i.profileImageUrl,
+    acceptsSupervisionRequests: i.acceptsSupervisionRequests,
+    supervisionHourlyRate: i.supervisionHourlyRate,
+    contactPhone: i.contactPhone,
+    contactCity: i.contactCity,
+    contactWhatsapp: i.contactWhatsapp,
+    contactPublicEmail: i.contactPublicEmail,
+    website: i.website,
+    instagram: i.instagram,
+    facebook: i.facebook,
+    tiktok: i.tiktok,
+    showPublicCalendar: i.showPublicCalendar,
+    portfolioTimeline: i.portfolioTimeline.map((e) => ({
+      id: e.id,
+      yearFrom: e.yearFrom,
+      yearTo: e.yearTo,
+      description: e.description,
+    })),
+  });
+}
+
 export function ProfileForm({ initial }: { initial: Initial }) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const { update: updateSession } = useSession();
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const [imageUploadBusy, setImageUploadBusy] = useState(false);
+
+  const isDirty = useMemo(() => profileFormSnapshot(form) !== profileFormSnapshot(initial), [form, initial]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,8 +128,10 @@ export function ProfileForm({ initial }: { initial: Initial }) {
     });
   }
 
+  const showStickySave = isDirty || imageUploadBusy;
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form ref={formRef} onSubmit={onSubmit} className={`space-y-4 ${showStickySave ? "pb-28 sm:pb-32" : ""}`}>
       <div>
         <label className="text-sm font-medium text-slate-700">כתובת דף ציבורית (slug)</label>
         <input
@@ -301,8 +346,35 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         disabled={pending || imageUploadBusy}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 font-medium text-white hover:bg-herbal-500 disabled:opacity-50"
       >
-        {pending ? "שומרים…" : imageUploadBusy ? "ממתינים לסיום העלאת תמונה…" : "שמירה"}
+        {pending ? "שומרים…" : imageUploadBusy ? "ממתינים לסיום העלאת תמונה…" : "שמירת פרופיל"}
       </button>
+
+      {showStickySave ? (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-herbal-200/95 bg-white/95 px-4 py-3 shadow-[0_-10px_40px_-12px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-6"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          role="region"
+          aria-label="שמירת פרופיל"
+        >
+          <div className="mx-auto flex max-w-2xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <p className="text-right text-sm font-medium text-herbal-900">
+              {imageUploadBusy
+                ? "מעלים תמונה — המתינו לסיום לפני שמירה."
+                : isDirty
+                  ? "יש שינויים שלא נשמרו במסד. לפני מעבר לדף אחר או סגירת הדפדפן — שמרו."
+                  : null}
+            </p>
+            <button
+              type="button"
+              disabled={pending || imageUploadBusy}
+              onClick={() => formRef.current?.requestSubmit()}
+              className="min-h-[48px] shrink-0 rounded-full bg-herbal-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:bg-herbal-500 disabled:opacity-50 sm:min-w-[11rem]"
+            >
+              {pending ? "שומרים…" : imageUploadBusy ? "ממתינים להעלאה…" : "שמירת פרופיל"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </form>
   );
 }

@@ -27,10 +27,12 @@ function portfolioTimelineJson(entries: PortfolioTimelineEntry[] | undefined): P
 
 /** כתובת תמונה לשמירה — מאחדים URL מלא עם pathname של /uploads/ */
 function normalizeProfileImageUrl(raw: string): string {
-  const t = raw.trim();
+  let t = raw.trim();
   if (!t) return "";
+  if (t.startsWith("//")) t = `https:${t}`;
+  if (t.startsWith("http://")) t = `https://${t.slice(7)}`;
   if (t.startsWith("/uploads/") || t.startsWith("https://")) return t;
-  if (t.startsWith("http://")) return `https://${t.slice(7)}`;
+  if (t.startsWith("/api/blob-media")) return t;
   try {
     const u = new URL(t);
     if (u.pathname.startsWith("/uploads/")) return `${u.pathname}${u.search}`;
@@ -84,7 +86,13 @@ export async function updateTherapistProfile(input: {
   }
 
   const img = normalizeProfileImageUrl(input.profileImageUrl ?? "");
-  if (img.length > 0 && !img.startsWith("https://") && !img.startsWith("/uploads/")) {
+  const okStored =
+    img.startsWith("https://") ||
+    img.startsWith("http://") ||
+    img.startsWith("//") ||
+    img.startsWith("/uploads/") ||
+    img.startsWith("/api/blob-media");
+  if (img.length > 0 && !okStored) {
     throw new Error("תמונת פרופיל חייבת להיות כתובת https או קובץ שהועלה למערכת");
   }
 

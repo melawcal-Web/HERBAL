@@ -96,7 +96,8 @@ model User {
   passwordHash     String?
   role             UserRole             @default(client)
   subStatus        SubscriptionStatus   @default(none) @map("sub_status")
-  image            String?
+  /** URL ארוך (Blob וכו׳) — Text כדי שלא ייחתך ב־MySQL (VARCHAR ברירת מחדל קצר מדי) */
+  image            String?              @db.Text
   /** מסלול שנרשם אליו (מטפל/ת, סטודנט/ית, מתעניין/ת) */
   registrationPersona RegistrationPersona? @map("registration_persona")
   /** סטטוס אימות תעודה למטפלים חדשים */

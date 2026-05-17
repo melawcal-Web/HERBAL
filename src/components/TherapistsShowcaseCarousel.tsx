@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
+import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-image-url";
 
 export type TherapistShowcaseItem = {
   id: string;
@@ -20,10 +21,10 @@ function specialtyLine(t: TherapistShowcaseItem) {
   return [t.specialty1, t.specialty2, t.specialty3].filter(Boolean).join(" · ");
 }
 
-/** תמונה לכרטיס ציבורי — תמיד https (תמונת משתמש או placeholder יציב). */
+/** תמונה לכרטיס ציבורי — תמונת משתמש או placeholder יציב. */
 function showcasePhotoUrl(t: TherapistShowcaseItem): string {
   const u = t.image?.trim();
-  if (u?.startsWith("https://")) return publicDisplayImageUrl(u);
+  if (isStoredImageUrl(u)) return publicDisplayImageUrl(normalizeHttpsImageReference(u!));
   return pickDemoImage(`showcase-${t.id}`, "therapists");
 }
 

@@ -1,9 +1,10 @@
 import { pickDemoImage } from "@/lib/demo-placeholders";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
+import { normalizeHttpsImageReference } from "@/lib/stored-image-url";
 
 function resolveImageSrc(url: string | null | undefined, seed: string): string {
   const raw = url?.trim();
-  const u = raw ? publicDisplayImageUrl(raw) : "";
+  const u = raw ? publicDisplayImageUrl(normalizeHttpsImageReference(raw)) : "";
   if (!u) return pickDemoImage(seed, "therapists");
   if (u.startsWith("https://") || u.startsWith("http://")) return u.startsWith("http://") ? u.replace("http://", "https://") : u;
   if (u.startsWith("/")) return u;

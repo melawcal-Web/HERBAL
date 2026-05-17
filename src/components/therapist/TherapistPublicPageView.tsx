@@ -25,6 +25,7 @@ import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audie
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
+import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-image-url";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -78,12 +79,11 @@ export function TherapistPublicPageView({
   const city = contact.city?.trim() || null;
   const publicTherapistTitle = profile.publicTherapistTitle === "male" ? "male" : "female";
 
-  const rawImg = profile.user.image?.trim();
-  const heroCoverUrl = publicDisplayImageUrl(
-    rawImg?.startsWith("https://") || rawImg?.startsWith("/uploads/")
-      ? rawImg
-      : pickDemoImage(`therapist-hero-${profile.id}`, "therapists"),
-  );
+  const rawImg = profile.user.image?.trim() ?? "";
+  const heroBase = isStoredImageUrl(rawImg)
+    ? normalizeHttpsImageReference(rawImg)
+    : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
+  const heroCoverUrl = publicDisplayImageUrl(heroBase);
 
   const availability: WeeklyAvailability = parseWeeklyAvailability(profile.weeklyAvailability);
 

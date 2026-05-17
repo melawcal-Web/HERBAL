@@ -5,6 +5,7 @@ import { therapistPublicHref } from "@/lib/therapist-public";
 import { HomeTherapistsRandomGrid, type HomeTherapistCard } from "@/components/home/HomeTherapistsRandomGrid";
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
 import { shuffleArray } from "@/lib/shuffle-array";
+import { isStoredImageUrl } from "@/lib/stored-image-url";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +27,7 @@ function gridCardImageUrl(url: string | null | undefined, fallback: string): str
 }
 
 function hasStoredProfileImage(url: string | null | undefined): boolean {
-  const u = url?.trim();
-  if (!u) return false;
-  if (u.startsWith("//")) return true;
-  if (u.startsWith("https://")) return true;
-  if (u.startsWith("http://")) return true;
-  if (u.startsWith("/uploads/")) return true;
-  return false;
+  return isStoredImageUrl(url);
 }
 
 const HOME_THERAPIST_LIMIT = 4;
