@@ -196,7 +196,6 @@ export async function duplicateTherapistProfile(sourceUserId: string): Promise<{
           slug,
           publicTherapistTitle: p.publicTherapistTitle,
           bio: p.bio,
-          clinicalExperience: p.clinicalExperience,
           specialty1: p.specialty1,
           specialty2: p.specialty2,
           specialty3: p.specialty3,

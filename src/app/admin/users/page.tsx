@@ -43,7 +43,7 @@ export default async function AdminUsersPage() {
           </thead>
           <tbody className="divide-y divide-herbal-100">
             {users.map((u) => (
-              <tr key={u.id} className="hover:bg-herbal-50/40">
+              <tr key={u.id} id={`admin-user-${u.id}`} className="hover:bg-herbal-50/40">
                 <td className="px-4 py-3 font-medium text-herbal-900">{u.name}</td>
                 <td className="px-4 py-3 font-mono text-xs text-slate-700" dir="ltr">
                   {u.email}

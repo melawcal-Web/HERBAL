@@ -6,24 +6,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertTherapist } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
-import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
-
-/** JSON נקי ל־Prisma — ללא ערכים לא־סריאליים (מונע כשלים אחרי שמירה / רענון RSC). */
-function portfolioTimelineJson(entries: PortfolioTimelineEntry[] | undefined): Prisma.InputJsonValue {
-  if (!entries?.length) return [];
-  const out: { id: string; yearFrom: string; yearTo?: string; description: string }[] = [];
-  for (const e of entries) {
-    const id = typeof e.id === "string" && e.id.trim() ? e.id.trim().slice(0, 80) : `tl-${out.length}`;
-    const yearFrom = typeof e.yearFrom === "string" ? e.yearFrom.trim().slice(0, 8) : "";
-    const yearTo = typeof e.yearTo === "string" ? e.yearTo.trim().slice(0, 8) : "";
-    const description = typeof e.description === "string" ? e.description.trim().slice(0, 4000) : "";
-    if (!yearFrom && !description) continue;
-    const row: { id: string; yearFrom: string; yearTo?: string; description: string } = { id, yearFrom, description };
-    if (yearTo) row.yearTo = yearTo;
-    out.push(row);
-  }
-  return out as unknown as Prisma.InputJsonValue;
-}
 
 /** כתובת תמונה לשמירה — מאחדים URL מלא עם pathname של /uploads/ */
 function normalizeProfileImageUrl(raw: string): string {
@@ -45,7 +27,6 @@ function normalizeProfileImageUrl(raw: string): string {
 export async function updateTherapistProfile(input: {
   slug: string;
   bio: string;
-  clinicalExperience: string;
   specialty1: string;
   specialty2: string;
   specialty3: string;
@@ -63,7 +44,6 @@ export async function updateTherapistProfile(input: {
   instagram: string;
   facebook: string;
   tiktok: string;
-  portfolioTimeline?: PortfolioTimelineEntry[];
   /** הצגת יומן ציבורי בדף המטפל */
   showPublicCalendar: boolean;
 }) {
@@ -107,7 +87,6 @@ export async function updateTherapistProfile(input: {
       slug: input.slug,
       publicTherapistTitle: input.publicTherapistTitle,
       bio: input.bio,
-      clinicalExperience: input.clinicalExperience.trim() || null,
       specialty1: input.specialty1,
       specialty2: input.specialty2,
       specialty3: input.specialty3,
@@ -128,7 +107,6 @@ export async function updateTherapistProfile(input: {
         facebook: input.facebook,
         tiktok: input.tiktok,
       },
-      portfolioTimeline: portfolioTimelineJson(input.portfolioTimeline),
       showPublicCalendar: input.showPublicCalendar,
     },
   });

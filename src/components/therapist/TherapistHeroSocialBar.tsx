@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { ReferralChannel, UserRole } from "@prisma/client";
 import {
   buildFacebookHref,
   buildInstagramHref,
@@ -13,6 +14,7 @@ import {
   type ParsedContactInfo,
   type ParsedSocialLinks,
 } from "@/lib/therapist-contact";
+import { logTherapistContactReferral } from "@/app/actions/therapist-referrals";
 
 const iconClassDark =
   "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/35 bg-black/40 text-white shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:bg-black/55 hover:border-white/50 motion-reduce:transition-none sm:h-11 sm:w-11";
@@ -29,7 +31,7 @@ function IconGlobe({ className }: { className?: string }) {
   );
 }
 
-function iconWrap(href: string, label: string, children: React.ReactNode, surface: "dark" | "light") {
+function iconWrapAnchor(href: string, label: string, children: ReactNode, surface: "dark" | "light") {
   const cls = surface === "dark" ? iconClassDark : iconClassLight;
   return (
     <a
@@ -42,6 +44,37 @@ function iconWrap(href: string, label: string, children: React.ReactNode, surfac
     >
       {children}
     </a>
+  );
+}
+
+function iconWrapTracked(
+  href: string,
+  label: string,
+  children: ReactNode,
+  surface: "dark" | "light",
+  channel: ReferralChannel,
+  therapistProfileId: string,
+) {
+  const cls = surface === "dark" ? iconClassDark : iconClassLight;
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      className={cls}
+      onClick={() => {
+        void (async () => {
+          try {
+            const { url } = await logTherapistContactReferral({ therapistProfileId, channel });
+            window.location.href = url;
+          } catch {
+            window.location.href = href;
+          }
+        })();
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -95,20 +128,29 @@ function IconMail({ className }: { className?: string }) {
   );
 }
 
+export type HeroReferralTracking = {
+  therapistProfileId: string;
+  therapistUserId: string;
+  viewerUserId: string;
+  viewerRole: UserRole;
+};
+
 /**
  * שורה אחת של אייקוני קשר — מתחת לפילים (בתוך עמודת הטקסט ב-hero).
+ * ללקוח/ה מחובר/ת (לא אדמין, לא המטפל עצמו): קליק בטלפון/מייל/וואטסאפ נרשם כפנייה לדוחות.
  */
 export function TherapistHeroSocialBar({
   contact,
   social,
   className = "",
   surface = "dark",
+  referralTracking,
 }: {
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
   className?: string;
-  /** "light" — רקע ירוק/בהיר ב־hero */
   surface?: "dark" | "light";
+  referralTracking?: HeroReferralTracking | null;
 }) {
   const wa = contact.whatsapp ? buildWhatsAppHref(contact.whatsapp) : null;
   const phone = contact.phone?.trim();
@@ -118,25 +160,46 @@ export function TherapistHeroSocialBar({
   const fb = social.facebook ? buildFacebookHref(social.facebook) : null;
   const tt = social.tiktok ? buildTikTokHref(social.tiktok) : null;
 
+  const useReferralLog =
+    referralTracking &&
+    referralTracking.viewerUserId !== referralTracking.therapistUserId &&
+    referralTracking.viewerRole === "client";
+
+  const tid = referralTracking?.therapistProfileId ?? "";
+
   const items: ReactNode[] = [];
-  if (site) items.push(iconWrap(site, "אתר אינטרנט", <IconGlobe className="h-5 w-5" />, surface));
-  if (tt) items.push(iconWrap(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />, surface));
-  if (ig) items.push(iconWrap(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />, surface));
-  if (fb) items.push(iconWrap(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />, surface));
-  if (wa) items.push(iconWrap(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />, surface));
-  if (phone) items.push(iconWrap(buildTelHref(phone), "טלפון", <IconPhone className="h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5" />, surface));
+  if (site) items.push(iconWrapAnchor(site, "אתר אינטרנט", <IconGlobe className="h-5 w-5" />, surface));
+  if (tt) items.push(iconWrapAnchor(tt, "טיקטוק", <IconTikTok className="h-5 w-5" />, surface));
+  if (ig) items.push(iconWrapAnchor(ig, "אינסטגרם", <IconInstagram className="h-5 w-5" />, surface));
+  if (fb) items.push(iconWrapAnchor(fb, "פייסבוק", <IconFacebook className="h-5 w-5" />, surface));
+  if (wa) {
+    items.push(
+      useReferralLog
+        ? iconWrapTracked(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />, surface, "whatsapp", tid)
+        : iconWrapAnchor(wa, "וואטסאפ", <IconWhatsApp className="h-5 w-5" />, surface),
+    );
+  }
+  if (phone) {
+    const tel = buildTelHref(phone);
+    items.push(
+      useReferralLog
+        ? iconWrapTracked(tel, "טלפון", <IconPhone className="h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5" />, surface, "phone", tid)
+        : iconWrapAnchor(tel, "טלפון", <IconPhone className="h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5" />, surface),
+    );
+  }
   if (email && isProbablyValidEmail(email)) {
-    items.push(iconWrap(buildMailto(email), "אימייל", <IconMail className="h-5 w-5" />, surface));
+    const mail = buildMailto(email);
+    items.push(
+      useReferralLog
+        ? iconWrapTracked(mail, "אימייל", <IconMail className="h-5 w-5" />, surface, "email", tid)
+        : iconWrapAnchor(mail, "אימייל", <IconMail className="h-5 w-5" />, surface),
+    );
   }
 
   if (items.length === 0) return null;
 
   return (
-    <div
-      className={`flex flex-wrap items-center gap-2 py-1 ${className}`}
-      aria-label="יצירת קשר"
-      dir="ltr"
-    >
+    <div className={`flex flex-wrap items-center gap-2 py-1 ${className}`} aria-label="יצירת קשר" dir="ltr">
       {items}
     </div>
   );

@@ -23,7 +23,6 @@ import {
 } from "@/lib/content-search";
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
-import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
 import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-image-url";
 
@@ -107,7 +106,6 @@ export function TherapistPublicPageView({
   const showSupervision =
     profile.acceptsSupervisionRequests && profile.supervisionHourlyRate != null && Number(profile.supervisionHourlyRate) > 0;
 
-  const portfolioTimeline = parsePortfolioTimeline(profile.portfolioTimeline);
   const publicEmail = contact.email?.trim();
   const requestMailto =
     publicEmail && isProbablyValidEmail(publicEmail)
@@ -119,6 +117,18 @@ export function TherapistPublicPageView({
   const bookAppointmentHref = profile.showPublicCalendar
     ? "#therapist-booking"
     : requestMailto ?? waHref ?? phoneHref ?? null;
+
+  const referralTracking =
+    viewer?.userId &&
+    viewer.userId !== profile.user.id &&
+    viewer.role === "client"
+      ? {
+          therapistProfileId: profile.id,
+          therapistUserId: profile.user.id,
+          viewerUserId: viewer.userId,
+          viewerRole: viewer.role,
+        }
+      : null;
 
   return (
     <article className="mx-auto w-full max-w-[1320px] px-0 pb-12 pt-0 sm:px-4 sm:pb-16 md:px-6" dir="rtl">
@@ -132,23 +142,14 @@ export function TherapistPublicPageView({
           contact={contact}
           social={social}
           publicTherapistTitle={publicTherapistTitle}
-          portfolioTimeline={portfolioTimeline}
           bookAppointmentHref={bookAppointmentHref}
+          referralTracking={referralTracking}
         />
       </header>
 
-      {profile.bio?.trim() || profile.clinicalExperience?.trim() ? (
+      {profile.bio?.trim() ? (
         <div className="mx-auto w-full max-w-5xl px-4 py-6 text-right sm:px-6 sm:py-8">
-          {profile.bio?.trim() ? (
-            <p className="whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio.trim()}</p>
-          ) : null}
-          {profile.clinicalExperience?.trim() ? (
-            <p
-              className={`whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg ${profile.bio?.trim() ? "mt-5" : ""}`}
-            >
-              {profile.clinicalExperience.trim()}
-            </p>
-          ) : null}
+          <p className="whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio.trim()}</p>
         </div>
       ) : null}
 

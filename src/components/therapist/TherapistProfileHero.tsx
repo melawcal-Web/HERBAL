@@ -1,6 +1,5 @@
 import type { ParsedContactInfo, ParsedSocialLinks } from "@/lib/therapist-contact";
-import { formatTimelineYears, type PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
-import { TherapistHeroSocialBar } from "@/components/therapist/TherapistHeroSocialBar";
+import { TherapistHeroSocialBar, type HeroReferralTracking } from "@/components/therapist/TherapistHeroSocialBar";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 
 type Props = {
@@ -14,23 +13,17 @@ type Props = {
   contact: ParsedContactInfo;
   social: ParsedSocialLinks;
   publicTherapistTitle: "male" | "female";
-  portfolioTimeline: PortfolioTimelineEntry[];
   /** יומן (#therapist-booking), mailto, וואטסאפ או טלפון */
   bookAppointmentHref: string | null;
+  referralTracking?: HeroReferralTracking | null;
 };
-
-function clip(s: string, max: number) {
-  const t = s.trim();
-  if (t.length <= max) return t;
-  return `${t.slice(0, max - 1)}…`;
-}
 
 const roleLine =
   "text-[10px] font-black uppercase tracking-[0.22em] text-herbal-600 sm:text-[11px]";
 
 /**
  * Hero דו־עמודתי (RTL): ימין — שם, תפקיד, עיר, תמונה בעיגול מתוך כיסוי הצבע.
- * שמאל — פאנל ירוק עם ציר זמן ואייקונים (ללא גלילה אופקית).
+ * שמאל — פאנל ירוק עם מומחיות ואייקוני קשר.
  */
 export function TherapistProfileHero({
   heroCoverUrl,
@@ -41,8 +34,8 @@ export function TherapistProfileHero({
   contact,
   social,
   publicTherapistTitle,
-  portfolioTimeline,
   bookAppointmentHref,
+  referralTracking,
 }: Props) {
   const roleHe = publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
 
@@ -51,7 +44,6 @@ export function TherapistProfileHero({
       className="relative mx-auto flex min-h-[min(48vh,440px)] w-full max-w-[920px] flex-col overflow-hidden bg-neutral-50 md:min-h-[min(52vh,500px)] md:flex-row"
       dir="rtl"
     >
-      {/* עמודת שם — צרה, צמודה לימין */}
       <div className="relative z-10 flex w-full shrink-0 flex-col items-center gap-1 px-5 py-8 text-center sm:w-[min(100%,260px)] sm:items-end sm:justify-center sm:px-6 sm:py-10 sm:text-right md:w-[min(100%,280px)] md:px-8 md:py-12">
         <ProfileAvatar
           imageUrl={heroCoverUrl}
@@ -76,7 +68,6 @@ export function TherapistProfileHero({
         ) : null}
       </div>
 
-      {/* עמודה ירוקה — תופסת את שאר הרוחב */}
       <div
         className="relative flex min-h-[min(36vh,320px)] min-w-0 flex-1 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 pb-7 pt-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:min-h-0 sm:border-t-0 sm:border-s sm:border-emerald-200/70 sm:px-6 sm:pb-9 sm:pt-10 md:px-7 md:pb-10 md:pt-12"
         dir="rtl"
@@ -99,31 +90,14 @@ export function TherapistProfileHero({
               </ul>
             ) : null}
 
-            {portfolioTimeline.length > 0 ? (
-              <div className={specialties.length > 0 ? "mt-4" : ""}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-emerald-900/65">ציר זמן — תקופות</p>
-                <ul className="mt-3 space-y-2 text-sm text-emerald-950">
-                  {portfolioTimeline.map((e) => (
-                    <li
-                      key={e.id}
-                      className="flex flex-wrap items-baseline gap-2 border-b border-emerald-200/40 pb-2 text-right last:border-0 last:pb-0"
-                    >
-                      <span className="shrink-0 font-mono text-xs font-bold text-emerald-800" dir="ltr">
-                        {formatTimelineYears(e) || "—"}
-                      </span>
-                      {e.description.trim() ? (
-                        <span className="text-xs leading-snug text-emerald-900/90">{clip(e.description, 80)}</span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className={`text-sm text-emerald-900/75 ${specialties.length > 0 ? "mt-4" : ""}`}>אין תקופות שסומנו בציר הזמן.</p>
-            )}
-
-            <div className="mt-4 w-full" dir="ltr">
-              <TherapistHeroSocialBar contact={contact} social={social} className="justify-start" surface="light" />
+            <div className={`w-full ${specialties.length > 0 ? "mt-4" : ""}`} dir="ltr">
+              <TherapistHeroSocialBar
+                contact={contact}
+                social={social}
+                className="justify-start"
+                surface="light"
+                referralTracking={referralTracking ?? undefined}
+              />
             </div>
           </div>
         </div>

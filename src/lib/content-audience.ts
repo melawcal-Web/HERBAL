@@ -24,6 +24,7 @@ export function audienceLabels(ids: ContentAudienceId[]): string {
 }
 
 export type ContentViewer = {
+  userId: string;
   role: UserRole;
   registrationPersona: RegistrationPersona | null;
 };

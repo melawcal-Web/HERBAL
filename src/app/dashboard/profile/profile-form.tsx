@@ -6,13 +6,9 @@ import { useSession } from "next-auth/react";
 import { updateTherapistProfile } from "@/app/actions/profile";
 import { ImagePicker } from "@/components/dashboard/ImagePicker";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
-import { PortfolioTimelineEditor } from "@/components/dashboard/PortfolioTimelineEditor";
-import type { PortfolioTimelineEntry } from "@/lib/portfolio-timeline";
-
 type Initial = {
   slug: string;
   bio: string;
-  clinicalExperience: string;
   specialty1: string;
   specialty2: string;
   specialty3: string;
@@ -28,7 +24,6 @@ type Initial = {
   instagram: string;
   facebook: string;
   tiktok: string;
-  portfolioTimeline: PortfolioTimelineEntry[];
   showPublicCalendar: boolean;
 };
 
@@ -36,7 +31,6 @@ function profileFormSnapshot(i: Initial): string {
   return JSON.stringify({
     slug: i.slug,
     bio: i.bio,
-    clinicalExperience: i.clinicalExperience,
     specialty1: i.specialty1,
     specialty2: i.specialty2,
     specialty3: i.specialty3,
@@ -53,12 +47,6 @@ function profileFormSnapshot(i: Initial): string {
     facebook: i.facebook,
     tiktok: i.tiktok,
     showPublicCalendar: i.showPublicCalendar,
-    portfolioTimeline: i.portfolioTimeline.map((e) => ({
-      id: e.id,
-      yearFrom: e.yearFrom,
-      yearTo: e.yearTo,
-      description: e.description,
-    })),
   });
 }
 
@@ -93,7 +81,6 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         await updateTherapistProfile({
           slug: form.slug,
           bio: form.bio,
-          clinicalExperience: form.clinicalExperience,
           specialty1: form.specialty1,
           specialty2: form.specialty2,
           specialty3: form.specialty3,
@@ -112,7 +99,6 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           instagram: form.instagram,
           facebook: form.facebook,
           tiktok: form.tiktok,
-          portfolioTimeline: form.portfolioTimeline,
           showPublicCalendar: form.showPublicCalendar,
         });
         setOk(true);
@@ -188,19 +174,6 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           className="mt-1 w-full min-h-[140px] rounded-xl border border-herbal-200 px-3 py-2"
           value={form.bio}
           onChange={(e) => setForm({ ...form, bio: e.target.value })}
-        />
-      </div>
-      <PortfolioTimelineEditor
-        value={form.portfolioTimeline}
-        onChange={(portfolioTimeline) => setForm({ ...form, portfolioTimeline })}
-      />
-      <div>
-        <label className="text-sm font-medium text-slate-700">ניסיון קליני והשכלה — טקסט חופשי (אופציונלי)</label>
-        <textarea
-          className="mt-1 w-full min-h-[120px] rounded-xl border border-herbal-200 px-3 py-2"
-          placeholder="הכשרות, קורסים, שנות ניסיון בתחומים ספציפיים…"
-          value={form.clinicalExperience}
-          onChange={(e) => setForm({ ...form, clinicalExperience: e.target.value })}
         />
       </div>
       <div className="rounded-2xl border border-herbal-200/80 bg-herbal-50/40 p-4">

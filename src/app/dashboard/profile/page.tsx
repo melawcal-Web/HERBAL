@@ -11,7 +11,6 @@ import { therapistPublicHref } from "@/lib/therapist-public";
 import { ProfileForm } from "./profile-form";
 import { TherapistSchedulePanel } from "@/components/dashboard/TherapistSchedulePanel";
 import { getTherapistScheduleDashboardData } from "@/app/actions/appointments";
-import { parsePortfolioTimeline } from "@/lib/portfolio-timeline";
 
 
 
@@ -134,8 +133,6 @@ export default async function TherapistProfilePage() {
 
             bio: profile.bio ?? "",
 
-            clinicalExperience: profile.clinicalExperience ?? "",
-
             specialty1: profile.specialty1 ?? "",
 
             specialty2: profile.specialty2 ?? "",
@@ -167,8 +164,6 @@ export default async function TherapistProfilePage() {
             facebook: social.facebook ?? "",
 
             tiktok: social.tiktok ?? "",
-
-            portfolioTimeline: parsePortfolioTimeline(profile.portfolioTimeline),
 
             showPublicCalendar: profile.showPublicCalendar ?? false,
 

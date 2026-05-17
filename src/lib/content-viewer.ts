@@ -13,6 +13,7 @@ export async function getContentViewer(): Promise<ContentViewer | null> {
   if (!row) return null;
 
   return {
+    userId: session.user.id,
     role: row.role,
     registrationPersona: row.registrationPersona,
   };

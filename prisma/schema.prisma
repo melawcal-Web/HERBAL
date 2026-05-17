@@ -88,6 +88,13 @@ enum AppointmentRequestStatus {
   cancelled
 }
 
+/** ערוץ דרכו לקוח פנה למטפל — לדוחות פניות */
+enum ReferralChannel {
+  phone
+  email
+  whatsapp
+}
+
 model User {
   id               String               @id @default(cuid())
   name             String
@@ -120,6 +127,7 @@ model User {
   therapistAcquisitions ContentAcquisition[] @relation("AcquisitionTherapist")
   manualAccessRequestsAsClient ManualAccessRequest[] @relation("ManualAccessClient")
   manualAccessRequestsAsTherapist ManualAccessRequest[] @relation("ManualAccessTherapist")
+  therapistReferralsAsClient TherapistReferral[] @relation("ReferralClient")
 
   @@map("users")
 }
@@ -131,8 +139,6 @@ model TherapistProfile {
   /** כותרת ציבורית בדף המטפל: male = מטפל בצמחי מרפא, female = מטפלת בצמחי מרפא */
   publicTherapistTitle String @default("female") @map("public_therapist_title") @db.VarChar(16)
   bio          String   @db.Text
-  /** ניסיון קליני, הכשרות והשכלה — מוצג בדף הציבורי */
-  clinicalExperience String? @map("clinical_experience") @db.Text
   specialty1   String   @map("specialty_1")
   specialty2   String   @map("specialty_2")
   specialty3   String   @map("specialty_3")
@@ -154,8 +160,32 @@ model TherapistProfile {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals TherapistReferral[]
 
   @@map("therapist_profiles")
+}
+
+/** פניית לקוח למטפל (טלפון / מייל / וואטסאפ) — לדוחות ניהול */
+model TherapistReferral {
+  id                    String          @id @default(cuid())
+  createdAt             DateTime        @default(now()) @map("created_at")
+  therapistProfileId    String          @map("therapist_profile_id")
+  therapistUserId       String          @map("therapist_user_id")
+  therapistNameSnapshot String          @map("therapist_name_snapshot") @db.VarChar(200)
+  therapistPublicPath   String          @map("therapist_public_path") @db.VarChar(256)
+  clientUserId          String          @map("client_user_id")
+  clientNameSnapshot    String          @map("client_name_snapshot") @db.VarChar(200)
+  clientEmailSnapshot   String          @map("client_email_snapshot") @db.VarChar(320)
+  clientPhoneSnapshot   String?         @map("client_phone_snapshot") @db.VarChar(64)
+  clientAdminPath       String          @map("client_admin_path") @db.VarChar(320)
+  channel               ReferralChannel
+
+  therapistProfile TherapistProfile @relation(fields: [therapistProfileId], references: [id], onDelete: Cascade)
+  client           User             @relation("ReferralClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+
+  @@index([therapistProfileId, createdAt])
+  @@index([clientUserId, createdAt])
+  @@map("therapist_referrals")
 }
 
 model ClinicalLog {
