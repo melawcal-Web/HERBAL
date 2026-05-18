@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
@@ -295,7 +296,7 @@ export async function saveTherapistScheduleSettings(input: {
     where: { id: profile.id },
     data: {
       availabilityOpenUntil: openUntilDate,
-      calendarSlotDefinitions: useDefs ? defs : null,
+      calendarSlotDefinitions: useDefs ? defs : Prisma.DbNull,
       weeklyAvailability: useDefs ? {} : input.weeklyFallback,
     },
   });
