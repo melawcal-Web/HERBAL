@@ -6,7 +6,7 @@ import {
   saveTherapistScheduleSettings,
   setAppointmentRecurringWeekly,
 } from "@/app/actions/appointments";
-import { AppointmentWeekDiary } from "@/components/calendar/AppointmentWeekDiary";
+import { TherapistDashboardMonthCalendar } from "@/components/dashboard/TherapistDashboardMonthCalendar";
 import type { WeeklyAvailability } from "@/lib/therapist-availability";
 import type { CalendarSlotDefinition } from "@/lib/calendar-slot-definitions";
 
@@ -119,7 +119,7 @@ export function TherapistSchedulePanel({
       <div>
         <h2 className="font-display text-lg font-bold text-herbal-900">יומן וזמינות</h2>
         <p className="mt-1 text-sm text-slate-600">
-          הוסיפו חלונות לפי תאריך ושעה. ניתן לסמן חזרה שבועית ומספר מופעים. אם אין חלונות פנויים, מבקרים יראו טופס בקשת פגישה.
+          היומן מציג פנוי (כחול) ותורים/בקשות (אדום). לחיצה על יום פותחת פירוט. להלן הוספת חלונות לפי תאריך ושעה, חזרה שבועית ומספר מופעים.
         </p>
 
         <label className="mt-4 block text-sm font-medium text-herbal-900">
@@ -132,7 +132,17 @@ export function TherapistSchedulePanel({
           />
         </label>
 
-        <p className="mt-6 text-sm font-semibold text-herbal-900">הוספת זמינות (לוח)</p>
+        <div className="mt-6">
+          <TherapistDashboardMonthCalendar
+            weeklyAvailability={weeklyFallback}
+            definitions={definitions}
+            openUntil={openUntilDate}
+            bookedBlocks={booked}
+            appointments={appointments}
+          />
+        </div>
+
+        <p className="mt-6 text-sm font-semibold text-herbal-900">הוספת זמינות</p>
         <div className="mt-3 grid gap-3 rounded-xl border border-herbal-50 bg-herbal-50/30 p-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
             תאריך
@@ -216,19 +226,6 @@ export function TherapistSchedulePanel({
           {pending ? "שומר…" : "שמירת יומן וזמינות"}
         </button>
         {msg ? <p className="mt-2 text-sm text-herbal-700">{msg}</p> : null}
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold text-herbal-900">תצוגת מה שפתוח למבקרים</p>
-        <div className="mt-3">
-          <AppointmentWeekDiary
-            weeklyAvailability={weeklyFallback}
-            calendarDefinitionsRaw={definitions}
-            openUntil={openUntilDate}
-            booked={booked}
-            emptyMessage="אין חלונות פנויים — עדכנו לוח או תאריך סיום."
-          />
-        </div>
       </div>
 
       <div>
