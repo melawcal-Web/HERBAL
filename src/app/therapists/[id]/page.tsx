@@ -62,6 +62,7 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
         slotEnd: true,
         recurringWeekly: true,
         status: true,
+        kind: true,
       },
     }),
   ]);

@@ -12,6 +12,7 @@ const CHANNEL_LABEL: Record<ReferralChannel, string> = {
   phone: "טלפון",
   email: "מייל",
   whatsapp: "וואטסאפ",
+  meeting_request: "בקשת פגישה",
 };
 
 type Search = { from: string; to: string; therapist: string };
@@ -120,7 +121,7 @@ export default async function AdminReferralsPage({
       </form>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-herbal-100 bg-white/90 shadow-sm">
-        <table className="w-full min-w-[960px] text-right text-sm">
+        <table className="w-full min-w-[1080px] text-right text-sm">
           <thead>
             <tr className="border-b border-herbal-100 bg-herbal-50/80 text-xs uppercase tracking-wide text-slate-600">
               <th className="px-3 py-3 font-semibold">מועד</th>
@@ -129,12 +130,13 @@ export default async function AdminReferralsPage({
               <th className="px-3 py-3 font-semibold">לקוח/ה</th>
               <th className="px-3 py-3 font-semibold">אימייל לקוח</th>
               <th className="px-3 py-3 font-semibold">טלפון לקוח</th>
+              <th className="px-3 py-3 font-semibold">הערה</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-herbal-100">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-600">
+                <td colSpan={7} className="px-4 py-10 text-center text-slate-600">
                   אין רשומות התואמות לסינון.
                 </td>
               </tr>
@@ -164,6 +166,13 @@ export default async function AdminReferralsPage({
                   </td>
                   <td className="px-3 py-3 font-mono text-xs text-slate-700" dir="ltr">
                     {r.clientPhoneSnapshot ?? "—"}
+                  </td>
+                  <td className="max-w-[min(280px,28vw)] px-3 py-3 align-top text-xs text-slate-700">
+                    {r.referralNote?.trim() ? (
+                      <span className="line-clamp-4 whitespace-pre-wrap break-words">{r.referralNote.trim()}</span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                 </tr>
               ))

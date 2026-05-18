@@ -204,6 +204,7 @@ export async function duplicateTherapistProfile(sourceUserId: string): Promise<{
           contactInfo: p.contactInfo as object,
           socialLinks: p.socialLinks as object,
           weeklyAvailability: p.weeklyAvailability ?? undefined,
+          calendarSlotDefinitions: p.calendarSlotDefinitions ?? undefined,
           availabilityOpenUntil: p.availabilityOpenUntil,
           showPublicCalendar: p.showPublicCalendar,
           portfolioTimeline: p.portfolioTimeline ?? undefined,

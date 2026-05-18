@@ -93,6 +93,12 @@ enum ReferralChannel {
   phone
   email
   whatsapp
+  meeting_request
+}
+
+enum AppointmentRequestKind {
+  time_slot
+  open_inquiry
 }
 
 model User {
@@ -150,8 +156,10 @@ model TherapistProfile {
   supervisionHourlyRate Decimal? @map("supervision_hourly_rate") @db.Decimal(10, 2)
   contactInfo  Json     @map("contact_info")
   socialLinks  Json     @map("social_links")
-  /** שעות זמינות שבועיות לפגישות — JSON { "0": [{ "start": "09:00", "end": "12:00" }], ... } (0=ראשון) */
+  /** שעות זמינות שבועיות (פורמט ישן) — JSON { "0": [{ "start": "09:00", "end": "12:00" }], ... } */
   weeklyAvailability Json? @map("weekly_availability")
+  /** זמינות לפי תאריכים — מערך { id, startISO, endISO, repeatWeekly, occurrences } */
+  calendarSlotDefinitions Json? @map("calendar_slot_definitions")
   /** עד תאריך זה ניתן לקבוע פגישות מהיומן הציבורי */
   availabilityOpenUntil DateTime? @map("availability_open_until")
   /** האם להציג בדף הציבורי את לוח הזמנים / מועדים פנויים */
@@ -181,6 +189,8 @@ model TherapistReferral {
   clientPhoneSnapshot   String?         @map("client_phone_snapshot") @db.VarChar(64)
   clientAdminPath       String          @map("client_admin_path") @db.VarChar(320)
   channel               ReferralChannel
+  /** טקסט בקשה (למשל בקשת פגישה כללית) */
+  referralNote          String?         @map("referral_note") @db.VarChar(2000)
 
   therapistProfile TherapistProfile @relation(fields: [therapistProfileId], references: [id], onDelete: Cascade)
   client           User             @relation("ReferralClient", fields: [clientUserId], references: [id], onDelete: Cascade)
@@ -288,6 +298,7 @@ model AppointmentRequest {
   guestPhone   String?                  @map("guest_phone") @db.VarChar(64)
   slotStart    DateTime                 @map("slot_start")
   slotEnd      DateTime                 @map("slot_end")
+  kind         AppointmentRequestKind   @default(time_slot) @map("kind")
   status       AppointmentRequestStatus @default(pending)
   /** פגישה חוזרת בשבוע באותו מועד */
   recurringWeekly Boolean @default(false) @map("recurring_weekly")

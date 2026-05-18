@@ -3,15 +3,16 @@
 import { useMemo, useState } from "react";
 import {
   APPOINTMENT_SLOT_MINUTES,
-  buildOpenSlots,
   formatHourSlot,
   groupSlotsByDay,
   type HourSlot,
   type WeeklyAvailability,
 } from "@/lib/therapist-availability";
+import { buildPublicOpenSlots } from "@/lib/calendar-slot-definitions";
 
 type Props = {
-  availability: WeeklyAvailability;
+  weeklyAvailability: WeeklyAvailability;
+  calendarDefinitionsRaw: unknown;
   openUntil?: Date | null;
   booked?: { start: Date; end: Date }[];
   selected?: HourSlot | null;
@@ -20,7 +21,8 @@ type Props = {
 };
 
 export function AppointmentWeekDiary({
-  availability,
+  weeklyAvailability,
+  calendarDefinitionsRaw,
   openUntil,
   booked = [],
   selected,
@@ -38,13 +40,13 @@ export function AppointmentWeekDiary({
 
   const slots = useMemo(
     () =>
-      buildOpenSlots(availability, {
+      buildPublicOpenSlots(weeklyAvailability, calendarDefinitionsRaw, {
         weeksAhead: 1,
         weekStart,
         openUntil,
         booked,
       }),
-    [availability, weekStart, openUntil, booked],
+    [weeklyAvailability, calendarDefinitionsRaw, weekStart, openUntil, booked],
   );
 
   const days = useMemo(() => groupSlotsByDay(slots), [slots]);

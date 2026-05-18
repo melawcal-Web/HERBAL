@@ -7,9 +7,8 @@ import {
   setAppointmentRecurringWeekly,
 } from "@/app/actions/appointments";
 import { AppointmentWeekDiary } from "@/components/calendar/AppointmentWeekDiary";
-import { dayLabel, type WeeklyAvailability } from "@/lib/therapist-availability";
-
-const DAYS = [0, 1, 2, 3, 4, 5, 6];
+import type { WeeklyAvailability } from "@/lib/therapist-availability";
+import type { CalendarSlotDefinition } from "@/lib/calendar-slot-definitions";
 
 type ApptRow = {
   id: string;
@@ -19,62 +18,79 @@ type ApptRow = {
   slotEnd: string;
   status: string;
   recurringWeekly: boolean;
+  kind: "time_slot" | "open_inquiry";
 };
 
 type Props = {
   initialAvailability: WeeklyAvailability;
+  initialDefinitions: CalendarSlotDefinition[];
   initialOpenUntil: string | null;
   initialAppointments: ApptRow[];
 };
 
 export function TherapistSchedulePanel({
   initialAvailability,
+  initialDefinitions,
   initialOpenUntil,
   initialAppointments,
 }: Props) {
-  const [availability, setAvailability] = useState<WeeklyAvailability>(initialAvailability);
+  const [weeklyFallback] = useState<WeeklyAvailability>(initialAvailability);
+  const [definitions, setDefinitions] = useState<CalendarSlotDefinition[]>(initialDefinitions);
   const [openUntil, setOpenUntil] = useState(initialOpenUntil ?? "");
   const [appointments, setAppointments] = useState(initialAppointments);
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
 
+  const [newDate, setNewDate] = useState("");
+  const [newStart, setNewStart] = useState("09:00");
+  const [newEnd, setNewEnd] = useState("10:00");
+  const [newRepeat, setNewRepeat] = useState(false);
+  const [newOccurrences, setNewOccurrences] = useState(4);
+
   const booked = useMemo(
     () =>
       appointments
-        .filter((a) => a.status !== "cancelled" && a.status !== "rejected")
+        .filter((a) => a.status !== "cancelled" && a.status !== "rejected" && a.kind === "time_slot")
         .map((a) => ({ start: new Date(a.slotStart), end: new Date(a.slotEnd) })),
     [appointments],
   );
 
   const openUntilDate = openUntil ? new Date(openUntil) : null;
 
-  const addSlot = (day: number) => {
-    const key = String(day);
-    const next = { ...availability };
-    next[key] = [...(next[key] ?? []), { start: "09:00", end: "17:00" }];
-    setAvailability(next);
+  const addDefinition = () => {
+    if (!newDate) {
+      setMsg("בחרו תאריך.");
+      return;
+    }
+    const start = new Date(`${newDate}T${newStart}:00`);
+    const end = new Date(`${newDate}T${newEnd}:00`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+      setMsg("שעות לא תקינות.");
+      return;
+    }
+    const occ = newRepeat ? Math.min(52, Math.max(1, newOccurrences)) : 1;
+    setDefinitions((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        startISO: start.toISOString(),
+        endISO: end.toISOString(),
+        repeatWeekly: newRepeat,
+        occurrences: occ,
+      },
+    ]);
+    setMsg(null);
   };
 
-  const updateSlot = (day: number, idx: number, field: "start" | "end", value: string) => {
-    const key = String(day);
-    const slots = [...(availability[key] ?? [])];
-    slots[idx] = { ...slots[idx]!, [field]: value };
-    setAvailability({ ...availability, [key]: slots });
-  };
-
-  const removeSlot = (day: number, idx: number) => {
-    const key = String(day);
-    const slots = (availability[key] ?? []).filter((_, i) => i !== idx);
-    const next = { ...availability };
-    if (slots.length) next[key] = slots;
-    else delete next[key];
-    setAvailability(next);
+  const removeDefinition = (id: string) => {
+    setDefinitions((prev) => prev.filter((d) => d.id !== id));
   };
 
   const saveSettings = () => {
     startTransition(async () => {
       await saveTherapistScheduleSettings({
-        availability,
+        definitions,
+        weeklyFallback,
         openUntil: openUntil || null,
       });
       setMsg("הגדרות היומן נשמרו.");
@@ -89,12 +105,21 @@ export function TherapistSchedulePanel({
     });
   };
 
+  const fmtDef = (d: CalendarSlotDefinition) => {
+    const s = new Date(d.startISO);
+    const e = new Date(d.endISO);
+    const day = s.toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "short" });
+    const ts = s.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    const te = e.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    return `${day} · ${ts}–${te}${d.repeatWeekly ? ` · חוזר ${d.occurrences} שבועות` : ""}`;
+  };
+
   return (
     <section className="mt-10 space-y-8 rounded-2xl border border-herbal-100 bg-white p-5 shadow-sm">
       <div>
         <h2 className="font-display text-lg font-bold text-herbal-900">יומן וזמינות</h2>
         <p className="mt-1 text-sm text-slate-600">
-          הגדירו מתי אתם פנויים, עד איזה תאריך ניתן להזמין, וסמנו פגישות חוזרות שבועית.
+          הוסיפו חלונות לפי תאריך ושעה. ניתן לסמן חזרה שבועית ומספר מופעים. אם אין חלונות פנויים, מבקרים יראו טופס בקשת פגישה.
         </p>
 
         <label className="mt-4 block text-sm font-medium text-herbal-900">
@@ -107,39 +132,80 @@ export function TherapistSchedulePanel({
           />
         </label>
 
-        <p className="mt-6 text-sm font-semibold text-herbal-900">שעות זמינות שבועיות (חלונות של שעה)</p>
-        <div className="mt-3 space-y-3">
-          {DAYS.map((d) => (
-            <div key={d} className="rounded-xl border border-herbal-50 bg-herbal-50/30 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold">{dayLabel(d)}</span>
-                <button type="button" onClick={() => addSlot(d)} className="text-xs font-semibold text-herbal-700">
-                  + חלון
-                </button>
-              </div>
-              {(availability[String(d)] ?? []).map((slot, idx) => (
-                <div key={idx} className="mt-2 flex flex-wrap items-center gap-2">
-                  <input
-                    type="time"
-                    value={slot.start}
-                    onChange={(e) => updateSlot(d, idx, "start", e.target.value)}
-                    className="rounded-lg border border-herbal-200 px-2 py-1 text-sm"
-                  />
-                  <span className="text-slate-400">עד</span>
-                  <input
-                    type="time"
-                    value={slot.end}
-                    onChange={(e) => updateSlot(d, idx, "end", e.target.value)}
-                    className="rounded-lg border border-herbal-200 px-2 py-1 text-sm"
-                  />
-                  <button type="button" onClick={() => removeSlot(d, idx)} className="text-xs text-rose-600">
-                    הסרה
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))}
+        <p className="mt-6 text-sm font-semibold text-herbal-900">הוספת זמינות (לוח)</p>
+        <div className="mt-3 grid gap-3 rounded-xl border border-herbal-50 bg-herbal-50/30 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+            תאריך
+            <input
+              type="date"
+              className="rounded-lg border border-herbal-200 px-2 py-2 text-sm"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+            שעת התחלה
+            <input
+              type="time"
+              className="rounded-lg border border-herbal-200 px-2 py-2 text-sm"
+              value={newStart}
+              onChange={(e) => setNewStart(e.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+            שעת סיום
+            <input
+              type="time"
+              className="rounded-lg border border-herbal-200 px-2 py-2 text-sm"
+              value={newEnd}
+              onChange={(e) => setNewEnd(e.target.value)}
+            />
+          </label>
+          <div className="flex flex-col justify-end gap-2">
+            <label className="flex items-center gap-2 text-xs font-semibold text-herbal-900">
+              <input type="checkbox" checked={newRepeat} onChange={(e) => setNewRepeat(e.target.checked)} />
+              חוזר מדי שבוע
+            </label>
+            {newRepeat ? (
+              <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+                כמה פעמים (שבועות)
+                <input
+                  type="number"
+                  min={1}
+                  max={52}
+                  className="rounded-lg border border-herbal-200 px-2 py-2 text-sm"
+                  value={newOccurrences}
+                  onChange={(e) => setNewOccurrences(Number(e.target.value))}
+                />
+              </label>
+            ) : null}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={addDefinition}
+          className="mt-3 rounded-full border border-herbal-300 bg-white px-5 py-2 text-sm font-semibold text-herbal-900 hover:bg-herbal-50"
+        >
+          הוספה לרשימה
+        </button>
+
+        {definitions.length > 0 ? (
+          <ul className="mt-4 space-y-2">
+            {definitions.map((d) => (
+              <li
+                key={d.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-herbal-100 bg-white px-3 py-2 text-sm"
+              >
+                <span className="text-herbal-900">{fmtDef(d)}</span>
+                <button type="button" onClick={() => removeDefinition(d.id)} className="text-xs font-semibold text-rose-600 hover:underline">
+                  הסרה
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-slate-600">אין עדיין חלונות בלוח. אם קיימת זמינות בפורמט שבועי ישן בלבד, היא עדיין פעילה עד שתשמרו כאן לוח חדש.</p>
+        )}
 
         <button
           type="button"
@@ -156,16 +222,17 @@ export function TherapistSchedulePanel({
         <p className="text-sm font-semibold text-herbal-900">תצוגת מה שפתוח למבקרים</p>
         <div className="mt-3">
           <AppointmentWeekDiary
-            availability={availability}
+            weeklyAvailability={weeklyFallback}
+            calendarDefinitionsRaw={definitions}
             openUntil={openUntilDate}
             booked={booked}
-            emptyMessage="אין חלונות פנויים — עדכנו שעות או תאריך סיום."
+            emptyMessage="אין חלונות פנויים — עדכנו לוח או תאריך סיום."
           />
         </div>
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-herbal-900">פגישות שנקבעו</p>
+        <p className="text-sm font-semibold text-herbal-900">פגישות ובקשות</p>
         {appointments.length === 0 ? (
           <p className="mt-2 text-sm text-slate-600">אין בקשות עדיין.</p>
         ) : (
@@ -173,18 +240,24 @@ export function TherapistSchedulePanel({
             {appointments.map((a) => (
               <li key={a.id} className="rounded-xl border border-herbal-100 bg-herbal-50/40 p-3 text-sm">
                 <p className="font-semibold text-herbal-900">
-                  {a.guestName} · {new Date(a.slotStart).toLocaleString("he-IL")}
+                  {a.kind === "open_inquiry" ? "בקשת פגישה (כללית)" : "בקשת מועד ביומן"}{" "}
+                  · {a.guestName}
                 </p>
+                {a.kind === "time_slot" ? (
+                  <p className="text-xs text-slate-700">{new Date(a.slotStart).toLocaleString("he-IL")}</p>
+                ) : null}
                 <p className="text-xs text-slate-600">{a.guestEmail}</p>
-                <label className="mt-2 flex items-center gap-2 text-xs font-medium text-herbal-800">
-                  <input
-                    type="checkbox"
-                    checked={a.recurringWeekly}
-                    onChange={(e) => toggleRecurring(a.id, e.target.checked)}
-                    disabled={pending}
-                  />
-                  חוזר על עצמו שבועית
-                </label>
+                {a.kind === "time_slot" ? (
+                  <label className="mt-2 flex items-center gap-2 text-xs font-medium text-herbal-800">
+                    <input
+                      type="checkbox"
+                      checked={a.recurringWeekly}
+                      onChange={(e) => toggleRecurring(a.id, e.target.checked)}
+                      disabled={pending}
+                    />
+                    חוזר על עצמו שבועית
+                  </label>
+                ) : null}
               </li>
             ))}
           </ul>

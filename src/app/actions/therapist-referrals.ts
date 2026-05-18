@@ -90,3 +90,57 @@ export async function logTherapistContactReferral(input: {
 
   return { url };
 }
+
+/** רישום בקשת פגישה כללית (ללא מועד ביומן) בדוח פניות */
+export async function logMeetingRequestReferral(input: {
+  therapistProfileId: string;
+  note: string;
+  guestPhone: string | null;
+}): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const profile = await prisma.therapistProfile.findFirst({
+    where: {
+      id: input.therapistProfileId,
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
+    include: { user: { select: { id: true, name: true, email: true } } },
+  });
+  if (!profile) return;
+
+  const viewerRole = session.user.role as UserRole;
+  const shouldLog = viewerRole === "client" && session.user.id !== profile.userId;
+  if (!shouldLog) return;
+
+  const clientRow = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, email: true, phone: true },
+  });
+  if (!clientRow) return;
+
+  const displayName = (session.user.name?.trim() || clientRow.name || clientRow.email || "לקוח/ה").slice(0, 200);
+  const phoneSnap =
+    input.guestPhone?.trim() ||
+    clientRow.phone?.trim()?.slice(0, 64) ||
+    null;
+
+  await prisma.therapistReferral.create({
+    data: {
+      therapistProfileId: profile.id,
+      therapistUserId: profile.userId,
+      therapistNameSnapshot: profile.user.name.slice(0, 200),
+      therapistPublicPath: therapistPublicHref(profile.id).slice(0, 256),
+      clientUserId: session.user.id,
+      clientNameSnapshot: displayName,
+      clientEmailSnapshot: clientRow.email.slice(0, 320),
+      clientPhoneSnapshot: phoneSnap,
+      clientAdminPath: clientAdminPathFor(session.user.id).slice(0, 320),
+      channel: "meeting_request",
+      referralNote: input.note.trim().slice(0, 2000),
+    },
+  });
+  revalidatePath("/admin/referrals");
+}

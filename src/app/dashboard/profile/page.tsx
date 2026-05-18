@@ -70,6 +70,7 @@ export default async function TherapistProfilePage() {
 
   let schedule: Awaited<ReturnType<typeof getTherapistScheduleDashboardData>> = {
     availability: {},
+    definitions: [],
     openUntil: null,
     appointments: [],
   };
@@ -175,6 +176,7 @@ export default async function TherapistProfilePage() {
 
       <TherapistSchedulePanel
         initialAvailability={schedule.availability}
+        initialDefinitions={schedule.definitions}
         initialOpenUntil={schedule.openUntil}
         initialAppointments={schedule.appointments}
       />

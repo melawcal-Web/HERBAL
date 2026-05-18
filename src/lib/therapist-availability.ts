@@ -132,13 +132,14 @@ export function formatHourSlot(s: HourSlot): string {
   return `${t}–${t2}`;
 }
 
-/** מרחיב פגישות חוזרות שבועית לחסימת מועדים ביומן */
+/** מרחיב פגישות חוזרות שבועית לחסימת מועדים ביומן (לא כולל בקשות כלליות ללא מועד) */
 export function expandBookedAppointments(
-  rows: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string }[],
+  rows: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string; kind?: "time_slot" | "open_inquiry" }[],
   weeksAhead = 12,
 ): { start: Date; end: Date }[] {
   const out: { start: Date; end: Date }[] = [];
   for (const row of rows) {
+    if (row.kind === "open_inquiry") continue;
     if (row.status === "cancelled" || row.status === "rejected") continue;
     if (!row.recurringWeekly) {
       out.push({ start: row.slotStart, end: row.slotEnd });

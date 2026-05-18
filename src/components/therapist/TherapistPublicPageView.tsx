@@ -69,7 +69,7 @@ export function TherapistPublicPageView({
     type?: string;
   };
   openUntil?: Date | null;
-  bookedAppointments?: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string }[];
+  bookedAppointments?: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string; kind?: "time_slot" | "open_inquiry" }[];
   viewer?: ContentViewer | null;
 }) {
   const contact = parseContactInfo(profile.contactInfo);
@@ -170,10 +170,10 @@ export function TherapistPublicPageView({
             therapistUserId={profile.user.id}
             therapistProfileId={profile.id}
             availability={availability}
+            calendarDefinitionsRaw={profile.calendarSlotDefinitions}
             openUntil={openUntil}
             booked={booked}
             enabled={profile.showPublicCalendar}
-            requestMailto={requestMailto}
           />
         </Suspense>
 
