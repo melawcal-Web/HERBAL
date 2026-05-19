@@ -56,7 +56,6 @@ export function TherapistPublicPageView({
   articles = [],
   products = [],
   searchParams = {},
-  openUntil = null,
   bookedAppointments = [],
   viewer = null,
 }: {
@@ -68,7 +67,6 @@ export function TherapistPublicPageView({
     tag?: string;
     type?: string;
   };
-  openUntil?: Date | null;
   bookedAppointments?: { slotStart: Date; slotEnd: Date; recurringWeekly: boolean; status: string; kind?: "time_slot" | "open_inquiry" }[];
   viewer?: ContentViewer | null;
 }) {
@@ -171,7 +169,6 @@ export function TherapistPublicPageView({
             therapistProfileId={profile.id}
             availability={availability}
             calendarDefinitionsRaw={profile.calendarSlotDefinitions}
-            openUntil={openUntil}
             booked={booked}
             enabled={profile.showPublicCalendar}
           />

@@ -14,7 +14,6 @@ type Props = {
   therapistProfileId: string;
   availability: WeeklyAvailability;
   calendarDefinitionsRaw: unknown;
-  openUntil?: Date | null;
   booked?: { start: Date; end: Date }[];
   /** רק כש־true — המטפל בחר להציג יומן ציבורי */
   enabled: boolean;
@@ -25,7 +24,6 @@ export function TherapistAppointmentCalendar({
   therapistProfileId,
   availability,
   calendarDefinitionsRaw,
-  openUntil,
   booked = [],
   enabled,
 }: Props) {
@@ -44,11 +42,10 @@ export function TherapistAppointmentCalendar({
     const slots = buildPublicOpenSlots(availability, calendarDefinitionsRaw, {
       weeksAhead: 8,
       weekStart: now,
-      openUntil: openUntil ?? null,
       booked,
     });
     return slots.length > 0;
-  }, [availability, calendarDefinitionsRaw, hasAvailability, openUntil, booked]);
+  }, [availability, calendarDefinitionsRaw, hasAvailability, booked]);
 
   const [selected, setSelected] = useState<{ start: Date; end: Date } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -88,16 +85,11 @@ export function TherapistAppointmentCalendar({
         </div>
       </div>
 
-      {openUntil ? (
-        <p className="mt-2 text-xs text-slate-500">פתוח להזמנות עד {openUntil.toLocaleDateString("he-IL")}</p>
-      ) : null}
-
       {hasAvailability && hasOpenSlots ? (
         <div className="mt-4">
           <AppointmentWeekDiary
             weeklyAvailability={availability}
             calendarDefinitionsRaw={calendarDefinitionsRaw}
-            openUntil={openUntil}
             booked={booked}
             selected={isLoggedIn ? selected : null}
             onSelect={(slot) => {

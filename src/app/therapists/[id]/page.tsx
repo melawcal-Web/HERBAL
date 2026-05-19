@@ -90,7 +90,6 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
       articles={articles}
       products={productModels}
       searchParams={sp}
-      openUntil={profile.availabilityOpenUntil}
       bookedAppointments={appointments}
       viewer={viewer}
     />

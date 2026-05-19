@@ -75,7 +75,6 @@ function groupByDay<T extends { start: Date }>(items: T[]): Map<string, T[]> {
 type Props = {
   weeklyAvailability: WeeklyAvailability;
   definitions: CalendarSlotDefinition[];
-  openUntil: Date | null;
   /** תורים מאושרים/ממתינים — לחישוב חלונות פנויים */
   bookedBlocks: { start: Date; end: Date }[];
   appointments: ApptRow[];
@@ -84,7 +83,6 @@ type Props = {
 export function TherapistDashboardMonthCalendar({
   weeklyAvailability,
   definitions,
-  openUntil,
   bookedBlocks,
   appointments,
 }: Props) {
@@ -112,10 +110,9 @@ export function TherapistDashboardMonthCalendar({
     return buildPublicOpenSlots(weeklyAvailability, definitions, {
       weekStart: gridRange.gridStart,
       weeksAhead: 6,
-      openUntil,
       booked: bookedBlocks,
     });
-  }, [weeklyAvailability, definitions, openUntil, bookedBlocks, gridRange.gridStart]);
+  }, [weeklyAvailability, definitions, bookedBlocks, gridRange.gridStart]);
 
   const freeByDay = useMemo(() => groupByDay<HourSlot>(allFreeSlots), [allFreeSlots]);
 
@@ -172,6 +169,7 @@ export function TherapistDashboardMonthCalendar({
         <div>
           <p className="text-sm font-semibold text-herbal-900">יומן — תצוגה חודשית</p>
           <p className="mt-1 text-xs text-slate-500">
+            סימונים רק כשיש נתון:{" "}
             <span className="me-3 inline-flex items-center gap-1">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-sky-500" aria-hidden />
               פנוי

@@ -24,19 +24,16 @@ type ApptRow = {
 type Props = {
   initialAvailability: WeeklyAvailability;
   initialDefinitions: CalendarSlotDefinition[];
-  initialOpenUntil: string | null;
   initialAppointments: ApptRow[];
 };
 
 export function TherapistSchedulePanel({
   initialAvailability,
   initialDefinitions,
-  initialOpenUntil,
   initialAppointments,
 }: Props) {
   const [weeklyFallback] = useState<WeeklyAvailability>(initialAvailability);
   const [definitions, setDefinitions] = useState<CalendarSlotDefinition[]>(initialDefinitions);
-  const [openUntil, setOpenUntil] = useState(initialOpenUntil ?? "");
   const [appointments, setAppointments] = useState(initialAppointments);
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -54,8 +51,6 @@ export function TherapistSchedulePanel({
         .map((a) => ({ start: new Date(a.slotStart), end: new Date(a.slotEnd) })),
     [appointments],
   );
-
-  const openUntilDate = openUntil ? new Date(openUntil) : null;
 
   const addDefinition = () => {
     if (!newDate) {
@@ -91,7 +86,6 @@ export function TherapistSchedulePanel({
       await saveTherapistScheduleSettings({
         definitions,
         weeklyFallback,
-        openUntil: openUntil || null,
       });
       setMsg("הגדרות היומן נשמרו.");
     });
@@ -119,24 +113,15 @@ export function TherapistSchedulePanel({
       <div>
         <h2 className="font-display text-lg font-bold text-herbal-900">יומן וזמינות</h2>
         <p className="mt-1 text-sm text-slate-600">
-          היומן מציג פנוי (כחול) ותורים/בקשות (אדום). לחיצה על יום פותחת פירוט. להלן הוספת חלונות לפי תאריך ושעה, חזרה שבועית ומספר מופעים.
+          נקודות ביומן מופיעות רק כשיש משמעות: <strong className="font-semibold text-sky-700">כחול</strong> — חלון פנוי
+          בפועל; <strong className="font-semibold text-rose-700">אדום</strong> — תור או בקשה. לחיצה על יום פותחת פירוט.
+          להלן הוספת חלונות לפי תאריך ושעה, חזרה שבועית ומספר מופעים.
         </p>
 
-        <label className="mt-4 block text-sm font-medium text-herbal-900">
-          פתוח להזמנות עד תאריך
-          <input
-            type="date"
-            className="mt-1 w-full max-w-xs rounded-xl border border-herbal-200 px-3 py-2 text-sm"
-            value={openUntil}
-            onChange={(e) => setOpenUntil(e.target.value)}
-          />
-        </label>
-
-        <div className="mt-6">
+        <div className="mt-4">
           <TherapistDashboardMonthCalendar
             weeklyAvailability={weeklyFallback}
             definitions={definitions}
-            openUntil={openUntilDate}
             bookedBlocks={booked}
             appointments={appointments}
           />

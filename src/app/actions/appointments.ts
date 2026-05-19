@@ -198,12 +198,11 @@ export type TherapistDashboardAppointment = {
 export async function getTherapistScheduleDashboardData(): Promise<{
   availability: WeeklyAvailability;
   definitions: CalendarSlotDefinition[];
-  openUntil: string | null;
   appointments: TherapistDashboardAppointment[];
 }> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { availability: {}, definitions: [], openUntil: null, appointments: [] };
+    return { availability: {}, definitions: [], appointments: [] };
   }
 
   const profile = await prisma.therapistProfile.findUnique({
@@ -211,7 +210,6 @@ export async function getTherapistScheduleDashboardData(): Promise<{
     select: {
       weeklyAvailability: true,
       calendarSlotDefinitions: true,
-      availabilityOpenUntil: true,
     },
   });
 
@@ -244,9 +242,6 @@ export async function getTherapistScheduleDashboardData(): Promise<{
   return {
     availability: parseWeeklyAvailability(profile?.weeklyAvailability),
     definitions: parseCalendarSlotDefinitions(profile?.calendarSlotDefinitions),
-    openUntil: profile?.availabilityOpenUntil
-      ? safeIso(profile.availabilityOpenUntil, "").slice(0, 10) || null
-      : null,
     appointments: appointments
       .map((a) => {
         const slotStart = safeIso(a.slotStart, "");
@@ -275,7 +270,6 @@ export async function getTherapistAppointmentsForDashboard(): Promise<TherapistD
 export async function saveTherapistScheduleSettings(input: {
   definitions: CalendarSlotDefinition[];
   weeklyFallback: WeeklyAvailability;
-  openUntil: string | null;
 }): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("יש להתחבר");
@@ -283,19 +277,13 @@ export async function saveTherapistScheduleSettings(input: {
   const profile = await prisma.therapistProfile.findUnique({ where: { userId: session.user.id } });
   if (!profile) throw new Error("פרופיל מטפל לא נמצא");
 
-  let openUntilDate: Date | null = null;
-  if (input.openUntil) {
-    openUntilDate = new Date(`${input.openUntil}T23:59:59`);
-    if (Number.isNaN(openUntilDate.getTime())) throw new Error("תאריך לא תקין");
-  }
-
   const defs = input.definitions.filter((d) => d.id && d.startISO && d.endISO);
   const useDefs = defs.length > 0;
 
   await prisma.therapistProfile.update({
     where: { id: profile.id },
     data: {
-      availabilityOpenUntil: openUntilDate,
+      availabilityOpenUntil: null,
       calendarSlotDefinitions: useDefs ? defs : Prisma.DbNull,
       weeklyAvailability: useDefs ? {} : input.weeklyFallback,
     },
