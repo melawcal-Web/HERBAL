@@ -5,7 +5,7 @@ import { getTherapistPendingApprovals } from "@/app/actions/commerce";
 import Link from "next/link";
 import { ApprovalsPanel } from "@/components/dashboard/ApprovalsPanel";
 
-export const metadata = { title: "אישורי תשלום וצפיות" };
+export const metadata = { title: "אישורים וצפיות" };
 
 export default async function TherapistApprovalsPage() {
   const session = await auth();
@@ -16,7 +16,7 @@ export default async function TherapistApprovalsPage() {
 
   return (
     <>
-      <h1 className="font-display text-3xl text-herbal-900">אישורי תשלום וצפיות</h1>
+      <h1 className="font-display text-3xl text-herbal-900">אישורים וצפיות</h1>
       <p className="mt-2 text-sm text-slate-600">
         לאחר אימות תשלום בביט/העברה — לחצו «אשר גישה». עמלת מרכז 15% נרשמת רק עבור מחיר מלא.
       </p>

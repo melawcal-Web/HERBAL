@@ -21,10 +21,10 @@ function buildMenuItems(session: Session): MenuItem[] {
       items.push({ href: "/dashboard/emr", label: "יומן קליני" });
     }
     items.push({ href: "/dashboard/content", label: "ניהול תוכן" });
+    items.push({ href: "/dashboard/approvals", label: "אישורים וצפיות" });
   }
 
   if (assertAdmin(role)) {
-    items.push({ href: "/admin/content", label: "ניהול תוכן" });
     items.push({ href: "/admin", label: "הגדרות אתר" });
   }
 

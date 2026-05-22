@@ -3,17 +3,18 @@
 import type { ReactNode } from "react";
 import { useState, useTransition } from "react";
 import {
-  createAdminArticle,
-  createAdminFrontalCourse,
-  createAdminSupervisionSession,
-  createAdminZoomSession,
-} from "@/app/actions/admin-content";
+  createTherapistArticle,
+  createTherapistLecture,
+  createTherapistPlantArticle,
+  createTherapistWorkshop,
+  createTherapistZoomSession,
+} from "@/app/actions/therapist-content";
 import { ImagePicker } from "@/components/dashboard/ImagePicker";
 import { isStoredImageUrl } from "@/lib/stored-image-url";
 import { AudienceMultiSelect } from "@/components/forms/AudienceMultiSelect";
 import type { ContentAudienceId } from "@/lib/content-audience";
 
-type Mode = null | "article" | "course" | "zoom" | "supervision";
+type Mode = null | "article" | "plant" | "lecture" | "workshop" | "zoom";
 
 function ActionTile({
   icon,
@@ -63,14 +64,6 @@ function IconVideo() {
     <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
       <rect x="2" y="6" width="14" height="12" rx="2" />
       <path d="M16 10l6-3v10l-6-3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconShield() {
-  return (
-    <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" />
     </svg>
   );
 }
@@ -138,33 +131,39 @@ export function DashboardAddContent() {
     <section className="mt-10 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
       <h2 className="font-display text-xl font-bold text-herbal-900">הוספת תוכן</h2>
       <p className="mt-2 text-sm text-slate-600">
-        בחרו סוג תוכן. חיפוש חכם בעברית מתורגם אוטומטית לאנגלית לחיפוש ב-Unsplash (דורש UNSPLASH_ACCESS_KEY בשרת).
+        בחרו סוג פריט. התוכן ישויך לפרופיל שלכם ויוצג ללקוחות. חיפוש תמונות בעברית דרך Unsplash (דורש מפתח בשרת).
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <ActionTile
           icon={<IconArticle />}
           title="מאמר"
-          subtitle="כותרת, תוכן, קטגוריה ותמונה — לאינדקס הצמחים"
+          subtitle="כותרת, תוכן, קטגוריה ותמונה"
           onClick={() => setMode("article")}
         />
         <ActionTile
-          icon={<IconCourseFrontal />}
-          title="קורס פרונטלי"
-          subtitle="מיקום, מועד, מחירים, משתתפים מקסימליים"
-          onClick={() => setMode("course")}
+          icon={<IconArticle />}
+          title="צמח"
+          subtitle="מאמר צמח לאינדקס — שם הצמח, תוכן ותמונה"
+          onClick={() => setMode("plant")}
+        />
+        <ActionTile
+          icon={<IconVideo />}
+          title="הרצאה"
+          subtitle="מועד, מחירים, קהל יעד ומשתתפים"
+          onClick={() => setMode("lecture")}
         />
         <ActionTile
           icon={<IconVideo />}
           title="זום"
-          subtitle="קישור זום, מועד, מחירים, משתתפים מקסימליים"
+          subtitle="קישור זום, מועד, מחירים ומשתתפים"
           onClick={() => setMode("zoom")}
         />
         <ActionTile
-          icon={<IconShield />}
-          title="סופרוויז׳ן"
-          subtitle="נושא, מועד, מחיר, משתתפים מקסימליים"
-          onClick={() => setMode("supervision")}
+          icon={<IconCourseFrontal />}
+          title="סדנה"
+          subtitle="מיקום פיזי, מועד, מחירים ומשתתפים"
+          onClick={() => setMode("workshop")}
         />
       </div>
 
@@ -187,8 +186,30 @@ export function DashboardAddContent() {
           startTransition={startTransition}
         />
       </ModalPanel>
-      <ModalPanel open={mode === "course"} title="קורס פרונטלי" onClose={close}>
-        <CourseForm
+      <ModalPanel open={mode === "plant"} title="מאמר צמח" onClose={close}>
+        <PlantArticleForm
+          pending={pending}
+          onDone={(m) => {
+            setMsg(m);
+            close();
+          }}
+          onError={setErr}
+          startTransition={startTransition}
+        />
+      </ModalPanel>
+      <ModalPanel open={mode === "lecture"} title="הרצאה" onClose={close}>
+        <LectureForm
+          pending={pending}
+          onDone={(m) => {
+            setMsg(m);
+            close();
+          }}
+          onError={setErr}
+          startTransition={startTransition}
+        />
+      </ModalPanel>
+      <ModalPanel open={mode === "workshop"} title="סדנה" onClose={close}>
+        <WorkshopForm
           pending={pending}
           onDone={(m) => {
             setMsg(m);
@@ -200,17 +221,6 @@ export function DashboardAddContent() {
       </ModalPanel>
       <ModalPanel open={mode === "zoom"} title="מפגש זום" onClose={close}>
         <ZoomForm
-          pending={pending}
-          onDone={(m) => {
-            setMsg(m);
-            close();
-          }}
-          onError={setErr}
-          startTransition={startTransition}
-        />
-      </ModalPanel>
-      <ModalPanel open={mode === "supervision"} title="סופרוויז׳ן" onClose={close}>
-        <SupervisionForm
           pending={pending}
           onDone={(m) => {
             setMsg(m);
@@ -249,7 +259,7 @@ function ArticleForm({
     startTransition(() => {
       void (async () => {
         try {
-          await createAdminArticle({ title, content, category, imageUrl: img });
+          await createTherapistArticle({ title, content, category, imageUrl: img });
           onDone("המאמר נשמר ופורסם.");
         } catch (e) {
           onError(e instanceof Error ? e.message : "שגיאה");
@@ -281,7 +291,7 @@ function ArticleForm({
       <ImagePicker value={img} onChange={setImg} />
       <button
         type="submit"
-        disabled={pending || !img.startsWith("https://")}
+        disabled={pending || !isStoredImageUrl(img)}
         className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
       >
         {pending ? "שומרים…" : "שמירת מאמר"}
@@ -290,7 +300,168 @@ function ArticleForm({
   );
 }
 
-function CourseForm({
+function PlantArticleForm({
+  pending,
+  onDone,
+  onError,
+  startTransition,
+}: {
+  pending: boolean;
+  onDone: (m: string) => void;
+  onError: (e: string | null) => void;
+  startTransition: (fn: () => void) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [plantName, setPlantName] = useState("");
+  const [content, setContent] = useState("");
+  const [img, setImg] = useState("");
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onError(null);
+        startTransition(() => {
+          void (async () => {
+            try {
+              await createTherapistPlantArticle({ title, content, plantName, imageUrl: img });
+              onDone("מאמר הצמח נשמר ופורסם באינדקס.");
+            } catch (er) {
+              onError(er instanceof Error ? er.message : "שגיאה");
+            }
+          })();
+        });
+      }}
+    >
+      <div>
+        <label className="text-sm font-medium text-slate-700">שם הצמח</label>
+        <input required className={fieldClass()} value={plantName} onChange={(e) => setPlantName(e.target.value)} maxLength={120} />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">כותרת המאמר</label>
+        <input required className={fieldClass()} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={240} />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">תוכן</label>
+        <textarea required className={`${fieldClass()} min-h-[160px]`} value={content} onChange={(e) => setContent(e.target.value)} />
+      </div>
+      <ImagePicker value={img} onChange={setImg} />
+      <button
+        type="submit"
+        disabled={pending || !isStoredImageUrl(img)}
+        className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
+      >
+        {pending ? "שומרים…" : "שמירת מאמר צמח"}
+      </button>
+    </form>
+  );
+}
+
+function LectureForm({
+  pending,
+  onDone,
+  onError,
+  startTransition,
+}: {
+  pending: boolean;
+  onDone: (m: string) => void;
+  onError: (e: string | null) => void;
+  startTransition: (fn: () => void) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [price, setPrice] = useState("");
+  const [memberPrice, setMemberPrice] = useState("");
+  const [maxP, setMaxP] = useState("");
+  const [img, setImg] = useState("");
+  const [courseDetails, setCourseDetails] = useState("");
+  const [audience, setAudience] = useState<ContentAudienceId[]>([]);
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onError(null);
+        if (audience.length === 0) {
+          onError("יש לבחור לפחות קהל יעד אחד");
+          return;
+        }
+        startTransition(() => {
+          void (async () => {
+            try {
+              await createTherapistLecture({
+                title,
+                startsAt,
+                price: Number(price),
+                memberPrice: Number(memberPrice),
+                maxParticipants: Number(maxP),
+                imageUrl: img,
+                courseDetails: courseDetails.trim() || undefined,
+                audience,
+              });
+              onDone("ההרצאה נוספה לפרופיל.");
+            } catch (er) {
+              onError(er instanceof Error ? er.message : "שגיאה");
+            }
+          })();
+        });
+      }}
+    >
+      <div>
+        <label className="text-sm font-medium text-slate-700">כותרת</label>
+        <input required className={fieldClass()} value={title} onChange={(e) => setTitle(e.target.value)} />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">מועד</label>
+        <input required type="datetime-local" className={fieldClass()} dir="ltr" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-slate-700">מחיר (₪)</label>
+          <input required type="number" min="0" step="0.01" className={fieldClass()} value={price} onChange={(e) => setPrice(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700">מחיר חברים (₪)</label>
+          <input
+            required
+            type="number"
+            min="0"
+            step="0.01"
+            className={fieldClass()}
+            value={memberPrice}
+            onChange={(e) => setMemberPrice(e.target.value)}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">משתתפים מקסימליים</label>
+        <input required type="number" min="1" className={fieldClass()} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-slate-700">פירוט (אופציונלי)</label>
+        <textarea
+          className={`${fieldClass()} min-h-[100px]`}
+          value={courseDetails}
+          onChange={(e) => setCourseDetails(e.target.value)}
+          placeholder="נושא ההרצאה, קהל יעד, משך…"
+        />
+      </div>
+      <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
+      <ImagePicker value={img} onChange={setImg} />
+      <button
+        type="submit"
+        disabled={pending || !isStoredImageUrl(img) || audience.length === 0}
+        className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
+      >
+        {pending ? "שומרים…" : "שמירה"}
+      </button>
+    </form>
+  );
+}
+
+function WorkshopForm({
   pending,
   onDone,
   onError,
@@ -324,7 +495,7 @@ function CourseForm({
         startTransition(() => {
           void (async () => {
             try {
-              await createAdminFrontalCourse({
+              await createTherapistWorkshop({
                 title,
                 location,
                 startsAt,
@@ -335,7 +506,7 @@ function CourseForm({
                 courseDetails: courseDetails.trim() || undefined,
                 audience,
               });
-              onDone("הקורס נוסף לקורסים וסדנאות.");
+              onDone("הסדנה נוספה לפרופיל.");
             } catch (er) {
               onError(er instanceof Error ? er.message : "שגיאה");
             }
@@ -433,7 +604,7 @@ function ZoomForm({
         startTransition(() => {
           void (async () => {
             try {
-              await createAdminZoomSession({
+              await createTherapistZoomSession({
                 title,
                 zoomUrl,
                 startsAt,
@@ -508,91 +679,3 @@ function ZoomForm({
   );
 }
 
-function SupervisionForm({
-  pending,
-  onDone,
-  onError,
-  startTransition,
-}: {
-  pending: boolean;
-  onDone: (m: string) => void;
-  onError: (e: string | null) => void;
-  startTransition: (fn: () => void) => void;
-}) {
-  const [topic, setTopic] = useState("");
-  const [startsAt, setStartsAt] = useState("");
-  const [price, setPrice] = useState("");
-  const [maxP, setMaxP] = useState("");
-  const [img, setImg] = useState("");
-  const [courseDetails, setCourseDetails] = useState("");
-  const [audience, setAudience] = useState<ContentAudienceId[]>([]);
-
-  return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onError(null);
-        if (audience.length === 0) {
-          onError("יש לבחור לפחות קהל יעד אחד");
-          return;
-        }
-        startTransition(() => {
-          void (async () => {
-            try {
-              await createAdminSupervisionSession({
-                topic,
-                startsAt,
-                price: Number(price),
-                maxParticipants: Number(maxP),
-                imageUrl: img,
-                courseDetails: courseDetails.trim() || undefined,
-                audience,
-              });
-              onDone("מפגש ההשגחה נוסף.");
-            } catch (er) {
-              onError(er instanceof Error ? er.message : "שגיאה");
-            }
-          })();
-        });
-      }}
-    >
-      <div>
-        <label className="text-sm font-medium text-slate-700">נושא</label>
-        <input required className={fieldClass()} value={topic} onChange={(e) => setTopic(e.target.value)} />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-slate-700">מועד</label>
-        <input required type="datetime-local" className={fieldClass()} dir="ltr" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-medium text-slate-700">מחיר (₪)</label>
-          <input required type="number" min="0" step="0.01" className={fieldClass()} value={price} onChange={(e) => setPrice(e.target.value)} />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-slate-700">משתתפים מקסימליים</label>
-          <input required type="number" min="1" className={fieldClass()} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
-        </div>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-slate-700">פירוט על ההשגחה (אופציונלי)</label>
-        <textarea
-          className={`${fieldClass()} min-h-[100px]`}
-          value={courseDetails}
-          onChange={(e) => setCourseDetails(e.target.value)}
-          placeholder="מטרות, שאלות לדיון, הכנה…"
-        />
-      </div>
-      <AudienceMultiSelect value={audience} onChange={setAudience} disabled={pending} />
-      <ImagePicker value={img} onChange={setImg} />
-      <button
-        type="submit"
-        disabled={pending || !isStoredImageUrl(img) || audience.length === 0}
-        className="w-full min-h-[48px] rounded-full bg-herbal-600 py-3 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-50"
-      >
-        {pending ? "שומרים…" : "שמירה"}
-      </button>
-    </form>
-  );
-}
