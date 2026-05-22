@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { assertAdmin, assertTherapist } from "@/lib/formula";
 
-export const metadata = { title: "ניהול תוכן" };
+export const metadata = { title: "ניהול תוכן הפרופיל" };
 
 export default async function DashboardContentPage() {
   const session = await auth();
@@ -18,22 +18,23 @@ export default async function DashboardContentPage() {
 
   return (
     <>
-      <h1 className="font-display text-3xl text-herbal-900">ניהול תוכן</h1>
+      <h1 className="font-display text-3xl text-herbal-900">ניהול תוכן הפרופיל</h1>
       <p className="mt-2 text-slate-600">
-        פרסום מאמרים ומוצרים חדשים מתבצע דרך צוות המרכז. עדכנו את הפרופיל הציבורי, תמונת הפרופיל והביוגרפיה.
+        כאן מנהלים את מה שמופיע בדף הציבורי שלכם: ביוגרפיה, תמונה, התמחויות וקישורים. פרסום מאמרים ומוצרים
+        חדשים מתבצע דרך צוות המרכז.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
           href="/dashboard/profile"
           className="rounded-full bg-herbal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-herbal-500"
         >
-          עריכת פרופיל
+          עריכת פרופיל ויומן
         </Link>
         <Link
           href="/content-hub"
           className="rounded-full border border-herbal-300 px-5 py-2.5 text-sm font-semibold text-herbal-800 hover:bg-herbal-50"
         >
-          מרכז תוכן
+          צפייה בתוכן שפורסם
         </Link>
       </div>
     </>

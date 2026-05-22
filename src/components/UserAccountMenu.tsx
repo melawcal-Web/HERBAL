@@ -6,8 +6,6 @@ import type { Session } from "next-auth";
 import { signOutAction } from "@/app/actions/auth";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { assertAdmin, assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
-import { therapistOperationsPath } from "@/lib/post-login-path";
-
 type MenuItem = { href: string; label: string };
 
 function buildMenuItems(session: Session): MenuItem[] {
@@ -15,22 +13,19 @@ function buildMenuItems(session: Session): MenuItem[] {
   const items: MenuItem[] = [];
 
   if (assertTherapist(role) || assertAdmin(role)) {
-    items.push({ href: "/dashboard/profile", label: "פרופיל שלי" });
+    items.push({ href: "/dashboard/profile", label: "הפרופיל שלי" });
   }
 
   if (assertTherapist(role)) {
-    items.push({ href: "/dashboard/finance", label: "הכספים שלי" });
-    items.push({ href: therapistOperationsPath(), label: "אישורי תשלום וצפיות" });
     if (therapistCanUseClinicalTools(role, session.user.therapistVerification)) {
       items.push({ href: "/dashboard/emr", label: "יומן קליני" });
     }
+    items.push({ href: "/dashboard/content", label: "ניהול תוכן" });
   }
 
   if (assertAdmin(role)) {
     items.push({ href: "/admin/content", label: "ניהול תוכן" });
-    items.push({ href: "/admin", label: "מרכז ניהול" });
-  } else if (assertTherapist(role)) {
-    items.push({ href: "/dashboard/content", label: "ניהול תוכן" });
+    items.push({ href: "/admin", label: "הגדרות אתר" });
   }
 
   return items;

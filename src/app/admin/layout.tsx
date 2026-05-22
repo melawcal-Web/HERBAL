@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-herbal-900 sm:text-3xl">מרכז ניהול</h1>
+        <h1 className="font-display text-2xl font-bold text-herbal-900 sm:text-3xl">הגדרות אתר</h1>
         <Link href="/" className="text-sm font-medium text-herbal-700 underline-offset-4 hover:underline">
           חזרה לדף הבית
         </Link>
