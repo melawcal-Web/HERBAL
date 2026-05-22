@@ -38,10 +38,9 @@ const HOME_THERAPIST_FETCH_POOL = 48;
 export default async function HomePage() {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
-  const isTherapist = session?.user?.role === "therapist";
 
   const homeHero = await getHomeHeroCopy();
-  const visionSlides = isTherapist ? await getVisionSlides() : [];
+  const visionSlides = await getVisionSlides();
 
   const therapists = isLoggedIn
     ? await prisma.therapistProfile.findMany({
@@ -100,7 +99,7 @@ export default async function HomePage() {
 
   return (
     <div className="w-full max-w-full pb-14 pt-4 transition-opacity duration-300 ease-out sm:pb-16 sm:pt-6">
-      <HomeVisionCarousel slides={visionSlides} heroCopy={homeHero} showSlides={isTherapist} />
+      <HomeVisionCarousel slides={visionSlides} heroCopy={homeHero} />
 
       <div className="mt-6 sm:mt-8">
         {isLoggedIn ? (

@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { buildPublicOpenSlots, type CalendarSlotDefinition } from "@/lib/calendar-slot-definitions";
+import {
+  buildPublicOpenSlots,
+  collectFreeAvailabilityDayKeys,
+  getAvailabilityWindowsForDay,
+  type CalendarSlotDefinition,
+} from "@/lib/calendar-slot-definitions";
 import type { HourSlot } from "@/lib/therapist-availability";
 import type { WeeklyAvailability } from "@/lib/therapist-availability";
 
@@ -106,15 +111,32 @@ export function TherapistDashboardMonthCalendar({
     return { gridStart, gridEnd };
   }, [monthStart]);
 
+  const weeksAhead = useMemo(() => {
+    const days = Math.ceil((gridRange.gridEnd.getTime() - gridRange.gridStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    return Math.max(6, Math.ceil(days / 7) + 1);
+  }, [gridRange.gridStart, gridRange.gridEnd]);
+
   const allFreeSlots = useMemo(() => {
     return buildPublicOpenSlots(weeklyAvailability, definitions, {
       weekStart: gridRange.gridStart,
-      weeksAhead: 6,
+      weeksAhead,
       booked: bookedBlocks,
     });
-  }, [weeklyAvailability, definitions, bookedBlocks, gridRange.gridStart]);
+  }, [weeklyAvailability, definitions, bookedBlocks, gridRange.gridStart, weeksAhead]);
 
   const freeByDay = useMemo(() => groupByDay<HourSlot>(allFreeSlots), [allFreeSlots]);
+
+  const freeDayKeys = useMemo(
+    () =>
+      collectFreeAvailabilityDayKeys(
+        weeklyAvailability,
+        definitions,
+        gridRange.gridStart,
+        gridRange.gridEnd,
+        bookedBlocks,
+      ),
+    [weeklyAvailability, definitions, bookedBlocks, gridRange.gridStart, gridRange.gridEnd],
+  );
 
   const expandedAppts = useMemo(
     () => expandAppointmentsForRange(appointments, gridRange.gridStart, gridRange.gridEnd),
@@ -138,7 +160,12 @@ export function TherapistDashboardMonthCalendar({
     return list;
   }, [gridRange.gridStart, view.m]);
 
-  const detailFree = detailKey ? freeByDay.get(detailKey) ?? [] : [];
+  const detailFree = useMemo(() => {
+    if (!detailKey) return [];
+    const hourly = freeByDay.get(detailKey) ?? [];
+    if (hourly.length > 0) return hourly;
+    return getAvailabilityWindowsForDay(weeklyAvailability, definitions, detailKey, bookedBlocks);
+  }, [detailKey, freeByDay, weeklyAvailability, definitions, bookedBlocks]);
   const detailAppts = detailKey ? apptByDay.get(detailKey) ?? [] : [];
 
   const closeDetail = useCallback(() => setDetailKey(null), []);
@@ -210,6 +237,7 @@ export function TherapistDashboardMonthCalendar({
       <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map(({ date, inMonth, key }) => {
           const freeN = freeByDay.get(key)?.length ?? 0;
+          const hasFree = freeN > 0 || freeDayKeys.has(key);
           const apptN = apptByDay.get(key)?.length ?? 0;
           const today = dateKeyLocal(new Date()) === key;
           return (
@@ -224,7 +252,12 @@ export function TherapistDashboardMonthCalendar({
             >
               <span className={`text-xs font-semibold sm:text-sm ${inMonth ? "text-herbal-950" : ""}`}>{date.getDate()}</span>
               <span className="mt-auto flex min-h-[14px] items-center justify-center gap-1">
-                {freeN > 0 ? <span className="h-2 w-2 rounded-full bg-sky-500" title={`${freeN} חלונות פנויים`} /> : null}
+                {hasFree ? (
+                  <span
+                    className="h-2 w-2 rounded-full bg-sky-500"
+                    title={freeN > 0 ? `${freeN} חלונות פנויים` : "יש זמינות ביום זה"}
+                  />
+                ) : null}
                 {apptN > 0 ? <span className="h-2 w-2 rounded-full bg-rose-500" title={`${apptN} תורים`} /> : null}
               </span>
             </button>
