@@ -134,6 +134,7 @@ export function TherapistDashboardMonthCalendar({
         gridRange.gridStart,
         gridRange.gridEnd,
         bookedBlocks,
+        { forTherapistDashboard: true },
       ),
     [weeklyAvailability, definitions, bookedBlocks, gridRange.gridStart, gridRange.gridEnd],
   );
@@ -164,7 +165,9 @@ export function TherapistDashboardMonthCalendar({
     if (!detailKey) return [];
     const hourly = freeByDay.get(detailKey) ?? [];
     if (hourly.length > 0) return hourly;
-    return getAvailabilityWindowsForDay(weeklyAvailability, definitions, detailKey, bookedBlocks);
+    return getAvailabilityWindowsForDay(weeklyAvailability, definitions, detailKey, bookedBlocks, {
+      forTherapistDashboard: true,
+    });
   }, [detailKey, freeByDay, weeklyAvailability, definitions, bookedBlocks]);
   const detailAppts = detailKey ? apptByDay.get(detailKey) ?? [] : [];
 

@@ -120,8 +120,14 @@ function dateKeyLocal(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function hasUnbookedSegment(rangeStart: Date, rangeEnd: Date, booked: { start: Date; end: Date }[], now: Date): boolean {
-  const from = rangeStart < now ? now : rangeStart;
+function hasUnbookedSegment(
+  rangeStart: Date,
+  rangeEnd: Date,
+  booked: { start: Date; end: Date }[],
+  now: Date,
+  ignoreNow = false,
+): boolean {
+  const from = ignoreNow ? rangeStart : rangeStart < now ? now : rangeStart;
   if (from >= rangeEnd) return false;
   const step = 15 * 60_000;
   for (let t = from.getTime(); t < rangeEnd.getTime(); t += step) {
@@ -139,9 +145,11 @@ export function collectFreeAvailabilityDayKeys(
   rangeStart: Date,
   rangeEnd: Date,
   booked: { start: Date; end: Date }[] = [],
+  options?: { forTherapistDashboard?: boolean },
 ): Set<string> {
   const keys = new Set<string>();
   const now = new Date();
+  const ignoreNow = Boolean(options?.forTherapistDashboard);
 
   const weeksAhead = Math.max(1, Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1);
   for (const slot of buildPublicOpenSlots(weekly, definitionsRaw, { weekStart: rangeStart, weeksAhead, booked })) {
@@ -160,8 +168,8 @@ export function collectFreeAvailabilityDayKeys(
       const occStart = new Date(baseStart.getTime() + (def.repeatWeekly ? i * 7 * 24 * 60 * 60 * 1000 : 0));
       const occEnd = new Date(occStart.getTime() + durationMs);
       if (occEnd <= rangeStart || occStart > rangeEnd) continue;
-      if (occEnd <= now) continue;
-      if (!hasUnbookedSegment(occStart, occEnd, booked, now)) continue;
+      if (!ignoreNow && occEnd <= now) continue;
+      if (!hasUnbookedSegment(occStart, occEnd, booked, now, ignoreNow)) continue;
       keys.add(dateKeyLocal(occStart));
     }
   }
@@ -183,8 +191,8 @@ export function collectFreeAvailabilityDayKeys(
           rangeStartDt.setHours(sh, sm || 0, 0, 0);
           const rangeEndDt = new Date(d);
           rangeEndDt.setHours(eh, em || 0, 0, 0);
-          if (rangeEndDt <= now) continue;
-          if (hasUnbookedSegment(rangeStartDt, rangeEndDt, booked, now)) keys.add(dateKeyLocal(d));
+          if (!ignoreNow && rangeEndDt <= now) continue;
+          if (hasUnbookedSegment(rangeStartDt, rangeEndDt, booked, now, ignoreNow)) keys.add(dateKeyLocal(d));
         }
       }
       d.setDate(d.getDate() + 1);
@@ -200,8 +208,10 @@ export function getAvailabilityWindowsForDay(
   definitionsRaw: unknown,
   dayKey: string,
   booked: { start: Date; end: Date }[] = [],
+  options?: { forTherapistDashboard?: boolean },
 ): HourSlot[] {
   const now = new Date();
+  const ignoreNow = Boolean(options?.forTherapistDashboard);
   const day = new Date(`${dayKey}T12:00:00`);
   if (Number.isNaN(day.getTime())) return [];
   const out: HourSlot[] = [];
@@ -217,8 +227,8 @@ export function getAvailabilityWindowsForDay(
       const occStart = new Date(baseStart.getTime() + (def.repeatWeekly ? i * 7 * 24 * 60 * 60 * 1000 : 0));
       const occEnd = new Date(occStart.getTime() + durationMs);
       if (dateKeyLocal(occStart) !== dayKey) continue;
-      if (occEnd <= now) continue;
-      if (!hasUnbookedSegment(occStart, occEnd, booked, now)) continue;
+      if (!ignoreNow && occEnd <= now) continue;
+      if (!hasUnbookedSegment(occStart, occEnd, booked, now, ignoreNow)) continue;
       out.push({ start: occStart, end: occEnd });
     }
   }
@@ -234,8 +244,8 @@ export function getAvailabilityWindowsForDay(
         rangeStartDt.setHours(sh, sm || 0, 0, 0);
         const rangeEndDt = new Date(day);
         rangeEndDt.setHours(eh, em || 0, 0, 0);
-        if (rangeEndDt <= now) continue;
-        if (hasUnbookedSegment(rangeStartDt, rangeEndDt, booked, now)) out.push({ start: rangeStartDt, end: rangeEndDt });
+        if (!ignoreNow && rangeEndDt <= now) continue;
+        if (hasUnbookedSegment(rangeStartDt, rangeEndDt, booked, now, ignoreNow)) out.push({ start: rangeStartDt, end: rangeEndDt });
       }
     }
   }
