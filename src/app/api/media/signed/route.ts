@@ -11,7 +11,7 @@ import { productTypeToContentKind } from "@/lib/content-kind";
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "יש להתחבר עם Google" }, { status: 401 });
+    return NextResponse.json({ error: "יש להתחבר" }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);

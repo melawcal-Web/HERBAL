@@ -67,7 +67,7 @@ export async function requestManualAccess(input: {
   guestName?: string;
 }): Promise<void> {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("יש להתחבר עם Google");
+  if (!session?.user?.id) throw new Error("יש להתחבר");
 
   await prisma.manualAccessRequest.create({
     data: {
