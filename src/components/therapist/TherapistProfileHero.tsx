@@ -15,6 +15,8 @@ type Props = {
   publicTherapistTitle: "male" | "female";
   /** יומן (#therapist-booking), mailto, וואטסאפ או טלפון */
   bookAppointmentHref: string | null;
+  /** ציר זמן ניסיון/השכלה (נרשם בפרופיל המטפל) */
+  timeline?: { yearFrom: number; yearTo?: number | null; description: string }[];
   referralTracking?: HeroReferralTracking | null;
 };
 
@@ -35,9 +37,14 @@ export function TherapistProfileHero({
   social,
   publicTherapistTitle,
   bookAppointmentHref,
+  timeline = [],
   referralTracking,
 }: Props) {
   const roleHe = publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
+
+  const safeTimeline = timeline
+    .filter((x) => Number.isFinite(x.yearFrom) && typeof x.description === "string" && x.description.trim().length > 0)
+    .slice(0, 8);
 
   return (
     <div
@@ -88,6 +95,27 @@ export function TherapistProfileHero({
                   </li>
                 ))}
               </ul>
+            ) : null}
+
+            {safeTimeline.length > 0 ? (
+              <div className={`w-full ${specialties.length > 0 ? "mt-4" : ""}`}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700/90">ניסיון והכשרה</p>
+                <ul className="mt-2 space-y-2">
+                  {safeTimeline.map((row, idx) => {
+                    const y1 = Math.floor(row.yearFrom);
+                    const y2 = row.yearTo != null ? Math.floor(row.yearTo) : null;
+                    const range = y2 && y2 !== y1 ? `${y1}–${y2}` : `${y1}`;
+                    return (
+                      <li key={`${range}-${idx}`} className="rounded-xl border border-emerald-200/70 bg-white/70 px-3 py-2 shadow-sm">
+                        <p className="text-xs font-bold text-emerald-900" dir="ltr">
+                          {range}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-700">{row.description.trim()}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ) : null}
 
             <div className={`w-full ${specialties.length > 0 ? "mt-4" : ""}`} dir="ltr">

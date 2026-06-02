@@ -12,6 +12,20 @@ import { ProfileForm } from "./profile-form";
 import { TherapistSchedulePanel } from "@/components/dashboard/TherapistSchedulePanel";
 import { getTherapistScheduleDashboardData } from "@/app/actions/appointments";
 
+function parseTimelineForForm(raw: unknown): { yearFrom: string; yearTo: string; description: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const out: { yearFrom: string; yearTo: string; description: string }[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const o = row as Record<string, unknown>;
+    const yearFrom = typeof o.yearFrom === "number" ? String(Math.floor(o.yearFrom)) : typeof o.yearFrom === "string" ? o.yearFrom : "";
+    const yearTo = typeof o.yearTo === "number" ? String(Math.floor(o.yearTo)) : typeof o.yearTo === "string" ? o.yearTo : "";
+    const description = typeof o.description === "string" ? o.description : "";
+    out.push({ yearFrom, yearTo, description });
+  }
+  return out;
+}
+
 
 
 export default async function TherapistProfilePage() {
@@ -166,6 +180,8 @@ export default async function TherapistProfilePage() {
             tiktok: social.tiktok ?? "",
 
             showPublicCalendar: profile.showPublicCalendar ?? false,
+
+            portfolioTimeline: parseTimelineForForm(profile.portfolioTimeline),
 
           }}
 

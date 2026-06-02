@@ -6,6 +6,9 @@ import { useSession } from "next-auth/react";
 import { updateTherapistProfile } from "@/app/actions/profile";
 import { ImagePicker } from "@/components/dashboard/ImagePicker";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
+
+type TimelineRow = { yearFrom: string; yearTo: string; description: string };
+
 type Initial = {
   slug: string;
   bio: string;
@@ -25,6 +28,7 @@ type Initial = {
   facebook: string;
   tiktok: string;
   showPublicCalendar: boolean;
+  portfolioTimeline: TimelineRow[];
 };
 
 function profileFormSnapshot(i: Initial): string {
@@ -47,7 +51,32 @@ function profileFormSnapshot(i: Initial): string {
     facebook: i.facebook,
     tiktok: i.tiktok,
     showPublicCalendar: i.showPublicCalendar,
+    portfolioTimeline: i.portfolioTimeline,
   });
+}
+
+function parseYearSafe(raw: string): number {
+  const t = raw.trim();
+  if (!t) return NaN;
+  const n = Number(t);
+  if (!Number.isFinite(n)) return NaN;
+  const y = Math.floor(n);
+  if (y < 1900 || y > 2100) return NaN;
+  return y;
+}
+
+function normalizeTimeline(rows: TimelineRow[]): { yearFrom: number; yearTo?: number | null; description: string }[] {
+  const out: { yearFrom: number; yearTo?: number | null; description: string }[] = [];
+  for (const row of rows) {
+    const y1 = parseYearSafe(row.yearFrom);
+    const y2 = row.yearTo.trim() ? parseYearSafe(row.yearTo) : NaN;
+    const desc = row.description.trim();
+    if (!Number.isFinite(y1) || !desc) continue;
+    const yearTo = Number.isFinite(y2) ? y2 : null;
+    out.push({ yearFrom: y1, yearTo, description: desc });
+  }
+  out.sort((a, b) => b.yearFrom - a.yearFrom);
+  return out.slice(0, 12);
 }
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -91,6 +120,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             form.acceptsSupervisionRequests && form.supervisionHourlyRate.trim() !== ""
               ? Number(form.supervisionHourlyRate)
               : null,
+          portfolioTimeline: normalizeTimeline(form.portfolioTimeline),
           contactPhone: form.contactPhone,
           contactCity: form.contactCity,
           contactWhatsapp: form.contactWhatsapp,
@@ -200,6 +230,90 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           </div>
         ))}
       </div>
+
+      <fieldset className="rounded-2xl border border-herbal-200/80 bg-white/80 p-4">
+        <legend className="text-sm font-medium text-herbal-900">ניסיון והכשרה (ציר זמן)</legend>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">
+          לדוגמה: <span dir="ltr">2006–2018</span> · לימודים/הכשרה/ניסיון קליני. יוצג בפאנל השמאלי בדף הציבורי.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {form.portfolioTimeline.map((row, idx) => (
+            <div key={idx} className="rounded-2xl border border-herbal-100 bg-herbal-50/40 p-3">
+              <div className="grid gap-3 sm:grid-cols-[140px_140px_1fr]">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">שנה התחלה</label>
+                  <input
+                    inputMode="numeric"
+                    placeholder="2006"
+                    className="mt-1 w-full min-h-[44px] rounded-xl border border-herbal-200 px-3 py-2"
+                    dir="ltr"
+                    value={row.yearFrom}
+                    onChange={(e) => {
+                      const next = [...form.portfolioTimeline];
+                      next[idx] = { ...next[idx]!, yearFrom: e.target.value };
+                      setForm({ ...form, portfolioTimeline: next });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">שנה סיום (אופציונלי)</label>
+                  <input
+                    inputMode="numeric"
+                    placeholder="2018"
+                    className="mt-1 w-full min-h-[44px] rounded-xl border border-herbal-200 px-3 py-2"
+                    dir="ltr"
+                    value={row.yearTo}
+                    onChange={(e) => {
+                      const next = [...form.portfolioTimeline];
+                      next[idx] = { ...next[idx]!, yearTo: e.target.value };
+                      setForm({ ...form, portfolioTimeline: next });
+                    }}
+                  />
+                </div>
+                <div className="sm:col-span-1">
+                  <label className="text-xs font-semibold text-slate-700">תיאור</label>
+                  <input
+                    required
+                    className="mt-1 w-full min-h-[44px] rounded-xl border border-herbal-200 px-3 py-2"
+                    value={row.description}
+                    onChange={(e) => {
+                      const next = [...form.portfolioTimeline];
+                      next[idx] = { ...next[idx]!, description: e.target.value };
+                      setForm({ ...form, portfolioTimeline: next });
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="mt-2 flex justify-start">
+                <button
+                  type="button"
+                  className="rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                  onClick={() => {
+                    const next = form.portfolioTimeline.filter((_, i) => i !== idx);
+                    setForm({ ...form, portfolioTimeline: next });
+                  }}
+                >
+                  מחיקה
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="w-full rounded-2xl border border-dashed border-herbal-200 bg-white/70 px-4 py-3 text-sm font-semibold text-herbal-900 hover:bg-herbal-50"
+            onClick={() => {
+              setForm({
+                ...form,
+                portfolioTimeline: [...form.portfolioTimeline, { yearFrom: "", yearTo: "", description: "" }],
+              });
+            }}
+          >
+            הוספת שורה
+          </button>
+        </div>
+      </fieldset>
       <div className="rounded-2xl border border-herbal-200/80 bg-herbal-50/60 p-4">
         <label className="flex cursor-pointer items-start gap-3 text-sm font-medium text-herbal-900">
           <input

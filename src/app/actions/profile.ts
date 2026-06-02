@@ -34,6 +34,8 @@ export async function updateTherapistProfile(input: {
   publicTherapistTitle: "male" | "female";
   /** תמונת פרופיל — URL https (למשל מ-Unsplash) */
   profileImageUrl: string | null;
+  /** ציר זמן ניסיון/השכלה */
+  portfolioTimeline: { yearFrom: number; yearTo?: number | null; description: string }[];
   acceptsSupervisionRequests: boolean;
   supervisionHourlyRate: number | null;
   contactPhone: string;
@@ -90,6 +92,7 @@ export async function updateTherapistProfile(input: {
       specialty1: input.specialty1,
       specialty2: input.specialty2,
       specialty3: input.specialty3,
+      portfolioTimeline: input.portfolioTimeline as unknown as Prisma.InputJsonValue,
       acceptsSupervisionRequests: input.acceptsSupervisionRequests,
       supervisionHourlyRate:
         input.acceptsSupervisionRequests && input.supervisionHourlyRate != null && input.supervisionHourlyRate > 0

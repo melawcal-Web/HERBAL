@@ -29,6 +29,37 @@ import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-ima
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
 
+type PortfolioTimelineItem = { yearFrom: number; yearTo?: number | null; description: string };
+
+function parsePortfolioTimeline(raw: unknown): PortfolioTimelineItem[] {
+  if (!Array.isArray(raw)) return [];
+  const out: PortfolioTimelineItem[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const o = row as Record<string, unknown>;
+    const yearFromRaw = o.yearFrom;
+    const yearToRaw = o.yearTo;
+    const descRaw = o.description;
+    const yearFrom =
+      typeof yearFromRaw === "number" && Number.isFinite(yearFromRaw)
+        ? Math.floor(yearFromRaw)
+        : typeof yearFromRaw === "string" && yearFromRaw.trim()
+          ? Number(yearFromRaw.trim())
+          : NaN;
+    const yearTo =
+      typeof yearToRaw === "number" && Number.isFinite(yearToRaw)
+        ? Math.floor(yearToRaw)
+        : typeof yearToRaw === "string" && yearToRaw.trim()
+          ? Number(yearToRaw.trim())
+          : null;
+    const description = typeof descRaw === "string" ? descRaw.trim() : "";
+    if (!Number.isFinite(yearFrom) || !description) continue;
+    out.push({ yearFrom, yearTo: yearTo != null && Number.isFinite(yearTo) ? Math.floor(yearTo) : null, description });
+  }
+  out.sort((a, b) => b.yearFrom - a.yearFrom);
+  return out;
+}
+
 export type TherapistPublishedArticle = {
   id: string;
   title: string;
@@ -83,6 +114,7 @@ export function TherapistPublicPageView({
   const heroCoverUrl = publicDisplayImageUrl(heroBase);
 
   const availability: WeeklyAvailability = parseWeeklyAvailability(profile.weeklyAvailability);
+  const timeline = parsePortfolioTimeline(profile.portfolioTimeline);
 
   const filters: ContentSearchParams = {
     q: searchParams.q,
@@ -141,6 +173,7 @@ export function TherapistPublicPageView({
           social={social}
           publicTherapistTitle={publicTherapistTitle}
           bookAppointmentHref={bookAppointmentHref}
+          timeline={timeline}
           referralTracking={referralTracking}
         />
       </header>
