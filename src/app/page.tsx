@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { pickDemoImage, pickDistinctDemoImage } from "@/lib/demo-placeholders";
 import { getHomeHeroCopy, getVisionSlides } from "@/lib/site-config";
@@ -7,7 +6,6 @@ import { HomeTherapistsRandomGrid, type HomeTherapistCard } from "@/components/h
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
 import { shuffleArray } from "@/lib/shuffle-array";
 import { isStoredImageUrl } from "@/lib/stored-image-url";
-import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -36,24 +34,19 @@ const HOME_THERAPIST_LIMIT = 4;
 const HOME_THERAPIST_FETCH_POOL = 48;
 
 export default async function HomePage() {
-  const session = await auth();
-  const isLoggedIn = Boolean(session?.user);
-
   const homeHero = await getHomeHeroCopy();
   const visionSlides = await getVisionSlides();
 
-  const therapists = isLoggedIn
-    ? await prisma.therapistProfile.findMany({
-        where: {
-          user: {
-            OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
-          },
-        },
-        include: { user: { select: { name: true, image: true } } },
-        orderBy: { updatedAt: "desc" },
-        take: HOME_THERAPIST_FETCH_POOL,
-      })
-    : [];
+  const therapists = await prisma.therapistProfile.findMany({
+    where: {
+      user: {
+        OR: [{ role: "admin" }, { AND: [{ role: "therapist" }, { therapistVerification: "approved" }] }],
+      },
+    },
+    include: { user: { select: { name: true, image: true } } },
+    orderBy: { updatedAt: "desc" },
+    take: HOME_THERAPIST_FETCH_POOL,
+  });
 
   const sortedPool = [...therapists].sort((a, b) => {
     const pa = hasStoredProfileImage(a.user.image) ? 1 : 0;
@@ -102,40 +95,7 @@ export default async function HomePage() {
       <HomeVisionCarousel slides={visionSlides} heroCopy={homeHero} />
 
       <div className="mt-6 sm:mt-8">
-        {isLoggedIn ? (
-          <HomeTherapistsRandomGrid therapists={therapistCards} />
-        ) : (
-          <section
-            className="mx-auto max-w-xl rounded-2xl border border-herbal-100 bg-white/90 p-6 text-center shadow-sm sm:p-8"
-            aria-labelledby="guest-home-explore-title"
-          >
-            <h2 id="guest-home-explore-title" className="font-display text-lg font-bold text-herbal-900 sm:text-xl">
-              רשימת המטפלים זמינה למשתמשים רשומים
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-              התחברו או הירשמו כדי לצפות בפרטי מטפלים ובתוכן המלא. מאמרי האינדקס פתוחים לכולם.
-            </p>
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row-reverse">
-              <Link
-                href="/auth/register?callbackUrl=%2F"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-herbal-600 px-5 text-sm font-semibold text-white transition hover:bg-herbal-500"
-              >
-                הרשמה
-              </Link>
-              <Link
-                href="/auth/signin?callbackUrl=%2F"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-herbal-200 bg-white px-5 text-sm font-semibold text-herbal-900 transition hover:bg-herbal-50"
-              >
-                כניסה
-              </Link>
-            </div>
-            <p className="mt-6 text-sm">
-              <Link href="/herbal-index" className="font-semibold text-herbal-700 underline-offset-2 hover:underline">
-                לאינדקס המאמרים (ללא התחברות)
-              </Link>
-            </p>
-          </section>
-        )}
+        <HomeTherapistsRandomGrid therapists={therapistCards} />
       </div>
     </div>
   );

@@ -3,17 +3,12 @@ import {
   type TherapistShowcaseItem,
 } from "@/components/TherapistsShowcaseCarousel";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 
 export const metadata = {
   title: "מטפלים",
 };
 
 export default async function TherapistsDirectoryPage() {
-  const session = await auth();
-  if (!session?.user) return <MemberAuthWall callbackPath="/therapists" />;
-
   const therapists = await prisma.therapistProfile.findMany({
     where: {
       user: {
