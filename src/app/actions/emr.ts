@@ -6,8 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { therapistCanUseClinicalTools } from "@/lib/formula";
 import type { FormulaJson } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { saveUploadedImageDataUrl } from "@/lib/save-uploaded-image";
 
 export async function createClinicalLog(input: {
   clientId: string;
@@ -23,17 +22,7 @@ export async function createClinicalLog(input: {
 
   let notesImage: string | null = null;
   if (input.notesImageDataUrl?.startsWith("data:image")) {
-    const match = /^data:(image\/\w+);base64,(.*)$/.exec(input.notesImageDataUrl);
-    if (match) {
-      const ext = match[1] === "image/png" ? "png" : "jpg";
-      const buf = Buffer.from(match[2], "base64");
-      const dir = path.join(process.cwd(), "public", "uploads", "notes");
-      await mkdir(dir, { recursive: true });
-      const filename = `${session.user.id}-${Date.now()}.${ext}`;
-      const full = path.join(dir, filename);
-      await writeFile(full, buf);
-      notesImage = `/uploads/notes/${filename}`;
-    }
+    notesImage = await saveUploadedImageDataUrl(input.notesImageDataUrl, "notes");
   }
 
   const log = await prisma.clinicalLog.create({

@@ -8,9 +8,9 @@ This guide is written for a **non-technical** owner or office manager. Follow th
 
 ## 1. What you are deploying
 
-- **App**: Next.js (Node.js) web application in this repository (`herbal-platform/`).
-- **Database**: MySQL (cloud or managed server).
-- **Files**: User-uploaded clinical note images are stored on the server disk in `public/uploads/notes` by default. For production, plan **object storage** (Amazon S3, Cloudflare R2, Google Cloud Storage, etc.) — see section 8.
+- **App**: Next.js (Node.js) web application in this repository (`HERBAL`, repo root).
+- **Database**: MySQL (Docker locally; Railway or similar in production).
+- **Files**: Images (profile, content, clinical notes) use **Vercel Blob** in production (`BLOB_READ_WRITE_TOKEN`) and `public/uploads/` locally.
 
 ---
 
@@ -24,20 +24,21 @@ Create accounts (free or paid tiers as you prefer) for:
 | **DNS / CDN** (often Cloudflare) | Point the domain to hosting; optional caching and security. |
 | **Hosting for Node.js** | Runs the Next.js app (Vercel, Railway, Render, Fly.io, AWS, Azure, etc.). |
 | **MySQL hosting** | PlanetScale (MySQL-compatible), AWS RDS, Google Cloud SQL, Azure Database for MySQL, DigitalOcean Managed DB, etc. |
+| **Vercel Blob** | Durable image uploads on Vercel (required for production photos). |
 | **AUTH_SECRET** | Random secret so login sessions are secure — no third-party account; you generate it locally (section 5). |
 | **Payment gateway (later)** | Stripe, PayPal, or a local Israeli processor — for courses/workshops checkout and membership. |
 | **Video / webinar (optional)** | Zoom, Google Meet, or Vimeo for paid “Zoom” products — links can live inside product descriptions until native integration is added. |
 | **Email provider (recommended)** | SendGrid, Postmark, Amazon SES, or Resend — for password reset and notifications (not wired in MVP; plan ahead). |
 | **Google Cloud (optional, for Google Docs export)** | Only if you want **one-click** creation of Google Docs via API. The app already supports **copy to clipboard** and **PDF** without Google. |
 
-You do **not** need all optional items on day one. Minimum to go live: **hosting + MySQL + domain + AUTH_SECRET**.
+You do **not** need all optional items on day one. Minimum to go live: **hosting + MySQL + domain + AUTH_SECRET + SUPER_ADMIN_EMAIL**. Production photo uploads also need **BLOB_READ_WRITE_TOKEN**.
 
 ---
 
 ## 3. Local test on a computer **(Tech)**
 
-1. Install **Node.js 20+** from [https://nodejs.org](https://nodejs.org).
-2. Open a terminal in the `herbal-platform` folder.
+1. Install **Node.js 20+** from [https://nodejs.org](https://nodejs.org) and **Docker Desktop**.
+2. Open a terminal in the `HERBAL` repo root.
 3. Copy environment file:
 
    ```bash
@@ -46,18 +47,18 @@ You do **not** need all optional items on day one. Minimum to go live: **hosting
 
    On macOS/Linux use `cp .env.example .env`.
 
-4. Set `DATABASE_URL` in `.env` to your MySQL connection string (from your cloud provider).
-5. Install and prepare the database:
+4. Start local MySQL and prepare the database:
 
    ```bash
+   docker compose up -d
    npm install
    npx prisma generate
    npx prisma db push
    ```
 
-   **Production (Vercel):** `npm run build` already runs `prisma db push --accept-data-loss` so the hosted MySQL schema stays in sync on each deploy — no separate “update database” click in Railway. Initial/demo **data** is not seeded on Vercel unless you run `npm run db:seed` from a trusted machine. See **`DATABASE.md`** in this repo (Hebrew + Prisma doc links).
+   **Production (Vercel):** `npm run build` runs `prisma db push` (without `--accept-data-loss`) so the hosted MySQL schema stays in sync on each deploy. A destructive schema change fails the build instead of wiping data. Initial/demo **data** is not seeded on Vercel unless you run `npm run db:seed` from a trusted machine. See **`DATABASE.md`**.
 
-6. (Optional) Load demo data — **change default passwords immediately**:
+5. (Optional) Load demo data — **change default passwords immediately**:
 
    ```bash
    set ADMIN_EMAIL=you@yourdomain.com
@@ -65,13 +66,13 @@ You do **not** need all optional items on day one. Minimum to go live: **hosting
    npx prisma db seed
    ```
 
-7. Start the site:
+6. Start the site:
 
    ```bash
    npm run dev
    ```
 
-8. Open `http://localhost:3000` and log in with the seeded admin or therapist accounts (see console output from seed).
+7. Open `http://localhost:3000` and log in with the seeded admin or therapist accounts (see console output from seed).
 
 ---
 
@@ -85,18 +86,19 @@ On your hosting dashboard, add these variables (names must match exactly):
 | `AUTH_SECRET` | long random string | Session encryption |
 | `NEXTAUTH_URL` | `https://www.yourdomain.com` | Public URL of the site |
 | `AUTH_URL` | same as `NEXTAUTH_URL` | Some hosts expect this for Auth.js v5 |
+| `SUPER_ADMIN_EMAIL` | `you@yourdomain.com` | Promotes this user to admin; required in production |
 
 **Generate AUTH_SECRET (Windows PowerShell):**
 
 ```powershell
-[Convert]::ToBase64String([byte[]](1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
 ```
 
 **Optional (later):**
 
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — payments.
-- `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_BASE_URL` — durable uploads.
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — Google OAuth for Docs API integration.
+- `BLOB_READ_WRITE_TOKEN` — Vercel Blob (required for image uploads on Vercel).
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — payments (not wired yet).
+- `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` — Google sign-in.
 
 Never commit `.env` to git. It is listed in `.gitignore`.
 
@@ -138,7 +140,7 @@ Propagation can take **5 minutes to 48 hours** depending on DNS TTL.
 - [ ] `npm run build` succeeds on the host.
 - [ ] Default seeded passwords changed (if you used `prisma db seed`).
 - [ ] Admin can open `/admin` and see audit entries.
-- [ ] Therapist can edit profile at `/dashboard/profile` and public page `/t/...` loads.
+- [ ] Therapist can edit profile at `/dashboard/profile` and public page `/therapists/[id]` loads (`/t/...` still redirects).
 - [ ] Client can register, sign in, and browse `/therapists` and `/herbal-index`.
 - [ ] Legal: privacy policy + terms + clinician disclaimers published (add pages when your lawyer is ready).
 - [ ] Cookie banner if required in your jurisdiction.
@@ -159,10 +161,8 @@ Until then, mark bank transfers manually in your office spreadsheet.
 
 ## 8. File uploads (clinical note photos)
 
-- **Development**: files save under `public/uploads/notes`.
-- **Production serverless** (e.g. Vercel): disk is **ephemeral** — uploads should go to **S3-compatible storage** and store the public URL in `clinical_logs.notes_image`.
-
-Plan this before heavy clinical use.
+- **Development**: files save under `public/uploads/` (including `notes/`).
+- **Production on Vercel**: use **Vercel Blob** (`BLOB_READ_WRITE_TOKEN`). Profile, content, and clinical-note images all go through the same helper.
 
 ---
 
@@ -191,11 +191,11 @@ Document who is allowed to create **admin** users (`role = admin` in the databas
 
 ```bash
 npm run dev          # local development
-npm run build        # production build (includes prisma db push --accept-data-loss)
+npm run build        # production build (includes prisma db push, no data-loss flag)
 npm run start        # production server
 npx prisma studio    # visual database browser
 npm run db:seed      # load/update starter catalog & users (run manually; not part of Vercel build)
-npx prisma migrate dev  # optional: create migrations locally instead of db push
+npm run db:push:force  # local only: db push with --accept-data-loss
 ```
 
 Schema vs data: see **`DATABASE.md`** — [Prisma `db push` reference](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push), [seeding](https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding).

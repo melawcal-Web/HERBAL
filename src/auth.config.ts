@@ -12,6 +12,10 @@ export default {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: UserRole }).role;
+        token.therapistVerification = (user as { therapistVerification?: TherapistVerificationStatus })
+          .therapistVerification;
+        token.registrationPersona = (user as { registrationPersona?: RegistrationPersona | null })
+          .registrationPersona;
       }
       return token;
     },

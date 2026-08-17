@@ -4,7 +4,7 @@
 
 | מה | אוטומטי ב-Vercel? | מה לעשות |
 | --- | --- | --- |
-| **שינויים בסכימה** (טבלאות, עמודות, אינדקסים לפי `prisma/schema.prisma`) | כן — בכל **Deploy** רץ `prisma db push --accept-data-loss` בתוך `npm run build` | רק לוודא ש־`DATABASE_URL` מוגדר ב־Vercel (אותו `mysql://...` מ-Railway). |
+| **שינויים בסכימה** (טבלאות, עמודות, אינדקסים לפי `prisma/schema.prisma`) | כן — בכל **Deploy** רץ `prisma db push` בתוך `npm run build` (בלי `--accept-data-loss`) | רק לוודא ש־`DATABASE_URL` מוגדר ב־Vercel (אותו `mysql://...` מ-Railway). אם הבילד נכשל בגלל שינוי הרסני — לתקן את הסכמה במפורש, לא לדרוס נתונים בשקט. |
 | **מילוי תוכן התחלה** (מוצרים, מאמרים, משתמשי seed) | לא — ה-seed **לא** רץ בבילד של Vercel | להריץ **פעם** (או כשצריך) מהמחשב שלך — ראו למטה. |
 
 כלומר: **מבנה הטבלאות** מתעדכן עם כל פריסה מוצלחת. **נתונים** (תוכן דמו) לא — אלא אם אתה מריץ seed בעצמך.
@@ -13,13 +13,12 @@
 
 ## איך זה עובד טכנית (קישורים רשמיים)
 
-1. **`db push`** — מסנכרן את הסכמה למסד בלי קבצי מיגרציה ידניים (מתאים לפרויקטים כמו שלנו בבילד).  
+1. **`db push`** — מסנכרן את הסכמה למסד בלי להחיל קבצי מיגרציה (מתאים לפריסת Vercel הנוכחית).  
    [תיעוד `prisma db push`](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push)
 
-2. **דגל `--accept-data-loss`** — נדרש לפעמים ב-CI (כמו Vercel) כש-Prisma מזהיר לפני שינויים “מסוכנים”; אצלנו זה בשימוש ב-build כדי שהוספת אינדקסים/עמודות לא תעצור את הפריסה.  
-   אותו עמוד תיעוד למעלה — סעיף על `--accept-data-loss`.
+2. **בלי `--accept-data-loss` בבילד** — שינוי שעלול למחוק נתונים **יכשיל** את הפריסה במקום למחוק בשקט. לפיתוח מקומי בלבד, אם מבינים את הסיכון: `npm run db:push:force`.
 
-3. **מיגרציות (`migrate`)** — אם בעתיד תעברו לזרימה עם קבצי migration בלבד:  
+3. **מיגרציות (`migrate`)** — קבצים קיימים תחת `prisma/migrations/` לפיתוח מקומי. המסד בפרודקשן סונכרן historically עם `db push`, לכן הבילד **לא** רץ `migrate deploy` (זה עלול להיכשל על טבלאות שכבר קיימות).  
    [Prototyping vs migrate](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)  
    [Deploy migrations (`migrate deploy`)](https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production)
 
@@ -29,19 +28,20 @@
 5. **חיבור MySQL** (`DATABASE_URL`):  
    [Datasource — MySQL](https://www.prisma.io/docs/orm/overview/databases/mysql)
 
+`prisma.config.ts` טוען את קובץ `.env` — אפשר להריץ `npx prisma db push` בלי להעתיק ידנית את `DATABASE_URL` לטרמינל.
+
 ---
 
 ## להריץ seed מהמחשב (תוכן התחלה / עדכון דמו)
 
-בתיקיית הפרויקט, אחרי `npm install`:
+בתיקיית הפרויקט, אחרי `npm install` ו־`docker compose up -d`:
 
 ```powershell
 cd C:\Users\cohen\OneDrive\Documents\GitHub\HERBAL
-$env:DATABASE_URL="mysql://..."   # אותו ערך כמו ב-Vercel
 npm run db:seed
 ```
 
-או: `npx prisma db seed` (אם מוגדר ב־`prisma.config.ts`).
+או: `npx prisma db seed` (מוגדר ב־`prisma.config.ts`).
 
 בסוף ההרצה יודפסו בטרמינל מיילים וסיסמאות ברירת מחדל — **החלף אותן בפרודקשן**.
 
@@ -50,11 +50,13 @@ npm run db:seed
 ## מקומי (פיתוח)
 
 ```powershell
+docker compose up -d
 npx prisma db push
+npm run db:seed
 npm run dev
 ```
 
-אם Prisma מבקש אישור לאובדן נתונים, אפשר: `npx prisma db push --accept-data-loss` (רק אם אתה מבין מה השתנה).
+אם Prisma מבקש אישור לאובדן נתונים, אפשר: `npm run db:push:force` (רק אם אתה מבין מה השתנה).
 
 ---
 

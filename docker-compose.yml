@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: herbal-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: herbal
+      MYSQL_DATABASE: herbal_center
+      MYSQL_USER: herbal
+      MYSQL_PASSWORD: herbal
+    ports:
+      - "3306:3306"
+    volumes:
+      - herbal_mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+
+volumes:
+  herbal_mysql_data:

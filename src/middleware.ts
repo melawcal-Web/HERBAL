@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import authConfig from "@/auth.config";
 import { NextResponse } from "next/server";
+import { postLoginPath } from "@/lib/post-login-path";
 
 const { auth } = NextAuth(authConfig);
 
@@ -21,6 +22,9 @@ export default auth((req) => {
       const url = new URL("/auth/signin", req.nextUrl.origin);
       url.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(url);
+    }
+    if (req.auth?.user?.role !== "admin") {
+      return NextResponse.redirect(new URL(postLoginPath(req.auth), req.nextUrl.origin));
     }
   }
 

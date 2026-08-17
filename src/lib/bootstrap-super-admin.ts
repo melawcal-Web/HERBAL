@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
+function isProductionRuntime(): boolean {
+  return process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+}
+
 /**
- * Ensures at least one admin exists: prefers `SUPER_ADMIN_EMAIL`, otherwise promotes the earliest user.
- * Idempotent; safe to call from admin layout.
+ * Ensures a known admin exists.
+ * Production: only `SUPER_ADMIN_EMAIL` is promoted (never the first random signup).
+ * Local/dev: if that env is unset and there are zero admins, the earliest user is promoted.
  */
 export async function ensureBootstrapAdmins(): Promise<void> {
   const superEmail = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
@@ -13,6 +18,8 @@ export async function ensureBootstrapAdmins(): Promise<void> {
     });
     return;
   }
+
+  if (isProductionRuntime()) return;
 
   const adminCount = await prisma.user.count({ where: { role: "admin" } });
   if (adminCount > 0) return;

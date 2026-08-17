@@ -8,16 +8,16 @@
 
 ## לפני הכל (חשוב מאוד)
 
-1. אתה צריך **את תיקיית הקוד** `herbal-platform` במחשב (או שמישהו מטפל בזה בשבילך).  
+1. אתה צריך **את תיקיית הקוד** `HERBAL` במחשב (או שמישהו מטפל בזה בשבילך).  
    בלי זה אי אפשר להעלות לגיטהאב.
 
 2. ב־Vercel נבנה את האתר עם הפקודה (כבר מוכן בפרויקט):  
-   `prisma generate && prisma db push --accept-data-loss && next build`  
-   כלומר בכל **Deploy** מוצלח — **מבנה** מסד הנתונים (טבלאות/עמודות לפי `prisma/schema.prisma`) מתעדכן אוטומטית מול ה־`DATABASE_URL` שלך (למשל Railway). **לא צריך** ללחוץ שום דבר ב-Railway בשביל זה.
+   `prisma generate && prisma db push && next build`  
+   כלומר בכל **Deploy** מוצלח — **מבנה** מסד הנתונים (טבלאות/עמודות לפי `prisma/schema.prisma`) מתעדכן אוטומטית מול ה־`DATABASE_URL` שלך (למשל Railway). **לא צריך** ללחוץ שום דבר ב-Railway בשביל זה. שינוי שעלול למחוק נתונים יכשיל את הבילד במקום למחוק בשקט.
 
 3. **תוכן התחלה** (מוצרים/מאמרים/משתמשים מה־seed) **לא** רץ אוטומטית ב-Vercel. אם צריך — מריצים פעם מהמחשב: `npm run db:seed` (ראו `DATABASE.md` ושלב 4 למטה).
 
-**קישורים רשמיים ל-Prisma:** כל המבנה + דגל `accept-data-loss` + seed — בקובץ **[DATABASE.md](./DATABASE.md)** (עברית + לינקים).
+**קישורים רשמיים ל-Prisma:** מבנה הטבלאות + seed — בקובץ **[DATABASE.md](./DATABASE.md)** (עברית + לינקים).
 
 ---
 
@@ -42,7 +42,7 @@
 2. התחבר עם חשבון ה־GitHub שלך.
 3. ב־GitHub Desktop: **File → Clone repository** ובחר את הריפו שיצרת.
 4. פתח את התיקייה במחשב (ב־GitHub Desktop יש כפתור **Show in Explorer**).
-5. **העתק** לתוכה את כל הקבצים מתוך `herbal-platform` (כך ש־`package.json` יהיה **בתוך** תיקיית הריפו, לא בתוך תיקייה כפולה בשם `herbal-platform` אם אפשר — הכי פשוט ל־Vercel).
+5. **העתק** לתוכה את כל הקבצים מתוך `HERBAL` (כך ש־`package.json` יהיה **בשורש** תיקיית הריפו).
 
 חזור ל־GitHub Desktop:
 
@@ -96,6 +96,7 @@
 | `AUTH_SECRET` | מחרוזת ארוכה ואקראית (ראה למטה איך לייצר) |
 | `NEXTAUTH_URL` | בשלב ראשון: `https://PLACEHOLDER.vercel.app` (נתקן אחרי שיש כתובת אמיתית) |
 | `AUTH_URL` | אותו דבר כמו `NEXTAUTH_URL` |
+| `SUPER_ADMIN_EMAIL` | המייל שלך — יוענק תפקיד אדמין. בלי זה אף אחד לא מקודם אוטומטית בפריסה. |
 
 #### איך לייצר `AUTH_SECRET` (בלי קסמים)
 
@@ -107,8 +108,7 @@
 
 העתק את הפלט — זה `AUTH_SECRET`.
 
-6. אם הקוד שלך בגיטהאב יושב בתוך תיקייה פנימית `herbal-platform` (ולא בשורש הריפו):  
-   ב־Vercel תחת **Root Directory** כתוב: `herbal-platform`
+6. **אל** תגדירו Root Directory ב־Vercel — הקוד כבר בשורש הריפו.
 
 7. לחץ **Deploy** והמתן כמה דקות.
 
@@ -132,7 +132,7 @@
 צריך מחשב אחד עם Node.js, ואז (פעם אחת):
 
 ```powershell
-cd path\to\herbal-platform
+cd path\to\HERBAL
 npm install
 $env:DATABASE_URL="הדבק כאן את אותו mysql מרילוויי"
 $env:ADMIN_EMAIL="you@yourdomain.com"
@@ -162,7 +162,7 @@ npx prisma db seed
    כמעט תמיד `NEXTAUTH_URL` / `AUTH_URL` לא תואמים לכתובת האתר המדויקת. תקן ו־Redeploy.
 
 3. **אין לך בכלל את תיקיית הקוד**  
-   צריך מישהו שיעתיק לך את `herbal-platform` לפני שאפשר לעלות לגיטהאב.
+   צריך מישהו שיעתיק לך את תיקיית `HERBAL` לפני שאפשר לעלות לגיטהאב.
 
 ---
 

@@ -1,17 +1,18 @@
 # HERBAL — פרויקט האתר
 
-הקבצים הועתקו לתיקייה הזו (`C:\Users\cohen\OneDrive\Documents\GitHub\HERBAL`).
+אתר קהילת מטפלי צמחי מרפא (Next.js + MySQL). הקוד בשורש הריפו `HERBAL` — ב־Vercel **אל** תגדירו Root Directory.
 
-## מה לעשות עכשיו (3 צעדים)
+## הרצה מקומית
 
-1. פתחו **GitHub Desktop** → בחרו את הריפו `HERBAL` (או הוסיפו Repository from disk לתיקייה הזו).
-2. אמורים לראות את כל הקבצים כשינוי → **Commit** → **Push**.
-3. ב־**Vercel**: ייבאו את הריפו. **אל** תגדירו Root Directory ל־`herbal-platform` (הכל כבר בשורש).
+1. התקינו Docker Desktop והריצו `docker compose up -d`
+2. העתיקו `.env.example` ל־`.env` (ברירת המחדל מתאימה ל-Docker המקומי)
+3. `npm install`
+4. `npx prisma db push`
+5. `npm run db:seed` (תוכן דמו — אופציונלי אבל מומלץ)
+6. `npm run dev` → http://localhost:3000
 
-לפני הרצה מקומית: `npm install` ואז צרו `.env` לפי `.env.example`.
-
-מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית), **`DATABASE.md`** (מתי מסד הנתונים מתעדכן ב-Vercel, מה ידני, וקישורים ל-Prisma).
+מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית), **`DATABASE.md`** (מתי מסד הנתונים מתעדכן ב-Vercel).
 
 ## פריסה (Vercel)
 
-אחרי **Push** ל־`main`, Vercel בונה אוטומטית את **הקומיט העדכני**. אם לחצתם **Redeploy** על דיפלוי ישן, ייתכן שיבנה שוב קומיט ישן — עדיף תמיד **Push** חדש או דיפלוי שמציג את ה־SHA העדכני בראש הלוג. (עדכון: middleware משתמש ב־`auth.config.ts` בלי Prisma כדי לשמור על גודל Edge סביר.)
+אחרי **Push** ל־`main`, Vercel בונה אוטומטית את **הקומיט העדכני**. ודאו שמוגדרים `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_URL`, ו־`SUPER_ADMIN_EMAIL`. להעלאת תמונות בפרודקשן נדרש `BLOB_READ_WRITE_TOKEN`.
