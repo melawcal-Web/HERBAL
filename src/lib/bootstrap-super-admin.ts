@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
 function isProductionRuntime(): boolean {
-  return process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  return (
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.env.VERCEL) ||
+    Boolean(process.env.RAILWAY_ENVIRONMENT)
+  );
 }
 
 /**
