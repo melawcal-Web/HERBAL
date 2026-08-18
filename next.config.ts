@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   experimental: {
     serverActions: {
       /** תמונות עד 5MB — ברירת המחדל של Next היא ~1MB וחותכת העלאות */

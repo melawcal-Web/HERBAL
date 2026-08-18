@@ -1,6 +1,6 @@
 # HERBAL — פרויקט האתר
 
-אתר קהילת מטפלי צמחי מרפא (Next.js + MySQL). הקוד בשורש הריפו `HERBAL` — ב־Vercel **אל** תגדירו Root Directory.
+אתר קהילת מטפלי צמחי מרפא (Next.js + MySQL). הקוד בשורש הריפו `HERBAL`.
 
 ## הרצה מקומית
 
@@ -11,8 +11,8 @@
 5. `npm run db:seed` (תוכן דמו — אופציונלי אבל מומלץ)
 6. `npm run dev` → http://localhost:3000
 
-מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית), **`DATABASE.md`** (מתי מסד הנתונים מתעדכן ב-Vercel).
+מדריכים: `SETUP-SIMPLE-HE.md` (עברית), `DEPLOY.md` (אנגלית), **`DATABASE.md`** (מתי מסד הנתונים מתעדכן ב-Railway).
 
-## פריסה (Vercel)
+## פריסה מומלצת (Railway)
 
-אחרי **Push** ל־`main`, Vercel בונה אוטומטית את **הקומיט העדכני**. ודאו שמוגדרים `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_URL`, ו־`SUPER_ADMIN_EMAIL`. להעלאת תמונות בפרודקשן נדרש `BLOB_READ_WRITE_TOKEN`.
+אחרי **Push** ל־`main`, Railway יכול לבנות אוטומטית את **הקומיט העדכני**. ודאו שמוגדרים `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_URL`, ו־`SUPER_ADMIN_EMAIL`, ושמחובר Volume אל `/app/public/uploads`.

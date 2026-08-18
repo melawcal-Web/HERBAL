@@ -9,8 +9,8 @@ This guide is written for a **non-technical** owner or office manager. Follow th
 ## 1. What you are deploying
 
 - **App**: Next.js (Node.js) web application in this repository (`HERBAL`, repo root).
-- **Database**: MySQL (Docker locally; Railway or similar in production).
-- **Files**: Images (profile, content, clinical notes) use **Vercel Blob** in production (`BLOB_READ_WRITE_TOKEN`) and `public/uploads/` locally.
+- **Database**: MySQL (Docker locally; **Railway MySQL** in production).
+- **Files**: Images (profile, content, clinical notes) are stored under `public/uploads/`. On Railway, attach a persistent **Volume** to `/app/public/uploads`.
 
 ---
 
@@ -22,16 +22,15 @@ Create accounts (free or paid tiers as you prefer) for:
 | --- | --- |
 | **Domain registrar** (GoDaddy, Namecheap, Cloudflare, etc.) | Your public web address, e.g. `herbal-center.co.il`. |
 | **DNS / CDN** (often Cloudflare) | Point the domain to hosting; optional caching and security. |
-| **Hosting for Node.js** | Runs the Next.js app (Vercel, Railway, Render, Fly.io, AWS, Azure, etc.). |
-| **MySQL hosting** | PlanetScale (MySQL-compatible), AWS RDS, Google Cloud SQL, Azure Database for MySQL, DigitalOcean Managed DB, etc. |
-| **Vercel Blob** | Durable image uploads on Vercel (required for production photos). |
+| **Hosting for Node.js** | Runs the Next.js app (**Railway** recommended for this project). |
+| **MySQL hosting** | **Railway MySQL** recommended so app + database stay in one project. |
 | **AUTH_SECRET** | Random secret so login sessions are secure — no third-party account; you generate it locally (section 5). |
 | **Payment gateway (later)** | Stripe, PayPal, or a local Israeli processor — for courses/workshops checkout and membership. |
 | **Video / webinar (optional)** | Zoom, Google Meet, or Vimeo for paid “Zoom” products — links can live inside product descriptions until native integration is added. |
 | **Email provider (recommended)** | SendGrid, Postmark, Amazon SES, or Resend — for password reset and notifications (not wired in MVP; plan ahead). |
 | **Google Cloud (optional, for Google Docs export)** | Only if you want **one-click** creation of Google Docs via API. The app already supports **copy to clipboard** and **PDF** without Google. |
 
-You do **not** need all optional items on day one. Minimum to go live: **hosting + MySQL + domain + AUTH_SECRET + SUPER_ADMIN_EMAIL**. Production photo uploads also need **BLOB_READ_WRITE_TOKEN**.
+You do **not** need all optional items on day one. Minimum to go live: **Railway project + MySQL service + AUTH_SECRET + SUPER_ADMIN_EMAIL**. For images, attach a Railway **Volume** to `/app/public/uploads`.
 
 ---
 
@@ -56,7 +55,7 @@ You do **not** need all optional items on day one. Minimum to go live: **hosting
    npx prisma db push
    ```
 
-   **Production (Vercel):** `npm run build` runs `prisma db push` (without `--accept-data-loss`) so the hosted MySQL schema stays in sync on each deploy. A destructive schema change fails the build instead of wiping data. Initial/demo **data** is not seeded on Vercel unless you run `npm run db:seed` from a trusted machine. See **`DATABASE.md`**.
+   **Production (Railway):** `npm run build` runs `prisma db push` (without `--accept-data-loss`) so the hosted MySQL schema stays in sync on each deploy. A destructive schema change fails the build instead of wiping data. Initial/demo **data** is not seeded automatically; run `npm run db:seed` once from a trusted machine if you want demo content. See **`DATABASE.md`**.
 
 5. (Optional) Load demo data — **change default passwords immediately**:
 
@@ -96,7 +95,6 @@ On your hosting dashboard, add these variables (names must match exactly):
 
 **Optional (later):**
 
-- `BLOB_READ_WRITE_TOKEN` — Vercel Blob (required for image uploads on Vercel).
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — payments (not wired yet).
 - `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` — Google sign-in.
 
@@ -118,10 +116,10 @@ Never commit `.env` to git. It is listed in `.gitignore`.
    npm run start
    ```
 
-2. The host will show you a **temporary URL** (e.g. `*.vercel.app`). Confirm the site loads.
+2. The host will show you a **temporary URL**. Confirm the site loads.
 3. In your **DNS** provider, create a **CNAME** (recommended) or **A** record:
 
-   - **Subdomain** `www` → target given by host (e.g. `cname.vercel-dns.com` or similar).
+   - **Subdomain** `www` → target given by host.
    - Apex/root domain (`@`) → use your host’s apex instructions (often ALIAS/ANAME or A records).
 
 4. In the hosting panel, attach **custom domain** `www.yourdomain.com` and enable **HTTPS** (automatic on most modern hosts).
@@ -162,7 +160,7 @@ Until then, mark bank transfers manually in your office spreadsheet.
 ## 8. File uploads (clinical note photos)
 
 - **Development**: files save under `public/uploads/` (including `notes/`).
-- **Production on Vercel**: use **Vercel Blob** (`BLOB_READ_WRITE_TOKEN`). Profile, content, and clinical-note images all go through the same helper.
+- **Production on Railway**: attach a persistent **Volume** to `/app/public/uploads`. Profile, content, and clinical-note images all go through the same helper.
 
 ---
 
@@ -194,7 +192,7 @@ npm run dev          # local development
 npm run build        # production build (includes prisma db push, no data-loss flag)
 npm run start        # production server
 npx prisma studio    # visual database browser
-npm run db:seed      # load/update starter catalog & users (run manually; not part of Vercel build)
+npm run db:seed      # load/update starter catalog & users (run manually; not part of Railway build)
 npm run db:push:force  # local only: db push with --accept-data-loss
 ```
 

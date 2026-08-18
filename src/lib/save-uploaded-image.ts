@@ -15,8 +15,11 @@ function extFromMime(mime: string): "png" | "webp" | "gif" | "jpg" {
 }
 
 /**
- * שמירת תמונה: בפרודקשן על Vercel — Vercel Blob (כש־`BLOB_READ_WRITE_TOKEN` מוגדר).
- * בפיתוח מקומי — תחת `public/uploads/{prefix}/`.
+ * שמירת תמונה:
+ * - ב־Vercel עם `BLOB_READ_WRITE_TOKEN` — ל־Vercel Blob
+ * - ב־Railway / פיתוח מקומי — תחת `public/uploads/{prefix}/`
+ *
+ * ב־Railway מומלץ לחבר Volume אל `/app/public/uploads` כדי שהתמונות יישמרו קבוע.
  */
 export async function saveUploadedImageBuffer(buffer: Buffer, mime: string, prefix: string): Promise<string> {
   if (!ALLOWED.has(mime)) {
@@ -48,7 +51,7 @@ export async function saveUploadedImageBuffer(buffer: Buffer, mime: string, pref
     const code = e && typeof e === "object" && "code" in e ? String((e as NodeJS.ErrnoException).code) : "";
     if (code === "ENOENT" || code === "EROFS" || code === "EACCES") {
       throw new Error(
-        "לא ניתן לכתוב קבצים לשרת (ב‑Vercel הדיסק read‑only). יש ליצור Blob Store בפרויקט ב‑Vercel ולהוסיף למשתני הסביבה BLOB_READ_WRITE_TOKEN (ראו .env.example).",
+        "לא ניתן לכתוב קבצים לשרת. ב־Vercel יש להגדיר BLOB_READ_WRITE_TOKEN. ב־Railway יש לחבר Volume אל /app/public/uploads.",
       );
     }
     throw e;

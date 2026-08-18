@@ -1,6 +1,6 @@
-# מדריך הקמה — כמו לילד (GitHub + MySQL + Vercel)
+# מדריך הקמה — כמו לילד (GitHub + MySQL + Railway)
 
-מטרה: שיהיה לך **אתר חי באינטרנט** (כתובת כמו `https://משהו.vercel.app`) + **מסד נתונים SQL (MySQL)** + הקוד ב־**GitHub**.
+מטרה: שיהיה לך **אתר חי באינטרנט** + **מסד נתונים SQL (MySQL)** + הכל ב־**Railway** באותו פרויקט.
 
 תעבוד **לפי הסדר מהלמעלה למטה**. אל תדלג.
 
@@ -11,11 +11,11 @@
 1. אתה צריך **את תיקיית הקוד** `HERBAL` במחשב (או שמישהו מטפל בזה בשבילך).  
    בלי זה אי אפשר להעלות לגיטהאב.
 
-2. ב־Vercel נבנה את האתר עם הפקודה (כבר מוכן בפרויקט):  
+2. ב־Railway נבנה את האתר עם הפקודה (כבר מוכן בפרויקט):  
    `prisma generate && prisma db push && next build`  
-   כלומר בכל **Deploy** מוצלח — **מבנה** מסד הנתונים (טבלאות/עמודות לפי `prisma/schema.prisma`) מתעדכן אוטומטית מול ה־`DATABASE_URL` שלך (למשל Railway). **לא צריך** ללחוץ שום דבר ב-Railway בשביל זה. שינוי שעלול למחוק נתונים יכשיל את הבילד במקום למחוק בשקט.
+   כלומר בכל **Deploy** מוצלח — **מבנה** מסד הנתונים (טבלאות/עמודות לפי `prisma/schema.prisma`) מתעדכן אוטומטית מול ה־`DATABASE_URL`. **לא צריך** ללחוץ שום דבר במסד. שינוי שעלול למחוק נתונים יכשיל את הבילד במקום למחוק בשקט.
 
-3. **תוכן התחלה** (מוצרים/מאמרים/משתמשים מה־seed) **לא** רץ אוטומטית ב-Vercel. אם צריך — מריצים פעם מהמחשב: `npm run db:seed` (ראו `DATABASE.md` ושלב 4 למטה).
+3. **תוכן התחלה** (מוצרים/מאמרים/משתמשים מה־seed) **לא** רץ אוטומטית ב-Railway. אם צריך — מריצים פעם מהמחשב: `npm run db:seed` (ראו `DATABASE.md` ושלב 4 למטה).
 
 **קישורים רשמיים ל-Prisma:** מבנה הטבלאות + seed — בקובץ **[DATABASE.md](./DATABASE.md)** (עברית + לינקים).
 
@@ -55,9 +55,9 @@
 
 ---
 
-## שלב 2 — פתח חשבון ב־Railway (MySQL בענן)
+## שלב 2 — פתח חשבון ב־Railway (האתר + MySQL)
 
-אנחנו צריכים **MySQL** (לא PostgreSQL) כי הפרויקט מוגדר כך.
+אנחנו צריכים **MySQL** (לא PostgreSQL) כי הפרויקט מוגדר כך, ואת האתר עצמו גם נשים ב־Railway.
 
 1. גש ל: [https://railway.app](https://railway.app)
 2. **Login** עם GitHub (זה הכי נוח).
@@ -76,25 +76,24 @@
 
 ### הרשאת חיבור מהאינטרנט
 
-ב־Railway ברירת המחדל בדרך כלל מאפשרת גישה חיצונית ל־MySQL. אם יש אופציה של **Public networking** / **TCP Proxy** — הפעל, כדי ש־Vercel יוכל להתחבר.
+ב־Railway ברירת המחדל בדרך כלל מאפשרת גישה חיצונית ל־MySQL. אם יש אופציה של **Public networking** / **TCP Proxy** — אפשר להפעיל אם תרצה להתחבר גם מכלי חיצוני.
 
 ---
 
-## שלב 3 — פתח חשבון ב־Vercel (האתר רץ כאן)
+## שלב 3 — העלה את האתר ל־Railway
 
-1. גש ל: [https://vercel.com/signup](https://vercel.com/signup)
-2. בחר **Continue with GitHub** והתחבר.
-3. **Add New… → Project**
-4. בחר את הריפו `herbal-therapists-center` (או השם שנתת).
-5. לפני Deploy, לחץ **Configure Project** (או **Environment Variables**):
+1. בתוך Railway לחץ **New** → **GitHub Repo**
+2. בחר את הריפו `HERBAL`
+3. Railway יזהה שזה פרויקט Node/Next.js
+4. היכנס לשירות האתר → **Variables**
 
 הוסף משתנים (שמות **בדיוק** ככה):
 
 | Name | Value (מה להדביק) |
 | --- | --- |
-| `DATABASE_URL` | מה שהעתקת מ־Railway (`mysql://...`) |
+| `DATABASE_URL` | בחר Reference Variable מהשירות של MySQL |
 | `AUTH_SECRET` | מחרוזת ארוכה ואקראית (ראה למטה איך לייצר) |
-| `NEXTAUTH_URL` | בשלב ראשון: `https://PLACEHOLDER.vercel.app` (נתקן אחרי שיש כתובת אמיתית) |
+| `NEXTAUTH_URL` | הכתובת הציבורית של האתר ב־Railway |
 | `AUTH_URL` | אותו דבר כמו `NEXTAUTH_URL` |
 | `SUPER_ADMIN_EMAIL` | המייל שלך — יוענק תפקיד אדמין. בלי זה אף אחד לא מקודם אוטומטית בפריסה. |
 
@@ -108,20 +107,20 @@
 
 העתק את הפלט — זה `AUTH_SECRET`.
 
-6. **אל** תגדירו Root Directory ב־Vercel — הקוד כבר בשורש הריפו.
+5. היכנס ל־**Settings → Networking** ולחץ **Generate Domain**
+6. חזור ל־**Variables** והדבק את הכתובת שקיבלת ב־`NEXTAUTH_URL` וגם ב־`AUTH_URL`
+7. לחץ **Deploy** והמתן כמה דקות
+8. חשוב: היכנס ל־**Volumes** וחבר Volume אל הנתיב:
 
-7. לחץ **Deploy** והמתן כמה דקות.
+```text
+/app/public/uploads
+```
 
 ### אחרי שהפריסה הצליחה
 
-1. למעלה יופיע לינק כמו `https://herbal-therapists-center-xxx.vercel.app`
-2. חזור ל־**Project → Settings → Environment Variables**
-3. עדכן:
-
-- `NEXTAUTH_URL` = הלינק המדויק עם `https://`
-- `AUTH_URL` = אותו דבר
-
-4. עשה **Redeploy** (חשוב — אחרת התחברות עלולה להשתבש).
+1. למעלה יופיע לינק ציבורי של Railway
+2. פתח אותו ובדוק שהאתר עולה
+3. אם שינית `NEXTAUTH_URL` / `AUTH_URL` אחרי יצירת הדומיין — עשה **Redeploy**
 
 ---
 
@@ -148,15 +147,15 @@ npx prisma db seed
 
 - **GitHub**: גיבוי הקוד + היסטוריית שינויים  
 - **Railway MySQL**: מסד SQL אמיתי  
-- **Vercel**: האתר באוויר עם HTTPS
+- **Railway**: האתר + MySQL + נפח קבצים באותו פרויקט
 
 ---
 
 ## אם משהו נשבר (הכי נפוץ)
 
-1. **Build נכשל ב־Vercel**  
-   פתח **Deployments → לחץ על הבילד האחרון → Logs** וחפש שורות אדומות.  
-   בדרך כלל זה `DATABASE_URL` לא נכון או MySQL לא נגיש מהאינטרנט.
+1. **Build נכשל ב־Railway**  
+   פתח **Deployments / Logs** וחפש שורות אדומות.  
+   בדרך כלל זה `DATABASE_URL` לא מחובר נכון או שחסר `AUTH_SECRET`.
 
 2. **האתר עלה אבל התחברות לא עובדת**  
    כמעט תמיד `NEXTAUTH_URL` / `AUTH_URL` לא תואמים לכתובת האתר המדויקת. תקן ו־Redeploy.
@@ -172,7 +171,6 @@ npx prisma db seed
 - יצירת ריפו חדש: [https://github.com/new](https://github.com/new)
 - GitHub Desktop: [https://desktop.github.com/](https://desktop.github.com/)
 - Railway: [https://railway.app](https://railway.app)
-- Vercel הרשמה: [https://vercel.com/signup](https://vercel.com/signup)
 - **מסד נתונים — מתי מתעדכן אוטומטית / מה ידני / לינקים ל-Prisma:** [DATABASE.md](./DATABASE.md)
 - `prisma db push` (תיעוד): [https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#db-push)
 - Seeding: [https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding](https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding)
@@ -183,7 +181,7 @@ npx prisma db seed
 
 כן — אבל **לא חובה ביום 1**:
 
-- דומיין משלך (למשל ב־Cloudflare / Namecheap) וחיבור ל־Vercel (מדריך נפרד כשתהיה מוכן).
+- דומיין משלך (למשל ב־Cloudflare / Namecheap) וחיבור ל־Railway (מדריך נפרד כשתהיה מוכן).
 - סליקה (Stripe וכו’) — כשתרצו מכירות אמיתיות בקורסים וסדנאות.
 
 מדריך טכני יותר באנגלית עדיין קיים בקובץ `DEPLOY.md`. **מסד נתונים (מתי מתעדכן / לינקים ל-Prisma):** `DATABASE.md`.
