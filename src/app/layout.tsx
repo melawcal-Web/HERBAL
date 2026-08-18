@@ -8,6 +8,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Providers } from "@/app/providers";
 import { AmbientBackground } from "@/components/AmbientBackground";
 
+/** Pages read MySQL at request time — skip DB during Railway/Vercel build. */
+export const dynamic = "force-dynamic";
+
 const notoHebrew = Noto_Sans_Hebrew({
   variable: "--font-display",
   subsets: ["hebrew", "latin"],
