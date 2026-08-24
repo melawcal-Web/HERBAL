@@ -10,6 +10,7 @@
     "build": "prisma generate && next build && node scripts/prepare-standalone.mjs",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
+    "deploy": "node scripts/deploy.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:push:force": "prisma db push --accept-data-loss",

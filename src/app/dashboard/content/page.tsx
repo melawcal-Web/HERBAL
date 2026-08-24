@@ -13,12 +13,12 @@ export default async function DashboardContentPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <>
       <h1 className="font-display text-3xl text-herbal-900">ניהול תוכן</h1>
       <p className="mt-2 text-slate-600">
-        בחרו קטגוריה והוסיפו תוכן שיוצג בפרופיל הציבורי שלכם ובאתר.
+        עברו בין סוגי התוכן בסרגל, או לחצו על הפלוס כדי להוסיף פריט חדש.
       </p>
       <DashboardAddContent />
-    </div>
+    </>
   );
 }

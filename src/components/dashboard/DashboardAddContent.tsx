@@ -88,30 +88,6 @@ function ModalPanel({
   );
 }
 
-function ActionTile({
-  icon,
-  title,
-  subtitle,
-  onClick,
-}: {
-  icon: ReactNode;
-  title: string;
-  subtitle: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex flex-col items-center gap-3 rounded-2xl border border-herbal-100 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-herbal-300 hover:shadow-md motion-reduce:transition-none"
-    >
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-herbal-50 text-herbal-800">{icon}</span>
-      <span className="font-display text-sm font-bold text-herbal-900">{title}</span>
-      <span className="text-xs leading-relaxed text-slate-600">{subtitle}</span>
-    </button>
-  );
-}
-
 /* ── Icons ── */
 
 function IconBuilding() {
@@ -180,13 +156,21 @@ function IconLive() {
   );
 }
 
+function IconPlus() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /* ── Category sections config ── */
 
 const categories: {
   id: ContentCategory;
   title: string;
   description: string;
-  tiles: { mode: FormMode; icon: ReactNode; title: string; subtitle: string }[];
+  tiles: { mode: Exclude<FormMode, null>; icon: ReactNode; title: string; subtitle: string }[];
 }[] = [
   {
     id: "frontal",
@@ -234,6 +218,120 @@ const categories: {
   },
 ];
 
+type NavKey = "all" | Exclude<FormMode, null>;
+
+function tileByMode(mode: Exclude<FormMode, null>) {
+  return categories.flatMap((c) => c.tiles).find((t) => t.mode === mode);
+}
+
+/** Matches admin "תפריט" pill buttons */
+function navPillClass(active: boolean) {
+  return [
+    "min-h-[40px] w-full rounded-xl px-4 py-2.5 text-right text-sm font-semibold transition",
+    active
+      ? "bg-herbal-600 text-white shadow-md shadow-herbal-600/25"
+      : "glass-panel border border-herbal-200/80 bg-white text-herbal-900 shadow-sm hover:border-herbal-300 hover:bg-white",
+  ].join(" ");
+}
+
+function SideRail({
+  nav,
+  setNav,
+  addMenuOpen,
+  setAddMenuOpen,
+  openAdd,
+}: {
+  nav: NavKey;
+  setNav: (key: NavKey) => void;
+  addMenuOpen: boolean;
+  setAddMenuOpen: (v: boolean | ((p: boolean) => boolean)) => void;
+  openAdd: (next: Exclude<FormMode, null>) => void;
+}) {
+  return (
+    <>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">תפריט</p>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setAddMenuOpen((v) => !v)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-herbal-600 text-white shadow-md shadow-herbal-600/25 hover:bg-herbal-500"
+            aria-label="הוספת תוכן"
+            aria-expanded={addMenuOpen}
+          >
+            <IconPlus />
+          </button>
+          {addMenuOpen ? (
+            <>
+              <button
+                type="button"
+                aria-label="סגירת תפריט הוספה"
+                className="fixed inset-0 z-20 cursor-default"
+                onClick={() => setAddMenuOpen(false)}
+              />
+              <div className="absolute left-0 top-10 z-30 max-h-[70vh] w-64 overflow-y-auto rounded-2xl border border-herbal-200 bg-white py-2 shadow-xl">
+                <p className="px-3 pb-2 text-xs font-semibold text-slate-500">מה להוסיף?</p>
+                {categories.map((cat) => (
+                  <div key={cat.id} className="px-1 pb-1">
+                    <p className="px-2 py-1 text-[11px] font-semibold text-herbal-700">{cat.title}</p>
+                    {cat.tiles.map((tile) => (
+                      <button
+                        key={tile.mode}
+                        type="button"
+                        onClick={() => openAdd(tile.mode)}
+                        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-right text-sm text-herbal-900 hover:bg-herbal-50"
+                      >
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-herbal-50 text-herbal-800 [&>svg]:h-4 [&>svg]:w-4">
+                          {tile.icon}
+                        </span>
+                        <span>{tile.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      <nav className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setNav("all");
+            setAddMenuOpen(false);
+          }}
+          className={navPillClass(nav === "all")}
+        >
+          כל התוכן
+        </button>
+
+        {categories.map((cat) => (
+          <div key={cat.id} className="pt-1">
+            <p className="mb-1.5 px-1 text-xs font-semibold text-herbal-700">{cat.title}</p>
+            <div className="flex flex-col gap-1.5 pr-3">
+              {cat.tiles.map((tile) => (
+                <button
+                  key={tile.mode}
+                  type="button"
+                  onClick={() => {
+                    setNav(tile.mode);
+                    setAddMenuOpen(false);
+                  }}
+                  className={navPillClass(nav === tile.mode)}
+                >
+                  {tile.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+    </>
+  );
+}
+
 /* ── Main component ── */
 
 export function DashboardAddContent() {
@@ -241,67 +339,97 @@ export function DashboardAddContent() {
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [activeCategoryId, setActiveCategoryId] = useState<ContentCategory>(categories[0].id);
+  const [nav, setNav] = useState<NavKey>("all");
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
 
   const close = () => {
     setMode(null);
+    setAddMenuOpen(false);
+  };
+
+  const openAdd = (next: Exclude<FormMode, null>) => {
+    setNav(next);
+    setMode(next);
+    setAddMenuOpen(false);
     setMsg(null);
     setErr(null);
   };
 
   const formProps = {
     pending,
-    onDone: (m: string) => { setMsg(m); close(); },
+    onDone: (m: string) => {
+      setMsg(m);
+      setMode(null);
+    },
     onError: setErr,
     startTransition,
   };
-  const activeCategory = categories.find((c) => c.id === activeCategoryId) ?? categories[0];
+
+  const selectedTile = nav === "all" ? null : tileByMode(nav);
 
   return (
     <>
       {msg ? <p className="mt-4 text-sm text-herbal-700">{msg}</p> : null}
       {err ? <p className="mt-4 text-sm text-rose-600">{err}</p> : null}
 
-      <div className="mt-8 flex flex-col gap-6 lg:flex-row-reverse lg:items-start">
-        <aside className="w-full lg:w-72">
-          <div className="rounded-2xl border border-herbal-200/80 bg-white/90 p-3 shadow-sm">
-            <nav className="space-y-2">
-              {categories.map((cat) => {
-                const active = cat.id === activeCategoryId;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setActiveCategoryId(cat.id)}
-                    className={[
-                      "w-full rounded-xl px-3 py-3 text-right text-sm font-semibold transition",
-                      active
-                        ? "border border-herbal-300 bg-white text-herbal-900 shadow-sm"
-                        : "border border-herbal-100 bg-white/60 text-slate-600 hover:border-herbal-200 hover:bg-white",
-                    ].join(" ")}
-                  >
-                    {cat.title}
-                  </button>
-                );
-              })}
-            </nav>
+      <div className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <aside className="w-full md:sticky md:top-24 md:max-h-[calc(100vh-7rem)] md:overflow-y-auto">
+          <details className="rounded-2xl border border-herbal-200/80 bg-white/90 p-3 shadow-sm md:hidden">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-herbal-900 [&::-webkit-details-marker]:hidden">
+              תפריט
+            </summary>
+            <div className="mt-3">
+              <SideRail
+                nav={nav}
+                setNav={setNav}
+                addMenuOpen={addMenuOpen}
+                setAddMenuOpen={setAddMenuOpen}
+                openAdd={openAdd}
+              />
+            </div>
+          </details>
+          <div className="hidden md:block">
+            <SideRail
+              nav={nav}
+              setNav={setNav}
+              addMenuOpen={addMenuOpen}
+              setAddMenuOpen={setAddMenuOpen}
+              openAdd={openAdd}
+            />
           </div>
         </aside>
 
-        <section className="flex-1 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
-          <h2 className="font-display text-xl font-bold text-herbal-900">{activeCategory.title}</h2>
-          <p className="mt-1 text-sm text-slate-600">{activeCategory.description}</p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {activeCategory.tiles.map((tile) => (
-              <ActionTile
-                key={tile.mode}
-                icon={tile.icon}
-                title={tile.title}
-                subtitle={tile.subtitle}
-                onClick={() => setMode(tile.mode)}
-              />
-            ))}
-          </div>
+        <section className="min-w-0 flex-1 rounded-2xl border border-herbal-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
+          {nav === "all" ? (
+            <div>
+              <h2 className="font-display text-xl font-bold text-herbal-900">כל התוכן</h2>
+              <ul className="mt-6 space-y-6">
+                {categories.map((cat) => (
+                  <li key={cat.id}>
+                    <p className="text-xs font-semibold text-herbal-700">{cat.title}</p>
+                    <ul className="mt-2 space-y-1">
+                      {cat.tiles.map((tile) => (
+                        <li key={tile.mode}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNav(tile.mode);
+                              setAddMenuOpen(false);
+                            }}
+                            className="text-right text-base font-medium text-herbal-900 hover:text-herbal-600"
+                          >
+                            {tile.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : selectedTile ? (
+            <h2 className="font-display text-xl font-bold text-herbal-900">{selectedTile.title}</h2>
+          ) : null}
         </section>
       </div>
 

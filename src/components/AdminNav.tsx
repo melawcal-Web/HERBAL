@@ -11,6 +11,7 @@ const tabs = [
   { href: "/admin/links", label: "קישורים" },
   { href: "/admin/content", label: "ניהול תוכן (Content)" },
   { href: "/admin/products", label: "קורסים וסדנאות" },
+  { href: "/admin/deploy", label: "העלאה לאוויר" },
 ];
 
 export function AdminNav() {
