@@ -382,6 +382,15 @@ model WaitlistEntry {
   @@map("waitlist_entries")
 }
 
+model UploadedImage {
+  id        String   @id @default(cuid())
+  mime      String   @db.VarChar(64)
+  data      Bytes    @db.LongBlob
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("uploaded_images")
+}
+
 model SiteConfig {
   id String @id @default("default")
 

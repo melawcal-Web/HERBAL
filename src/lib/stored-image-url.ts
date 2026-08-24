@@ -13,6 +13,7 @@ export function isStoredImageUrl(url: string | null | undefined): boolean {
     u.startsWith("http://") ||
     u.startsWith("//") ||
     u.startsWith("/uploads/") ||
+    u.startsWith("/api/images/") ||
     u.startsWith("/api/blob-media")
   );
 }

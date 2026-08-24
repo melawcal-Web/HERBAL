@@ -188,7 +188,7 @@ export async function duplicateTherapistProfile(sourceUserId: string): Promise<{
       name: `${source.name} (עותק)`,
       email,
       role: "therapist",
-      therapistVerification: "none",
+      therapistVerification: "approved",
       registrationPersona: source.registrationPersona,
       image: source.image,
       therapistProfile: {

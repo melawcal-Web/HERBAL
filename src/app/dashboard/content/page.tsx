@@ -12,15 +12,11 @@ export default async function DashboardContentPage() {
     redirect("/herbal-index");
   }
 
-  if (assertAdmin(session.user.role)) {
-    redirect("/admin");
-  }
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-3xl text-herbal-900">ניהול תוכן</h1>
       <p className="mt-2 text-slate-600">
-        הוסיפו תוכן שיוצג בפרופיל הציבורי שלכם ובאתר: מאמר, הרצאה, מאמר צמח לאינדקס, מפגש זום או סדנה.
+        בחרו קטגוריה והוסיפו תוכן שיוצג בפרופיל הציבורי שלכם ובאתר.
       </p>
       <DashboardAddContent />
     </div>

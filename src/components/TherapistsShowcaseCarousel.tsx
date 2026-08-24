@@ -25,7 +25,7 @@ function specialtyLine(t: TherapistShowcaseItem) {
 function showcasePhotoUrl(t: TherapistShowcaseItem): string {
   const u = t.image?.trim();
   if (isStoredImageUrl(u)) return publicDisplayImageUrl(normalizeHttpsImageReference(u!));
-  return pickDemoImage(`showcase-${t.id}`, "therapists");
+  return pickDemoImage(`therapist-hero-${t.id}`, "therapists");
 }
 
 /** Distance from viewport center → for parallax only */
