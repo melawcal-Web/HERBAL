@@ -116,17 +116,18 @@ export default function RegisterPage() {
         </fieldset>
         {persona === "therapist" ? (
           <div>
-            <label className="text-sm font-medium text-slate-700">קישור לתעודה (https)</label>
+            <label className="text-sm font-medium text-slate-700">תעודה (אופציונלי עכשיו)</label>
             <input
-              required
               type="url"
               className="mt-1 w-full min-h-[48px] rounded-xl border border-herbal-200 px-3 py-2 font-mono text-sm"
               dir="ltr"
-              placeholder="https://..."
+              placeholder="https://... או העלו אחרי הכניסה בפרופיל"
               value={certificateUrl}
               onChange={(e) => setCertificateUrl(e.target.value)}
             />
-            <p className="mt-1 text-xs text-slate-600">יש להעלות את קובץ התעודה לשירות ענן ולהדביק כאן כתובת ציבורית ב-https.</p>
+            <p className="mt-1 text-xs text-slate-600">
+              אפשר להירשם בלי תעודה ולהעלות תמונה אחרי הכניסה ב«הפרופיל שלי». רק אחרי העלאה תוכלו לערוך את הפרופיל; אישור המרכז נדרש לפרסום הציבורי.
+            </p>
           </div>
         ) : null}
         {error && <p className="text-sm text-rose-600">{error}</p>}

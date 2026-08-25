@@ -13,7 +13,7 @@ function normalizeProfileImageUrl(raw: string): string {
   if (!t) return "";
   if (t.startsWith("//")) t = `https:${t}`;
   if (t.startsWith("http://")) t = `https://${t.slice(7)}`;
-  if (t.startsWith("/uploads/") || t.startsWith("https://")) return t;
+  if (t.startsWith("/uploads/") || t.startsWith("/api/images/") || t.startsWith("https://")) return t;
   if (t.startsWith("/api/blob-media")) return t;
   try {
     const u = new URL(t);
@@ -54,6 +54,18 @@ export async function updateTherapistProfile(input: {
     throw new Error("אין הרשאה");
   }
 
+  if (session.user.role === "admin") {
+    // אדמין תמיד יכול
+  } else {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { certificateUrl: true },
+    });
+    if (!me?.certificateUrl?.trim()) {
+      throw new Error("יש להעלות תעודה לפני עריכת הפרופיל");
+    }
+  }
+
   const slugTaken = await prisma.therapistProfile.findFirst({
     where: { slug: input.slug, NOT: { userId: session.user.id } },
   });
@@ -73,6 +85,7 @@ export async function updateTherapistProfile(input: {
     img.startsWith("http://") ||
     img.startsWith("//") ||
     img.startsWith("/uploads/") ||
+    img.startsWith("/api/images/") ||
     img.startsWith("/api/blob-media");
   if (img.length > 0 && !okStored) {
     throw new Error("תמונת פרופיל חייבת להיות כתובת https או קובץ שהועלה למערכת");

@@ -1,6 +1,7 @@
 "use server";
 
 import { execFile } from "node:child_process";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { auth } from "@/auth";
 import { writeAudit } from "@/lib/audit";
@@ -22,7 +23,9 @@ function isRailwayHost(): boolean {
 
 /**
  * Admin-only: push local git HEAD to origin (triggers Railway from GitHub).
- * Intended for local `npm run dev` / local Next — not for the Railway runtime.
+ * Intended for local `npm run dev` — not for the Railway runtime.
+ *
+ * Windows: call `node scripts/deploy.mjs` directly (avoid npm.cmd → spawn EINVAL).
  */
 export async function pushToLive(): Promise<DeployToLiveResult> {
   const session = await auth();
@@ -38,15 +41,16 @@ export async function pushToLive(): Promise<DeployToLiveResult> {
     };
   }
 
-  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const script = join(process.cwd(), "scripts", "deploy.mjs");
 
   try {
-    const { stdout, stderr } = await execFileAsync(npmBin, ["run", "deploy"], {
+    const { stdout, stderr } = await execFileAsync(process.execPath, [script], {
       cwd: process.cwd(),
       timeout: 120_000,
       maxBuffer: 2 * 1024 * 1024,
       env: process.env,
       windowsHide: true,
+      shell: false,
     });
 
     const out = `${stdout ?? ""}\n${stderr ?? ""}`.trim();
@@ -65,8 +69,8 @@ export async function pushToLive(): Promise<DeployToLiveResult> {
         "נדחף ל-GitHub בהצלחה. Railway אמור להתחיל פריסה אוטומטית מ-main.",
     };
   } catch (err: unknown) {
-    const e = err as { stdout?: string; stderr?: string; message?: string };
-    const detail = [e.stdout, e.stderr, e.message].filter(Boolean).join("\n").trim();
+    const e = err as { stdout?: string; stderr?: string; message?: string; code?: string };
+    const detail = [e.stdout, e.stderr, e.message, e.code].filter(Boolean).join("\n").trim();
     return {
       ok: false,
       message:

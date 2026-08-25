@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { assertAdmin, assertTherapist } from "@/lib/formula";
+import { prisma } from "@/lib/prisma";
+import { assertAdmin, assertTherapist, therapistCanEditProfile } from "@/lib/formula";
 import { DashboardAddContent } from "@/components/dashboard/DashboardAddContent";
 
 export const metadata = { title: "ניהול תוכן" };
@@ -10,6 +11,16 @@ export default async function DashboardContentPage() {
   if (!session?.user?.id) redirect("/auth/signin");
   if (!assertTherapist(session.user.role) && !assertAdmin(session.user.role)) {
     redirect("/herbal-index");
+  }
+
+  if (session.user.role === "therapist") {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { certificateUrl: true },
+    });
+    if (!therapistCanEditProfile(session.user.role, me?.certificateUrl)) {
+      redirect("/dashboard/profile");
+    }
   }
 
   return (

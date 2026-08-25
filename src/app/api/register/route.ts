@@ -3,38 +3,24 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
+import { isStoredImageUrl } from "@/lib/stored-image-url";
 
 const personaSchema = z.enum(["therapist", "student", "interested"]);
 
-const schema = z
-  .object({
-    name: z.string().min(2),
-    email: z.string().email(),
-    password: z.string().min(8),
-    persona: personaSchema,
-    certificateUrl: z.string().optional(),
-    phone: z.string().max(64).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.persona !== "therapist") return;
-    const u = (data.certificateUrl ?? "").trim();
-    if (!u.startsWith("https://")) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "certificate_https",
-        path: ["certificateUrl"],
-      });
-    }
-  });
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(8),
+  persona: personaSchema,
+  /** אופציונלי בהרשמה — אפשר להעלות אחר כך בפרופיל */
+  certificateUrl: z.string().optional(),
+  phone: z.string().max(64).optional(),
+});
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    const certErr = parsed.error.flatten().fieldErrors.certificateUrl;
-    if (certErr?.length) {
-      return Response.json({ error: "למסלול מטפל/ת נדרש קישור https לקובץ התעודה (העלאה לענן והדבקת כתובת)" }, { status: 400 });
-    }
     return Response.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
@@ -46,8 +32,10 @@ export async function POST(req: Request) {
 
   const passwordHash = await hash(password, 12);
   const role = persona === "therapist" ? "therapist" : "client";
-  const therapistVerification = persona === "therapist" ? "pending_approval" : "none";
-  const certTrim = persona === "therapist" ? (certificateUrl ?? "").trim() : null;
+  const certTrim = persona === "therapist" ? (certificateUrl ?? "").trim() : "";
+  const hasCert = Boolean(certTrim && (certTrim.startsWith("https://") || isStoredImageUrl(certTrim)));
+  const therapistVerification =
+    persona !== "therapist" ? "none" : hasCert ? "pending_approval" : "none";
 
   const phoneTrim = (phone ?? "").trim().slice(0, 64) || null;
 
@@ -59,7 +47,7 @@ export async function POST(req: Request) {
       role,
       registrationPersona: persona,
       therapistVerification,
-      certificateUrl: certTrim,
+      certificateUrl: hasCert ? certTrim : null,
       phone: phoneTrim,
     },
   });
@@ -87,8 +75,12 @@ export async function POST(req: Request) {
     action: "user.register",
     entityType: "User",
     entityId: user.id,
-    metadata: { persona, email, role, therapistVerification },
+    metadata: { persona, email, role, therapistVerification, hasCert },
   });
 
-  return Response.json({ ok: true, pendingTherapistApproval: persona === "therapist" });
+  return Response.json({
+    ok: true,
+    pendingTherapistApproval: persona === "therapist" && hasCert,
+    needsCertificate: persona === "therapist" && !hasCert,
+  });
 }

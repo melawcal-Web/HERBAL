@@ -35,6 +35,16 @@ export function therapistCanUseClinicalTools(role: UserRole, verification?: Ther
   return verification === "approved";
 }
 
+/** עריכת פרופיל / תוכן — אחרי שהועלתה תעודה (גם לפני אישור אדמין) */
+export function therapistCanEditProfile(
+  role: UserRole,
+  certificateUrl?: string | null,
+) {
+  if (role === "admin") return true;
+  if (role !== "therapist") return false;
+  return Boolean(certificateUrl?.trim());
+}
+
 export function assertAdmin(role: UserRole) {
   return role === "admin";
 }
