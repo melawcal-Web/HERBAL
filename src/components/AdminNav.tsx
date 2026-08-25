@@ -14,23 +14,27 @@ const tabs = [
   { href: "/admin/deploy", label: "העלאה לאוויר" },
 ];
 
+function navPillClass(active: boolean) {
+  return [
+    "min-h-[40px] w-full rounded-xl px-4 py-2.5 text-right text-sm font-semibold transition",
+    active
+      ? "bg-herbal-600 text-white shadow-md shadow-herbal-600/25"
+      : "glass-panel border border-herbal-200/80 bg-white text-herbal-900 shadow-sm hover:border-herbal-300 hover:bg-white",
+  ].join(" ");
+}
+
 export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-row gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+    <nav className="flex flex-col gap-2">
       {tabs.map((t) => {
-        const active = pathname === t.href || (t.href === "/admin/log" && pathname === "/admin");
+        const active =
+          pathname === t.href ||
+          (t.href === "/admin/log" && (pathname === "/admin" || pathname === "/admin/log")) ||
+          (t.href !== "/admin/log" && pathname.startsWith(t.href));
         return (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`min-h-[44px] shrink-0 rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition lg:text-right ${
-              active
-                ? "bg-herbal-600 text-white shadow-md shadow-herbal-600/25"
-                : "glass-panel border-herbal-200/80 text-herbal-900 hover:border-herbal-300 hover:bg-white/90"
-            }`}
-          >
+          <Link key={t.href} href={t.href} className={navPillClass(active)}>
             {t.label}
           </Link>
         );
