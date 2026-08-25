@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_BUILD_TIME_ISO: new Date().toISOString(),
-    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA:
+      process.env.VERCEL_GIT_COMMIT_SHA ??
+      process.env.RAILWAY_GIT_COMMIT_SHA ??
+      process.env.GITHUB_SHA ??
+      "",
   },
   images: {
     remotePatterns: [

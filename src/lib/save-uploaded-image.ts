@@ -12,7 +12,7 @@ export async function saveUploadedImageBuffer(buffer: Buffer, mime: string, _pre
   }
 
   const record = await prisma.uploadedImage.create({
-    data: { mime, data: buffer },
+    data: { mime, data: new Uint8Array(buffer) },
     select: { id: true },
   });
 
