@@ -10,6 +10,7 @@ import {
   createTherapistZoomSession,
 } from "@/app/actions/therapist-content";
 import { ImagePicker } from "@/components/dashboard/ImagePicker";
+import { DigitalMaterialForm } from "@/components/dashboard/DigitalMaterialForm";
 import { isStoredImageUrl } from "@/lib/stored-image-url";
 import { AudienceMultiSelect } from "@/components/forms/AudienceMultiSelect";
 import type { ContentAudienceId } from "@/lib/content-audience";
@@ -28,6 +29,7 @@ type FormMode =
   | "workshop"
   | "lecture"
   | "zoom"
+  | "digital-material"
   | "recording"
   | "livestream"
   | "article"
@@ -156,6 +158,15 @@ function IconLive() {
   );
 }
 
+function IconFile() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 2v6h6M8 13h8M8 17h5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function IconPlus() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -184,8 +195,9 @@ const categories: {
   {
     id: "digital",
     title: "סדנאות דיגיטליות",
-    description: "מפגשים מקוונים — זום, וובינרים ושיעורים דיגיטליים.",
+    description: "מפגשים מקוונים וחומרים להורדה — זום, PDF, וידאו, מתכונים והרצאות מוקלטות.",
     tiles: [
+      { mode: "digital-material", icon: <IconFile />, title: "חומר דיגיטלי", subtitle: "מוצר מדף, וידאו, מתכון, קישור הורדה" },
       { mode: "zoom", icon: <IconVideo />, title: "מפגש זום", subtitle: "קישור, מועד, מחיר ומשתתפים" },
     ],
   },
@@ -448,6 +460,16 @@ export function DashboardAddContent() {
       </ModalPanel>
       <ModalPanel open={mode === "workshop"} title="סדנה פרונטלית" onClose={close}>
         <WorkshopForm {...formProps} />
+      </ModalPanel>
+      <ModalPanel open={mode === "digital-material"} title="חומר דיגיטלי" onClose={close}>
+        <DigitalMaterialForm
+          mode="create"
+          onDone={(m) => {
+            setMsg(m);
+            setMode(null);
+          }}
+          onError={setErr}
+        />
       </ModalPanel>
       <ModalPanel open={mode === "zoom"} title="מפגש זום" onClose={close}>
         <ZoomForm {...formProps} />

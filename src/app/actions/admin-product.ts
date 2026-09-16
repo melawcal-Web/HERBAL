@@ -100,6 +100,7 @@ async function revalidateProductSurfaces(therapistIds: Array<string | null | und
   revalidatePath("/content-hub");
   revalidatePath("/admin/products");
   revalidatePath("/admin/products", "layout");
+  revalidatePath("/dashboard/products");
 
   const ids = [...new Set(therapistIds.filter((id): id is string => Boolean(id)))];
   if (ids.length === 0) return;
