@@ -63,7 +63,10 @@ export default async function TherapistContentListPage({ params }: Props) {
         updatedAt: true,
       },
     });
-    items = articlesToBlogList(rows.filter((r) => contentVisibleForViewer(r.audience, viewer)));
+    items = articlesToBlogList(
+      rows.filter((r) => contentVisibleForViewer(r.audience, viewer)),
+      profile.id,
+    );
   } else {
     const rows = await prisma.product.findMany({
       where: { active: true, therapistId: profile.user.id },

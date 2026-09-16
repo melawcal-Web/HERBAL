@@ -6,12 +6,13 @@ import type { Session } from "next-auth";
 import { signOutAction } from "@/app/actions/auth";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { UserAccountMenu } from "@/components/UserAccountMenu";
+import { herbalIndexListPath, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 const menuLinks = [
   { href: "/therapists", label: "מטפלים" },
   { href: "/marketplace", label: "קורסים וסדנאות" },
   { href: "/content-hub", label: "מרכז תוכן" },
-  { href: "/herbal-index", label: "אינדקס צמחים" },
+  ...(isHerbalIndexEnabled() ? [{ href: herbalIndexListPath(), label: "אינדקס צמחים" }] : []),
 ];
 
 function MenuIcon({ open }: { open: boolean }) {

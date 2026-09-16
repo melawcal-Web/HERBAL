@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
+import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 export type ExploreCategory = "all" | "therapists" | "courses_workshops" | "herbal";
 
@@ -20,7 +21,7 @@ const tabs: { id: ExploreCategory; label: string }[] = [
   { id: "all", label: "הכל" },
   { id: "therapists", label: "מטפלים" },
   { id: "courses_workshops", label: "קורסים וסדנאות" },
-  { id: "herbal", label: "צמחים" },
+  ...(isHerbalIndexEnabled() ? ([{ id: "herbal", label: "צמחים" }] as const) : []),
 ];
 
 function placeholderGradient(seed: string) {
@@ -95,8 +96,9 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   const [fade, setFade] = useState(true);
 
   const visible = useMemo(() => {
-    if (filter === "all") return items;
-    return items.filter((x) => x.category === filter);
+    const source = isHerbalIndexEnabled() ? items : items.filter((x) => x.category !== "herbal");
+    if (filter === "all") return source;
+    return source.filter((x) => x.category === filter);
   }, [items, filter]);
 
   const setFilterAnimated = useCallback((next: ExploreCategory) => {
@@ -111,7 +113,9 @@ export function HomeExploreGrid({ items }: { items: ExploreGridItem[] }) {
   return (
     <section className="mt-0 w-full max-w-full" aria-labelledby="explore-tabs-label">
       <h2 id="explore-tabs-label" className="sr-only">
-        סינון תוכן — מטפלים, קורסים וסדנאות, ואינדקס צמחים
+        {isHerbalIndexEnabled()
+          ? "סינון תוכן — מטפלים, קורסים וסדנאות, ואינדקס צמחים"
+          : "סינון תוכן — מטפלים, קורסים וסדנאות"}
       </h2>
 
       <div

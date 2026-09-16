@@ -24,6 +24,8 @@ import {
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 import { storedImageSrc } from "@/lib/stored-image-url";
+import { herbalArticleHref } from "@/lib/herbal-index-flag";
+import { therapistContentHref } from "@/lib/therapist-portfolio-content";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -198,7 +200,7 @@ export function TherapistPublicPageView({
                 return (
                   <li key={a.id}>
                     <Link
-                      href={`/herbal-index/${a.slug}`}
+                      href={herbalArticleHref(a.slug, therapistContentHref(profile.id, "articles"))}
                       className="flex h-full overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-300 hover:shadow-md"
                     >
                       <div className="aspect-[4/3] w-[7.5rem] shrink-0 bg-herbal-50 sm:w-36">

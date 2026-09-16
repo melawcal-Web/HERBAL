@@ -1,6 +1,8 @@
 import type { ProductType } from "@prisma/client";
 import type { BlogStyleListItem } from "@/components/content/BlogStyleList";
 import { productTypeLabel } from "@/lib/product-metadata";
+import { herbalArticleHref } from "@/lib/herbal-index-flag";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 export const PORTFOLIO_KINDS = ["articles", "courses", "recipes", "lectures"] as const;
 export type PortfolioContentKind = (typeof PORTFOLIO_KINDS)[number];
@@ -65,10 +67,12 @@ export function articlesToBlogList(
     coverImageUrl: string | null;
     updatedAt: Date;
   }[],
+  therapistProfileId?: string,
 ): BlogStyleListItem[] {
+  const fallback = therapistProfileId ? therapistPublicHref(therapistProfileId) : "/therapists";
   return rows.map((a) => ({
     id: a.id,
-    href: `/herbal-index/${a.slug}`,
+    href: herbalArticleHref(a.slug, fallback),
     title: a.title,
     excerpt: a.excerpt,
     imageUrl: a.coverImageUrl,

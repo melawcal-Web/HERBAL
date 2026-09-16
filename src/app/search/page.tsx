@@ -15,6 +15,7 @@ import type { ContentFilterType } from "@/components/search/ContentSearchFilter"
 import { auth } from "@/auth";
 import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 import { memberCallbackPathFromSearch } from "@/lib/member-callback-path";
+import { herbalArticleHref, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 export const metadata = {
   title: "חיפוש",
@@ -60,7 +61,7 @@ export default async function SearchPage({ searchParams }: Props) {
     prisma.herbalArticle.findMany({
       where: { published: true },
       take: 50,
-      include: { therapist: { select: { name: true } } },
+      include: { therapist: { select: { name: true, therapistProfile: { select: { id: true } } } } },
     }),
   ]);
 
@@ -129,12 +130,17 @@ export default async function SearchPage({ searchParams }: Props) {
 
       {articleRows.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-bold text-herbal-900">מאמרים — אינדקס צמחים</h2>
+          <h2 className="font-display text-lg font-bold text-herbal-900">
+            {isHerbalIndexEnabled() ? "מאמרים — אינדקס צמחים" : "מאמרים"}
+          </h2>
           <ul className="mt-3 space-y-2">
             {articleRows.map((a) => (
               <li key={a.id}>
                 <Link
-                  href={`/herbal-index/${a.slug}`}
+                  href={herbalArticleHref(
+                    a.slug,
+                    a.therapist.therapistProfile ? therapistPublicHref(a.therapist.therapistProfile.id) : "/therapists",
+                  )}
                   className="block rounded-xl border border-herbal-100 bg-white px-4 py-3 text-herbal-900 shadow-sm transition hover:border-herbal-300"
                 >
                   <span className="font-semibold">{a.title}</span>

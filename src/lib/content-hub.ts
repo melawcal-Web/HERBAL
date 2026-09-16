@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { contentKindLabel } from "@/lib/commerce";
 import { productTypeToContentKind } from "@/lib/content-kind";
+import { herbalArticleHref } from "@/lib/herbal-index-flag";
+import { therapistPublicHref } from "@/lib/therapist-public";
 
 export type ContentHubItem = {
   id: string;
@@ -41,7 +43,7 @@ export async function listContentHubItems(limit = 80): Promise<ContentHubItem[]>
       date: a.createdAt,
       therapistName: a.therapist.name,
       therapistProfileId: profileId,
-      href: `/herbal-index/${a.slug}`,
+      href: herbalArticleHref(a.slug, profileId ? therapistPublicHref(profileId) : "/therapists"),
     });
   }
 

@@ -1,12 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { herbalIndexArticlePath, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 export const metadata = {
   title: "אינדקס צמחים",
 };
 
 export default async function HerbalIndexPage() {
+  if (!isHerbalIndexEnabled()) redirect("/");
+
   const articles = await prisma.herbalArticle.findMany({
     where: { published: true },
     include: {
@@ -24,7 +28,7 @@ export default async function HerbalIndexPage() {
           <li key={a.id}>
             <article className="rounded-2xl border border-herbal-100 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-semibold text-herbal-900">
-                <Link href={`/herbal-index/${a.slug}`} className="hover:underline">
+                <Link href={herbalIndexArticlePath(a.slug)} className="hover:underline">
                   {a.title}
                 </Link>
               </h2>

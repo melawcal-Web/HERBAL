@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { herbalIndexListPath, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 /**
  * מסך מודאלי — משתמש/ת לא מחובר/ת שניסו/ה לצפות בתוכן שמוגבל לחברים רשומים.
- * מאמרי `/herbal-index` נשארים ציבוריים (קישור בתחתית).
+ * כשאינדקס הצמחים פעיל, מאמרי `/herbal-index` נשארים ציבוריים (קישור בתחתית).
  */
 export function MemberAuthWall({ callbackPath }: { callbackPath: string }) {
   const path = callbackPath.startsWith("/") ? callbackPath : `/${callbackPath}`;
@@ -31,7 +32,9 @@ export function MemberAuthWall({ callbackPath }: { callbackPath: string }) {
           נדרשת הרשמה והתחברות
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-          כדי לצפות בפרטי מטפלים, בחומרים ובתוכן המפורט באתר, יש להתחבר לחשבון רשום. מאמרי האינדקס נשארים פתוחים לכולם.
+          {isHerbalIndexEnabled()
+            ? "כדי לצפות בפרטי מטפלים, בחומרים ובתוכן המפורט באתר, יש להתחבר לחשבון רשום. מאמרי האינדקס נשארים פתוחים לכולם."
+            : "כדי לצפות בפרטי מטפלים, בחומרים ובתוכן המפורט באתר, יש להתחבר לחשבון רשום."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse sm:justify-end">
           <Link
@@ -47,11 +50,13 @@ export function MemberAuthWall({ callbackPath }: { callbackPath: string }) {
             כניסה
           </Link>
         </div>
-        <p className="mt-5 border-t border-herbal-100 pt-5 text-center text-sm text-slate-600">
-          <Link href="/herbal-index" className="font-semibold text-herbal-700 underline-offset-2 hover:underline">
-            המשך לאינדקס המאמרים (ללא התחברות)
-          </Link>
-        </p>
+        {isHerbalIndexEnabled() ? (
+          <p className="mt-5 border-t border-herbal-100 pt-5 text-center text-sm text-slate-600">
+            <Link href={herbalIndexListPath()} className="font-semibold text-herbal-700 underline-offset-2 hover:underline">
+              המשך לאינדקס המאמרים (ללא התחברות)
+            </Link>
+          </p>
+        ) : null}
       </div>
     </div>
   );

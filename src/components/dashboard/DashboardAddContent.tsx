@@ -14,6 +14,7 @@ import { DigitalMaterialForm } from "@/components/dashboard/DigitalMaterialForm"
 import { isStoredImageUrl } from "@/lib/stored-image-url";
 import { AudienceMultiSelect } from "@/components/forms/AudienceMultiSelect";
 import type { ContentAudienceId } from "@/lib/content-audience";
+import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 /* ── Types ── */
 
@@ -230,6 +231,14 @@ const categories: {
   },
 ];
 
+function visibleCategories() {
+  if (isHerbalIndexEnabled()) return categories;
+  return categories.map((cat) => ({
+    ...cat,
+    tiles: cat.tiles.filter((t) => t.mode !== "plant"),
+  }));
+}
+
 type NavKey = "all" | Exclude<FormMode, null>;
 
 function tileByMode(mode: Exclude<FormMode, null>) {
@@ -283,7 +292,7 @@ function SideRail({
               />
               <div className="absolute left-0 top-10 z-30 max-h-[70vh] w-64 overflow-y-auto rounded-2xl border border-herbal-200 bg-white py-2 shadow-xl">
                 <p className="px-3 pb-2 text-xs font-semibold text-slate-500">מה להוסיף?</p>
-                {categories.map((cat) => (
+                {visibleCategories().map((cat) => (
                   <div key={cat.id} className="px-1 pb-1">
                     <p className="px-2 py-1 text-[11px] font-semibold text-herbal-700">{cat.title}</p>
                     {cat.tiles.map((tile) => (
@@ -319,7 +328,7 @@ function SideRail({
           כל התוכן
         </button>
 
-        {categories.map((cat) => (
+        {visibleCategories().map((cat) => (
           <div key={cat.id} className="pt-1">
             <p className="mb-1.5 px-1 text-xs font-semibold text-herbal-700">{cat.title}</p>
             <div className="flex flex-col gap-1.5 pr-3">
@@ -416,7 +425,7 @@ export function DashboardAddContent() {
             <div>
               <h2 className="font-display text-xl font-bold text-herbal-900">כל התוכן</h2>
               <ul className="mt-6 space-y-6">
-                {categories.map((cat) => (
+                {visibleCategories().map((cat) => (
                   <li key={cat.id}>
                     <p className="text-xs font-semibold text-herbal-700">{cat.title}</p>
                     <ul className="mt-2 space-y-1">
@@ -452,7 +461,7 @@ export function DashboardAddContent() {
       <ModalPanel open={mode === "article"} title="הוספת מאמר" onClose={close}>
         <ArticleForm {...formProps} />
       </ModalPanel>
-      <ModalPanel open={mode === "plant"} title="מאמר צמח" onClose={close}>
+      <ModalPanel open={isHerbalIndexEnabled() && mode === "plant"} title="מאמר צמח" onClose={close}>
         <PlantArticleForm {...formProps} />
       </ModalPanel>
       <ModalPanel open={mode === "lecture"} title="הרצאה / הנחייה" onClose={close}>
@@ -540,7 +549,7 @@ function PlantArticleForm({ pending, onDone, onError, startTransition }: FormHan
         void (async () => {
           try {
             await createTherapistPlantArticle({ title, content, plantName, imageUrl: img });
-            onDone("מאמר הצמח נשמר ופורסם באינדקס.");
+            onDone(isHerbalIndexEnabled() ? "מאמר הצמח נשמר ופורסם באינדקס." : "מאמר הצמח נשמר ופורסם.");
           } catch (er) { onError(er instanceof Error ? er.message : "שגיאה"); }
         })();
       });

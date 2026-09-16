@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertAdmin, assertTherapist, therapistCanEditProfile } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { DashboardAddContent } from "@/components/dashboard/DashboardAddContent";
 
 export const metadata = { title: "ניהול תוכן" };
@@ -11,7 +12,7 @@ export default async function DashboardContentPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
   if (!assertTherapist(session.user.role) && !assertAdmin(session.user.role)) {
-    redirect("/herbal-index");
+    redirect(memberLandingPath());
   }
 
   if (session.user.role === "therapist") {
