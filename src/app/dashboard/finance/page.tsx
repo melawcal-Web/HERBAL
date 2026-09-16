@@ -2,8 +2,10 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { assertTherapist } from "@/lib/formula";
 import { getTherapistFinanceLedger } from "@/app/actions/commerce";
+import { getTherapistPaymentSettings } from "@/app/actions/therapist-payments";
 import Link from "next/link";
 import { FinanceLedger } from "@/components/dashboard/FinanceLedger";
+import { TherapistPaymentSettingsForm } from "@/components/dashboard/TherapistPaymentSettingsForm";
 
 export const metadata = { title: "כספים" };
 
@@ -12,7 +14,10 @@ export default async function TherapistFinancePage() {
   if (!session?.user?.id) redirect("/auth/signin");
   if (!assertTherapist(session.user.role)) redirect("/herbal-index");
 
-  const { rows, totalCommissionOwed } = await getTherapistFinanceLedger();
+  const [{ rows, totalCommissionOwed }, paymentSettings] = await Promise.all([
+    getTherapistFinanceLedger(),
+    getTherapistPaymentSettings(),
+  ]);
 
   return (
     <>
@@ -20,6 +25,13 @@ export default async function TherapistFinancePage() {
       <p className="mt-2 text-sm text-slate-600">
         פנקס תנועות — כולל משתמשים ב-₪0 (חינם/חבר). עמלה למרכז: 15% ממחיר מלא בלבד.
       </p>
+
+      <section className="mt-8 rounded-2xl border border-herbal-200/80 bg-white/90 p-5 shadow-sm sm:p-7">
+        <h2 className="font-display text-xl font-bold text-herbal-900">תשלום מלקוחות — Bit ו-PayBox</h2>
+        <div className="mt-4">
+          <TherapistPaymentSettingsForm initial={paymentSettings} />
+        </div>
+      </section>
       <nav className="mt-6 flex flex-wrap gap-2">
         <Link
           href="/dashboard/approvals"

@@ -129,12 +129,18 @@ export function withProductDownloadUrl(
 }
 
 /** מיפוי סוג מוצר לסעיף בדף מטפל */
-export type TherapistOfferingSection = "tours" | "courses" | "meetings";
+export type TherapistOfferingSection = "digital" | "tours" | "courses" | "meetings";
+
+/** חומר דיגיטלי שנמכר ישירות (לא רשימת המתנה) */
+export function isDigitalProductType(type: ProductType): boolean {
+  return type === "shelf_product" || type === "video" || type === "podcast" || type === "recipe" || type === "lecture";
+}
 
 export function classifyProductForProfile(
   type: ProductType,
   meta: ProductMetadata,
 ): TherapistOfferingSection {
+  if (isDigitalProductType(type) && !productTypeUsesWaitlist(type)) return "digital";
   if (type === "supervision") return "meetings";
   if (type === "zoom") return "courses";
   if (type === "workshop") {
@@ -142,6 +148,5 @@ export function classifyProductForProfile(
     if (loc && /סיור|טיול|שטח/i.test(loc + (meta.courseDetails ?? ""))) return "tours";
     return "courses";
   }
-  if (type === "shelf_product") return "tours";
   return "courses";
 }

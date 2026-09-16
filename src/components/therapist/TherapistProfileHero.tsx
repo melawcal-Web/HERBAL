@@ -1,11 +1,9 @@
 import type { ParsedContactInfo, ParsedSocialLinks } from "@/lib/therapist-contact";
 import { TherapistHeroSocialBar, type HeroReferralTracking } from "@/components/therapist/TherapistHeroSocialBar";
-import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 
 type Props = {
-  /** תמונת כיסוי — גם העיגול מציג אותה בצבע מלא */
+  /** תמונת פרופיל — אותה כתובת כמו בדף הבית ובקרוסלה */
   heroCoverUrl: string;
-  profileImageSeed: string;
   therapistName: string;
   /** שם העיר בלבד */
   serviceCity: string | null;
@@ -21,15 +19,13 @@ type Props = {
 };
 
 const roleLine =
-  "text-[10px] font-black uppercase tracking-[0.22em] text-herbal-600 sm:text-[11px]";
+  "text-[10px] font-black uppercase tracking-[0.22em] text-emerald-200/95 sm:text-[11px]";
 
 /**
- * Hero דו־עמודתי (RTL): ימין — שם, תפקיד, עיר, תמונה בעיגול מתוך כיסוי הצבע.
- * שמאל — פאנל ירוק עם מומחיות ואייקוני קשר.
+ * Hero: תמונת פרופיל במסך מלא (B&W כמו בבית ובקרוסלה) + פאנל פרטים מתחתיה.
  */
 export function TherapistProfileHero({
   heroCoverUrl,
-  profileImageSeed,
   therapistName,
   serviceCity,
   specialties,
@@ -47,36 +43,36 @@ export function TherapistProfileHero({
     .slice(0, 8);
 
   return (
-    <div
-      className="relative mx-auto flex min-h-[min(48vh,440px)] w-full max-w-[920px] flex-col overflow-hidden bg-neutral-50 md:min-h-[min(52vh,500px)] md:flex-row"
-      dir="rtl"
-    >
-      <div className="relative z-10 flex w-full shrink-0 flex-col items-center gap-1 px-5 py-8 text-center sm:w-[min(100%,260px)] sm:items-end sm:justify-center sm:px-6 sm:py-10 sm:text-right md:w-[min(100%,280px)] md:px-8 md:py-12">
-        <ProfileAvatar
-          imageUrl={heroCoverUrl}
-          name={therapistName}
-          seed={profileImageSeed}
-          size="lg"
-          imageTreatment="natural"
-          className="mb-2 shadow-md ring-2 ring-herbal-200/80 !aspect-square"
+    <div className="relative w-full overflow-hidden bg-neutral-950" dir="rtl">
+      <div className="relative min-h-[min(52vh,480px)] w-full md:min-h-[min(58vh,560px)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={heroCoverUrl}
+          alt={therapistName}
+          className="therapist-photo-bw absolute inset-0 h-full w-full object-cover object-center contrast-[1.06]"
         />
-        <span className={roleLine}>{roleHe}</span>
-        <span className="mt-1 font-display text-2xl font-bold leading-tight text-herbal-950 sm:text-3xl">
-          {therapistName}
-        </span>
-        {serviceCity ? <span className="mt-1 text-base font-semibold text-herbal-800 sm:text-lg">{serviceCity}</span> : null}
-        {bookAppointmentHref ? (
-          <a
-            href={bookAppointmentHref}
-            className="mt-4 inline-flex min-h-[44px] w-full max-w-[220px] items-center justify-center rounded-full bg-herbal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-herbal-500 sm:max-w-none sm:self-end"
-          >
-            קבע פגישה
-          </a>
-        ) : null}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-6 text-right sm:px-8 sm:pb-8">
+          <p className={roleLine}>{roleHe}</p>
+          <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-white drop-shadow-md sm:text-4xl">
+            {therapistName}
+          </h1>
+          {serviceCity ? (
+            <p className="mt-1.5 text-base font-semibold text-white/95 sm:text-lg">{serviceCity}</p>
+          ) : null}
+          {bookAppointmentHref ? (
+            <a
+              href={bookAppointmentHref}
+              className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full bg-herbal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-herbal-500"
+            >
+              קבע פגישה
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <div
-        className="relative flex min-h-[min(36vh,320px)] min-w-0 flex-1 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 pb-7 pt-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:min-h-0 sm:border-t-0 sm:border-s sm:border-emerald-200/70 sm:px-6 sm:pb-9 sm:pt-10 md:px-7 md:pb-10 md:pt-12"
+        className="relative flex min-h-0 min-w-0 flex-col justify-end border-t border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-teal-50/95 to-lime-50/90 px-5 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] sm:px-6 sm:py-9 md:px-7 md:py-10"
         dir="rtl"
       >
         <div className="pointer-events-none absolute -left-16 -top-12 h-44 w-44 rounded-full bg-lime-300/25 blur-3xl" aria-hidden />
@@ -118,7 +114,7 @@ export function TherapistProfileHero({
               </div>
             ) : null}
 
-            <div className={`w-full ${specialties.length > 0 ? "mt-4" : ""}`} dir="ltr">
+            <div className={`w-full ${specialties.length > 0 || safeTimeline.length > 0 ? "mt-4" : ""}`} dir="ltr">
               <TherapistHeroSocialBar
                 contact={contact}
                 social={social}

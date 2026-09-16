@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { pickDemoImage } from "@/lib/demo-placeholders";
 import { therapistPublicHref } from "@/lib/therapist-public";
-import { publicDisplayImageUrl } from "@/lib/blob-image-url";
-import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-image-url";
+import { therapistAvatarSrc } from "@/lib/therapist-avatar";
 
 export type TherapistShowcaseItem = {
   id: string;
@@ -21,11 +19,9 @@ function specialtyLine(t: TherapistShowcaseItem) {
   return [t.specialty1, t.specialty2, t.specialty3].filter(Boolean).join(" · ");
 }
 
-/** תמונה לכרטיס ציבורי — תמונת משתמש או placeholder יציב. */
+/** תמונה לכרטיס ציבורי — אותה תמונת פרופיל כמו בדף הבית ובדף המטפל. */
 function showcasePhotoUrl(t: TherapistShowcaseItem): string {
-  const u = t.image?.trim();
-  if (isStoredImageUrl(u)) return publicDisplayImageUrl(normalizeHttpsImageReference(u!));
-  return pickDemoImage(`therapist-hero-${t.id}`, "therapists");
+  return therapistAvatarSrc(t.image, t.id);
 }
 
 /** Distance from viewport center → for parallax only */

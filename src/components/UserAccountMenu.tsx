@@ -22,6 +22,7 @@ function buildMenuItems(session: Session): MenuItem[] {
     }
     items.push({ href: "/dashboard/content", label: "ניהול תוכן" });
     items.push({ href: "/dashboard/products", label: "חומרים דיגיטליים" });
+    items.push({ href: "/dashboard/finance", label: "כספים ותשלום" });
     items.push({ href: "/dashboard/approvals", label: "אישורים וצפיות" });
   }
 

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { pickDemoImage, pickDistinctDemoImage } from "@/lib/demo-placeholders";
 import { getHomeHeroCopy, getVisionSlides } from "@/lib/site-config";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { therapistAvatarSrc } from "@/lib/therapist-avatar";
 import { HomeTherapistsRandomGrid, type HomeTherapistCard } from "@/components/home/HomeTherapistsRandomGrid";
 import { HomeVisionCarousel } from "@/components/home/HomeVisionCarousel";
 import { shuffleArray } from "@/lib/shuffle-array";
@@ -13,17 +13,6 @@ function clip(s: string, max: number): string {
   const t = s.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max - 1)}…`;
-}
-
-/** תמונת פרופיל: https, העלאה מקומית, או placeholder */
-function gridCardImageUrl(url: string | null | undefined, fallback: string): string {
-  const u = url?.trim();
-  if (!u) return fallback;
-  if (u.startsWith("//")) return `https:${u}`;
-  if (u.startsWith("https://")) return u;
-  if (u.startsWith("http://")) return `https://${u.slice(7)}`;
-  if (u.startsWith("/uploads/")) return u;
-  return fallback;
 }
 
 function hasStoredProfileImage(url: string | null | undefined): boolean {
@@ -58,35 +47,16 @@ export default async function HomePage() {
   /** בכל רענון — 4 מטפלים אקראיים מתוך המאגר (אחרי ערבוב). */
   const randomizedPick = shuffleArray(sortedPool).slice(0, HOME_THERAPIST_LIMIT);
 
-  /** מונע שני כרטיסים עם אותה תמונה (אותו URL בפרופיל או התנגשות ב־hash). */
-  const usedHomeTherapistImageUrls = new Set<string>();
-
   const therapistCards: HomeTherapistCard[] = randomizedPick.map((p) => {
     const spec = [p.specialty1, p.specialty2, p.specialty3].map((s) => s.trim()).filter(Boolean).join(" · ");
     const roleLabel = p.publicTherapistTitle === "male" ? "מטפל בצמחי מרפא" : "מטפלת בצמחי מרפא";
-    let primary = gridCardImageUrl(p.user.image, pickDemoImage(`t-${p.id}`, "therapists"));
-    let tries = 0;
-    while (usedHomeTherapistImageUrls.has(primary) && tries < 64) {
-      primary = pickDemoImage(`home-uniq-${p.id}-${tries}`, "therapists");
-      tries += 1;
-    }
-    usedHomeTherapistImageUrls.add(primary);
-
-    let backupImageUrl = pickDistinctDemoImage(p.id, "therapists", primary);
-    let triesB = 0;
-    while (backupImageUrl === primary && triesB < 32) {
-      backupImageUrl = pickDemoImage(`home-bak-${p.id}-${triesB}`, "therapists");
-      triesB += 1;
-    }
-
     return {
       id: p.id,
       name: p.user.name,
       roleLabel,
       specialties: clip(spec, 180),
       href: therapistPublicHref(p.id),
-      imageUrl: primary,
-      backupImageUrl,
+      imageUrl: therapistAvatarSrc(p.user.image, p.id),
     };
   });
 

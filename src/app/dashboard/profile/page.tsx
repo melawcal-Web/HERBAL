@@ -6,7 +6,9 @@ import { therapistPublicHref } from "@/lib/therapist-public";
 import { ProfileForm } from "./profile-form";
 import { TherapistSchedulePanel } from "@/components/dashboard/TherapistSchedulePanel";
 import { CertificateUploadPanel } from "@/components/dashboard/CertificateUploadPanel";
+import { TherapistPaymentSettingsForm } from "@/components/dashboard/TherapistPaymentSettingsForm";
 import { getTherapistScheduleDashboardData } from "@/app/actions/appointments";
+import { parseTherapistPaymentSettings } from "@/lib/therapist-payments";
 
 function parseTimelineForForm(raw: unknown): { yearFrom: string; yearTo: string; description: string }[] {
   if (!Array.isArray(raw)) return [];
@@ -135,6 +137,12 @@ export default async function TherapistProfilePage() {
               }}
             />
           </div>
+          <section className="mt-10 rounded-2xl border border-herbal-200/80 bg-white/90 p-5 shadow-sm sm:p-7">
+            <h2 className="font-display text-xl font-bold text-herbal-900">תשלום מלקוחות — Bit ו-PayBox</h2>
+            <div className="mt-4">
+              <TherapistPaymentSettingsForm initial={parseTherapistPaymentSettings(profile.paymentSettings)} />
+            </div>
+          </section>
           <TherapistSchedulePanel
             initialAvailability={schedule.availability}
             initialDefinitions={schedule.definitions}

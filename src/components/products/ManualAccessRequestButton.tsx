@@ -12,6 +12,7 @@ export function ManualAccessRequestButton({
   contentTitle,
   priceCategory,
   amountNis,
+  compact = false,
 }: {
   therapistId: string;
   contentKind: ContentKind;
@@ -19,6 +20,7 @@ export function ManualAccessRequestButton({
   contentTitle: string;
   priceCategory: PriceCategory;
   amountNis: number;
+  compact?: boolean;
 }) {
   const { data: session } = useSession();
   const [pending, startTransition] = useTransition();
@@ -29,7 +31,7 @@ export function ManualAccessRequestButton({
 
   if (!session?.user) {
     return (
-      <p className="mt-3 text-xs text-slate-600">
+      <p className={compact ? "text-[10px] text-slate-600" : "mt-3 text-xs text-slate-600"}>
         לתשלום ביט/העברה —{" "}
         <a href="/auth/signin" className="font-semibold text-herbal-700 underline">
           התחברו עם Google
@@ -40,14 +42,18 @@ export function ManualAccessRequestButton({
   }
 
   return (
-    <div className="mt-4 border-t border-herbal-50 pt-4">
+    <div className={compact ? "mt-1" : "mt-4 border-t border-herbal-50 pt-4"}>
       {!open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-full border border-herbal-400 bg-herbal-50 py-2.5 text-sm font-semibold text-herbal-900 hover:bg-herbal-100"
+          className={
+            compact
+              ? "w-full rounded-full border border-herbal-300 bg-herbal-50 py-1.5 text-[11px] font-semibold text-herbal-900 hover:bg-herbal-100"
+              : "w-full rounded-full border border-herbal-400 bg-herbal-50 py-2.5 text-sm font-semibold text-herbal-900 hover:bg-herbal-100"
+          }
         >
-          בקשת גישה לאחר תשלום (ביט / העברה)
+          {compact ? "אישור תשלום / בקשת גישה" : "בקשת גישה לאחר תשלום (ביט / העברה)"}
         </button>
       ) : (
         <form

@@ -8,10 +8,10 @@ import { audienceLabels } from "@/lib/content-audience";
 import { parseProductMetadata, parseProductAudience } from "@/lib/product-metadata";
 import { productTypeToContentKind } from "@/lib/content-kind";
 import { storedImageSrc } from "@/lib/stored-image-url";
-import { ManualAccessRequestButton } from "@/components/products/ManualAccessRequestButton";
+import { ProductPaymentHandoff } from "@/components/products/ProductPaymentHandoff";
+import { emptyTherapistPaymentSettings, type TherapistPaymentSettings } from "@/lib/therapist-payments";
 import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
 import { chaptersFromProductMeta } from "@/lib/content-description-chapters";
-import type { PriceCategory } from "@prisma/client";
 
 export type WaitlistProductModel = {
   id: string;
@@ -35,7 +35,13 @@ function money(n: unknown) {
   return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
 }
 
-export function WaitlistProductCard({ product }: { product: WaitlistProductModel }) {
+export function WaitlistProductCard({
+  product,
+  paymentSettings,
+}: {
+  product: WaitlistProductModel;
+  paymentSettings?: TherapistPaymentSettings | null;
+}) {
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -135,13 +141,13 @@ export function WaitlistProductCard({ product }: { product: WaitlistProductModel
             </button>
           </form>
         ) : product.therapistId ? (
-          <ManualAccessRequestButton
+          <ProductPaymentHandoff
             therapistId={product.therapistId}
             contentKind={productTypeToContentKind(product.type)}
             contentId={product.id}
             contentTitle={product.title}
-            priceCategory={"regular" as PriceCategory}
             amountNis={Number(product.price)}
+            paymentSettings={paymentSettings ?? emptyTherapistPaymentSettings()}
           />
         ) : (
           <button
