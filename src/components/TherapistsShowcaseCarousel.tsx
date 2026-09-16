@@ -49,8 +49,16 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
   const [activeIndex, setActiveIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const suppressNavRef = useRef(false);
-  const dragRef = useRef({ active: false, pointerId: 0, startX: 0, startScroll: 0, moved: false });
+  const dragRef = useRef({
+    active: false,
+    pointerId: 0,
+    startX: 0,
+    startScroll: 0,
+    moved: false,
+    capturing: false,
+  });
   const rafRef = useRef<number | null>(null);
+  const DRAG_THRESHOLD_PX = 12;
 
   const n = items.length;
 
@@ -178,33 +186,40 @@ export function TherapistsShowcaseCarousel({ items }: { items: TherapistShowcase
         startX: e.clientX,
         startScroll: el.scrollLeft,
         moved: false,
+        capturing: false,
       };
-      try {
-        el.setPointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
-      }
-      el.classList.add("cursor-grabbing");
     };
 
     const onMove = (e: PointerEvent) => {
       if (!dragRef.current.active || e.pointerId !== dragRef.current.pointerId) return;
       const dx = e.clientX - dragRef.current.startX;
-      if (Math.abs(dx) > 4) dragRef.current.moved = true;
+      if (!dragRef.current.capturing) {
+        if (Math.abs(dx) < DRAG_THRESHOLD_PX) return;
+        dragRef.current.capturing = true;
+        dragRef.current.moved = true;
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+        el.classList.add("cursor-grabbing");
+      }
       el.scrollLeft = dragRef.current.startScroll - dx;
       scheduleUpdate();
     };
 
     const end = (e: PointerEvent) => {
       if (!dragRef.current.active || e.pointerId !== dragRef.current.pointerId) return;
+      const didDrag = dragRef.current.moved;
       dragRef.current.active = false;
+      dragRef.current.capturing = false;
       el.classList.remove("cursor-grabbing");
       try {
         el.releasePointerCapture(e.pointerId);
       } catch {
         /* ignore */
       }
-      if (dragRef.current.moved) {
+      if (didDrag) {
         suppressNavRef.current = true;
         window.setTimeout(() => {
           suppressNavRef.current = false;

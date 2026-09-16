@@ -34,7 +34,6 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
     prisma.herbalArticle.findMany({
       where: { therapistId: profile.user.id, published: true },
       orderBy: { createdAt: "desc" },
-      take: 24,
       select: {
         id: true,
         title: true,
