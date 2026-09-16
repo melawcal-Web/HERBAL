@@ -21,6 +21,7 @@ function buildMenuItems(session: Session): MenuItem[] {
       items.push({ href: "/dashboard/emr", label: "יומן קליני" });
     }
     items.push({ href: "/dashboard/content", label: "ניהול תוכן" });
+    items.push({ href: "/dashboard/products", label: "חומרים דיגיטליים" });
     items.push({ href: "/dashboard/approvals", label: "אישורים וצפיות" });
   }
 

@@ -17,14 +17,13 @@ import { pickDemoImage } from "@/lib/demo-placeholders";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
 import { expandBookedAppointments, parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
 import {
-  filterArticleRow,
   filterProductRow,
   type ContentSearchParams,
 } from "@/lib/content-search";
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
 import { publicDisplayImageUrl } from "@/lib/blob-image-url";
-import { isStoredImageUrl, normalizeHttpsImageReference } from "@/lib/stored-image-url";
+import { isStoredImageUrl, normalizeHttpsImageReference, storedImageSrc } from "@/lib/stored-image-url";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -124,12 +123,10 @@ export function TherapistPublicPageView({
   };
 
   const visibleProducts = products.filter((p) => contentVisibleForViewer(p.audience, viewer));
-  const visibleArticles = articles.filter((a) => contentVisibleForViewer(a.audience, viewer));
 
   const filteredProducts = visibleProducts.filter((p) =>
     filterProductRow({ ...p, therapistId: p.therapistId ?? profile.user.id }, filters),
   );
-  const filteredArticles = visibleArticles.filter((a) => filterArticleRow(a, filters));
 
   const booked = expandBookedAppointments(bookedAppointments);
 
@@ -178,19 +175,66 @@ export function TherapistPublicPageView({
         />
       </header>
 
-      {profile.bio?.trim() ? (
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 text-right sm:px-6 sm:py-8">
-          <p className="whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">{profile.bio.trim()}</p>
-        </div>
-      ) : null}
-
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8">
-        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-herbal-50" />}>
+        <section className="text-right" aria-labelledby="about-heading">
+          <p id="about-heading" className={sectionLabel}>
+            אודות
+          </p>
+          {profile.bio?.trim() ? (
+            <p className="mt-4 whitespace-pre-wrap text-base leading-[1.85] text-neutral-700 md:text-lg">
+              {profile.bio.trim()}
+            </p>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">טרם נוסף תיאור רקע.</p>
+          )}
+        </section>
+
+        <section className="mt-12 border-t border-neutral-200/90 pt-10" aria-labelledby="articles-heading">
+          <p id="articles-heading" className={sectionLabel}>
+            מאמרים שפורסמו
+          </p>
+          {articles.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">אין מאמרים שפורסמו עדיין.</p>
+          ) : (
+            <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+              {articles.map((a) => {
+                const cover = storedImageSrc(a.coverImageUrl);
+                return (
+                  <li key={a.id}>
+                    <Link
+                      href={`/herbal-index/${a.slug}`}
+                      className="flex h-full overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-300 hover:shadow-md"
+                    >
+                      <div className="aspect-[4/3] w-[7.5rem] shrink-0 bg-herbal-50 sm:w-36">
+                        {cover ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={cover} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs font-medium text-herbal-600">
+                            מאמר
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 p-4 text-right">
+                        <h3 className="font-display text-base font-bold text-herbal-900">{a.title}</h3>
+                        {a.category ? <p className="mt-1 text-[11px] font-semibold text-herbal-700">{a.category}</p> : null}
+                        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{a.excerpt}</p>
+                        <span className="mt-3 inline-block text-xs font-semibold text-herbal-700">לקריאה</span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <Suspense fallback={<div className="mt-10 h-24 animate-pulse rounded-2xl bg-herbal-50" />}>
           <ContentSearchFilter
             therapistUserId={profile.user.id}
             basePath={`/therapists/${profile.id}`}
             variant="therapist"
-            className="mb-10"
+            className="mb-10 mt-12"
           />
         </Suspense>
 
@@ -216,44 +260,6 @@ export function TherapistPublicPageView({
               המטפל/ת מאשר/ת פניות להשגחה מקצועית. תעריף לשעת עבודה:{" "}
               <span className="font-semibold text-herbal-900">{moneyIls(Number(profile.supervisionHourlyRate))}</span>
             </p>
-          </section>
-        ) : null}
-
-        {filteredArticles.length > 0 ? (
-          <section className="mt-14 border-t border-neutral-200/90 pt-12" aria-labelledby="articles-heading">
-            <p id="articles-heading" className={sectionLabel}>
-              מאמרים שפורסמו
-            </p>
-            <div
-              className="hero-vision-hide-scrollbar mt-6 flex gap-4 overflow-x-auto pb-2 pt-1 [-webkit-overflow-scrolling:touch]"
-              dir="ltr"
-              style={{ scrollSnapType: "x proximity" }}
-            >
-              {filteredArticles.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/herbal-index/${a.slug}`}
-                  className="w-[min(280px,82vw)] shrink-0 scroll-ml-4 snap-start overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-300 hover:shadow-md"
-                  dir="ltr"
-                >
-                  <div className="aspect-[16/10] w-full bg-herbal-50">
-                    {a.coverImageUrl?.startsWith("https://") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.coverImageUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs font-medium text-herbal-600">
-                        מאמר
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 text-right" dir="rtl">
-                    <h3 className="font-display text-base font-bold text-herbal-900">{a.title}</h3>
-                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{a.excerpt}</p>
-                    <span className="mt-3 inline-block text-xs font-semibold text-herbal-700">לקריאה ←</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </section>
         ) : null}
       </div>

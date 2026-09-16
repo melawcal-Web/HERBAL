@@ -56,9 +56,9 @@ export function TherapistProfileHero({
           imageUrl={heroCoverUrl}
           name={therapistName}
           seed={profileImageSeed}
-          size="xl"
+          size="lg"
           imageTreatment="natural"
-          className="mb-2 shadow-xl ring-4 ring-herbal-200/80 !aspect-square"
+          className="mb-2 shadow-md ring-2 ring-herbal-200/80 !aspect-square"
         />
         <span className={roleLine}>{roleHe}</span>
         <span className="mt-1 font-display text-2xl font-bold leading-tight text-herbal-950 sm:text-3xl">

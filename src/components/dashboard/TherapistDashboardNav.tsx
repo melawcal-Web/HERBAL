@@ -8,6 +8,8 @@ type NavLink = { href: string; label: string; exact?: boolean };
 const LINKS: NavLink[] = [
   { href: "/dashboard", label: "סקירה", exact: true },
   { href: "/dashboard/profile", label: "פרופיל" },
+  { href: "/dashboard/content", label: "ניהול תוכן" },
+  { href: "/dashboard/products", label: "חומרים דיגיטליים" },
   { href: "/dashboard/reports", label: "דוח צפיות" },
   { href: "/dashboard/approvals", label: "אישורים" },
   { href: "/dashboard/finance", label: "כספים" },

@@ -1,5 +1,6 @@
 import type { ProductType } from "@prisma/client";
 import type { BlogStyleListItem } from "@/components/content/BlogStyleList";
+import { productTypeLabel } from "@/lib/product-metadata";
 
 export const PORTFOLIO_KINDS = ["articles", "courses", "recipes", "lectures"] as const;
 export type PortfolioContentKind = (typeof PORTFOLIO_KINDS)[number];
@@ -51,18 +52,7 @@ export function productMatchesPortfolioKind(type: ProductType, kind: PortfolioCo
 }
 
 export function productKindLabel(type: ProductType): string {
-  switch (type) {
-    case "zoom":
-      return "זום";
-    case "workshop":
-      return "סדנה";
-    case "recipe":
-      return "מתכון";
-    case "lecture":
-      return "הרצאה";
-    default:
-      return "קורסים וסדנאות";
-  }
+  return productTypeLabel(type);
 }
 
 export function articlesToBlogList(

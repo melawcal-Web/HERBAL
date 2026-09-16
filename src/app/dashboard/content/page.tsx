@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertAdmin, assertTherapist, therapistCanEditProfile } from "@/lib/formula";
@@ -27,7 +28,11 @@ export default async function DashboardContentPage() {
     <>
       <h1 className="font-display text-3xl text-herbal-900">ניהול תוכן</h1>
       <p className="mt-2 text-slate-600">
-        עברו בין סוגי התוכן בסרגל, או לחצו על הפלוס כדי להוסיף פריט חדש.
+        עברו בין סוגי התוכן בסרגל, או לחצו על הפלוס כדי להוסיף פריט חדש. חומרים דיגיטליים (PDF, וידאו, מתכון) משויכים אוטומטית אליכם ומופיעים בדף הציבורי — ראו גם{" "}
+        <Link href="/dashboard/products" className="font-medium text-herbal-800 underline-offset-4 hover:underline">
+          החומרים שלי
+        </Link>
+        .
       </p>
       <DashboardAddContent />
     </>
