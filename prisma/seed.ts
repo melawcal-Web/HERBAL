@@ -324,6 +324,10 @@ async function main() {
       },
       acceptsSupervisionRequests: true,
       supervisionHourlyRate: new Prisma.Decimal(420),
+      paymentSettings: {
+        bit: { enabled: true, phone: "0521001001", paymentLink: "" },
+        paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+      },
     },
     create: {
       userId: therapistUser.id,
@@ -346,6 +350,65 @@ async function main() {
       },
       acceptsSupervisionRequests: true,
       supervisionHourlyRate: new Prisma.Decimal(420),
+      paymentSettings: {
+        bit: { enabled: true, phone: "0521001001", paymentLink: "" },
+        paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+      },
+    },
+  });
+
+  await prisma.product.upsert({
+    where: { catalogKey: "ronit-digital-formulas-pdf" },
+    create: {
+      catalogKey: "ronit-digital-formulas-pdf",
+      therapistId: therapistUser.id,
+      type: ProductType.recipe,
+      title: "חוברת דיגיטלית — שתים־עשרה נוסחאות ביתיות",
+      description: "PDF להורדה לאחר תשלום בביט או PayBox.",
+      price: new Prisma.Decimal(79),
+      memberPrice: new Prisma.Decimal(59),
+      imageUrl: covMint,
+      active: true,
+      isWaitlist: false,
+      metadata: { downloadUrl: "https://example.com/demo/ronit-formulas.pdf" },
+    },
+    update: {
+      therapistId: therapistUser.id,
+      type: ProductType.recipe,
+      title: "חוברת דיגיטלית — שתים־עשרה נוסחאות ביתיות",
+      description: "PDF להורדה לאחר תשלום בביט או PayBox.",
+      price: new Prisma.Decimal(79),
+      memberPrice: new Prisma.Decimal(59),
+      imageUrl: covMint,
+      active: true,
+      isWaitlist: false,
+    },
+  });
+
+  await prisma.product.upsert({
+    where: { catalogKey: "ronit-digital-tea-video" },
+    create: {
+      catalogKey: "ronit-digital-tea-video",
+      therapistId: therapistUser.id,
+      type: ProductType.video,
+      title: "שיעור וידאו — הכנת חליטות בבטחה",
+      description: "סרטון קצר על הכנה, מינון ואחסון.",
+      price: new Prisma.Decimal(49),
+      memberPrice: new Prisma.Decimal(39),
+      imageUrl: covChamomile,
+      active: true,
+      isWaitlist: false,
+    },
+    update: {
+      therapistId: therapistUser.id,
+      type: ProductType.video,
+      title: "שיעור וידאו — הכנת חליטות בבטחה",
+      description: "סרטון קצר על הכנה, מינון ואחסון.",
+      price: new Prisma.Decimal(49),
+      memberPrice: new Prisma.Decimal(39),
+      imageUrl: covChamomile,
+      active: true,
+      isWaitlist: false,
     },
   });
 

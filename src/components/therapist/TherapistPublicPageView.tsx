@@ -13,7 +13,8 @@ import {
   parseContactInfo,
   parseSocialLinks,
 } from "@/lib/therapist-contact";
-import { pickDemoImage } from "@/lib/demo-placeholders";
+import { therapistAvatarSrc } from "@/lib/therapist-avatar";
+import { parseTherapistPaymentSettings } from "@/lib/therapist-payments";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
 import { expandBookedAppointments, parseWeeklyAvailability, type WeeklyAvailability } from "@/lib/therapist-availability";
 import {
@@ -22,8 +23,7 @@ import {
 } from "@/lib/content-search";
 import { contentVisibleForViewer, type ContentViewer } from "@/lib/content-audience";
 import type { ContentFilterType } from "@/components/search/ContentSearchFilter";
-import { publicDisplayImageUrl } from "@/lib/blob-image-url";
-import { isStoredImageUrl, normalizeHttpsImageReference, storedImageSrc } from "@/lib/stored-image-url";
+import { storedImageSrc } from "@/lib/stored-image-url";
 
 type UserPick = Pick<User, "id" | "name" | "image">;
 export type TherapistPublicProfile = TherapistProfile & { user: UserPick };
@@ -106,11 +106,8 @@ export function TherapistPublicPageView({
   const city = contact.city?.trim() || null;
   const publicTherapistTitle = profile.publicTherapistTitle === "male" ? "male" : "female";
 
-  const rawImg = profile.user.image?.trim() ?? "";
-  const heroBase = isStoredImageUrl(rawImg)
-    ? normalizeHttpsImageReference(rawImg)
-    : pickDemoImage(`therapist-hero-${profile.id}`, "therapists");
-  const heroCoverUrl = publicDisplayImageUrl(heroBase);
+  const heroCoverUrl = therapistAvatarSrc(profile.user.image, profile.id);
+  const paymentSettings = parseTherapistPaymentSettings(profile.paymentSettings);
 
   const availability: WeeklyAvailability = parseWeeklyAvailability(profile.weeklyAvailability);
   const timeline = parsePortfolioTimeline(profile.portfolioTimeline);
@@ -162,7 +159,6 @@ export function TherapistPublicPageView({
       <header className="mx-auto w-full max-w-[920px] overflow-hidden rounded-none shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:shadow-xl">
         <TherapistProfileHero
           heroCoverUrl={heroCoverUrl}
-          profileImageSeed={`therapist-${profile.id}`}
           therapistName={profile.user.name}
           serviceCity={city}
           specialties={specs}
@@ -238,7 +234,7 @@ export function TherapistPublicPageView({
           />
         </Suspense>
 
-        <TherapistOfferingSections products={filteredProducts} />
+        <TherapistOfferingSections products={filteredProducts} paymentSettings={paymentSettings} />
 
         <Suspense fallback={<div className="mt-14 h-32 animate-pulse rounded-2xl bg-herbal-50" />}>
           <TherapistAppointmentCalendar
