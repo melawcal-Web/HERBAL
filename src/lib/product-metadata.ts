@@ -1,6 +1,40 @@
 import type { Prisma, ProductType } from "@prisma/client";
 import type { ContentAudienceId } from "@/lib/content-audience";
 
+export const PRODUCT_TYPE_OPTIONS = [
+  { id: "shelf_product", label: "מוצר מדף / חומר דיגיטלי" },
+  { id: "video", label: "וידאו" },
+  { id: "recipe", label: "מתכון" },
+  { id: "workshop", label: "סדנה" },
+  { id: "lecture", label: "הרצאה" },
+  { id: "podcast", label: "פודקאסט" },
+  { id: "zoom", label: "זום" },
+  { id: "supervision", label: "השגחה" },
+] as const satisfies ReadonlyArray<{ id: ProductType; label: string }>;
+
+export type ProductTypeId = (typeof PRODUCT_TYPE_OPTIONS)[number]["id"];
+
+export function productTypeLabel(type: ProductType): string {
+  return PRODUCT_TYPE_OPTIONS.find((o) => o.id === type)?.label ?? type;
+}
+
+/** סדנה / זום / השגחה נשמרים כרשימת המתנה; חומר דיגיטלי נמכר ישירות */
+export function productTypeUsesWaitlist(type: ProductType): boolean {
+  return type === "workshop" || type === "zoom" || type === "supervision";
+}
+
+/** קישור הורדה / קובץ דיגיטלי במטא-דאטה */
+export function isProductFileUrl(url: string | null | undefined): boolean {
+  const u = url?.trim();
+  if (!u) return false;
+  return (
+    u.startsWith("https://") ||
+    u.startsWith("http://") ||
+    u.startsWith("/uploads/") ||
+    u.startsWith("/api/")
+  );
+}
+
 /** JSON on `Product.metadata` for קורסים וסדנאות */
 export type ProductMetadata = {
   location?: string;
@@ -25,6 +59,8 @@ export type ProductMetadata = {
   videoProvider?: "vimeo" | "bunny";
   videoId?: string;
   playbackUrl?: string;
+  /** קישור הורדה לחומר דיגיטלי (PDF, קובץ, וכו׳) */
+  downloadUrl?: string;
 };
 
 export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): ProductMetadata {
@@ -48,6 +84,9 @@ export function parseProductMetadata(raw: Prisma.JsonValue | null | undefined): 
   if (o.videoProvider === "vimeo" || o.videoProvider === "bunny") out.videoProvider = o.videoProvider;
   if (typeof o.videoId === "string") out.videoId = o.videoId;
   if (typeof o.playbackUrl === "string") out.playbackUrl = o.playbackUrl;
+  if (typeof o.downloadUrl === "string" && isProductFileUrl(o.downloadUrl)) {
+    out.downloadUrl = o.downloadUrl.trim();
+  }
   if (Array.isArray(o.chapters)) {
     out.chapters = o.chapters
       .filter((c): c is { id: string; title: string; body: string } => {
@@ -73,6 +112,20 @@ export function parseProductAudience(raw: unknown): ContentAudienceId[] {
   if (!Array.isArray(raw)) return [];
   const allowed = new Set<ContentAudienceId>(["therapist", "student", "interested"]);
   return raw.filter((x): x is ContentAudienceId => typeof x === "string" && allowed.has(x as ContentAudienceId));
+}
+
+/** מעדכן downloadUrl בלי למחוק שדות מטא-דאטה אחרים */
+export function withProductDownloadUrl(
+  raw: Prisma.JsonValue | null | undefined,
+  downloadUrl: string | undefined,
+): Prisma.InputJsonValue {
+  const base =
+    raw != null && typeof raw === "object" && !Array.isArray(raw)
+      ? { ...(raw as Record<string, unknown>) }
+      : {};
+  if (downloadUrl) base.downloadUrl = downloadUrl;
+  else delete base.downloadUrl;
+  return base as Prisma.InputJsonValue;
 }
 
 /** מיפוי סוג מוצר לסעיף בדף מטפל */

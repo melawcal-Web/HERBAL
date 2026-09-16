@@ -56,6 +56,16 @@ export async function GET(req: Request) {
   const meta = parseProductMetadata(product.metadata);
   const kind = productTypeToContentKind(product.type);
 
+  if (meta.downloadUrl) {
+    return NextResponse.json({
+      kind,
+      provider: "download",
+      playbackUrl: meta.downloadUrl,
+      downloadUrl: meta.downloadUrl,
+      note: "קישור הורדה מאושר",
+    });
+  }
+
   if (meta.externalUrl?.startsWith("http")) {
     return NextResponse.json({
       kind,
