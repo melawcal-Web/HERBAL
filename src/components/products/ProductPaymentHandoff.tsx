@@ -106,9 +106,14 @@ export function ProductPaymentHandoff({
             </button>
           ) : null}
           {handoff.phone ? (
-            <p className={`text-slate-600 ${compact ? "text-[10px] leading-snug" : "text-xs"}`} dir="ltr">
-              {handoff.phone}
-              {` · ${money(handoff.amountNis)}`}
+            <p className={`text-slate-600 ${compact ? "text-[10px] leading-snug" : "text-xs"}`}>
+              {handoff.usesCustomLink
+                ? null
+                : "העבירו את הסכום למספר זה באפליקציה: "}
+              <span dir="ltr">
+                {handoff.phone}
+                {` · ${money(handoff.amountNis)}`}
+              </span>
             </p>
           ) : null}
           {opened ? (

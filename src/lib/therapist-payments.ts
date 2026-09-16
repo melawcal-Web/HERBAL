@@ -145,17 +145,10 @@ export function buildPaymentHandoff(
 
   if (!phoneNational) return null;
 
-  const q = new URLSearchParams({
-    phone: phoneNational,
-    sum: String(amount),
-    amount: String(amount),
-    c: description.slice(0, 80),
-  });
-
   const href =
     method === "bit"
-      ? `https://www.bitpay.co.il/app/bitPayment?${q.toString()}`
-      : `https://www.payboxapp.com/?phone=${encodeURIComponent(phoneNational)}&amount=${amount}`;
+      ? "https://www.bitpay.co.il/"
+      : "https://www.payboxapp.com/";
 
   return {
     method,
