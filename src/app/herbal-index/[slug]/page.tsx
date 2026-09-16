@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { ContentAccessLogger } from "@/components/content/ContentAccessLogger";
 import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
 import { chaptersFromArticleBody } from "@/lib/content-description-chapters";
+import { herbalIndexListPath, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
+  if (!isHerbalIndexEnabled()) return { title: "המרכז למטפלים בצמחי מרפא" };
   const { slug } = await params;
   const article = await prisma.herbalArticle.findUnique({
     where: { slug, published: true },
@@ -19,6 +21,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function HerbalArticlePage({ params }: Props) {
+  if (!isHerbalIndexEnabled()) redirect("/");
   const { slug } = await params;
   const article = await prisma.herbalArticle.findUnique({
     where: { slug, published: true },
@@ -52,7 +55,7 @@ export default async function HerbalArticlePage({ params }: Props) {
         <ChaptersAccordion chapters={chaptersFromArticleBody(article.body, article.excerpt)} />
       </div>
       <div className="mt-10">
-        <Link href="/herbal-index" className="text-herbal-700 underline">
+        <Link href={herbalIndexListPath()} className="text-herbal-700 underline">
           חזרה לאינדקס
         </Link>
       </div>

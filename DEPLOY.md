@@ -139,7 +139,7 @@ Propagation can take **5 minutes to 48 hours** depending on DNS TTL.
 - [ ] Default seeded passwords changed (if you used `prisma db seed`).
 - [ ] Admin can open `/admin` and see audit entries.
 - [ ] Therapist can edit profile at `/dashboard/profile` and public page `/therapists/[id]` loads (`/t/...` still redirects).
-- [ ] Client can register, sign in, and browse `/therapists` and `/herbal-index`.
+- [ ] Client can register, sign in, and browse `/therapists`.
 - [ ] Legal: privacy policy + terms + clinician disclaimers published (add pages when your lawyer is ready).
 - [ ] Cookie banner if required in your jurisdiction.
 

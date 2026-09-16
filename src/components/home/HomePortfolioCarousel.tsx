@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import type { ExploreCategory, ExploreGridItem } from "@/components/home/HomeExploreGrid";
 import { ExploreCardImage } from "@/components/home/HomeExploreGrid";
+import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 const tabs: { id: ExploreCategory; label: string }[] = [
   { id: "all", label: "הכל" },
   { id: "therapists", label: "מטפלים" },
   { id: "courses_workshops", label: "קורסים וסדנאות" },
-  { id: "herbal", label: "צמחים" },
+  ...(isHerbalIndexEnabled() ? ([{ id: "herbal", label: "צמחים" }] as const) : []),
 ];
 
 export function HomePortfolioCarousel({ items }: { items: ExploreGridItem[] }) {
@@ -17,8 +18,9 @@ export function HomePortfolioCarousel({ items }: { items: ExploreGridItem[] }) {
   const [fade, setFade] = useState(true);
 
   const visible = useMemo(() => {
-    if (filter === "all") return items;
-    return items.filter((x) => x.category === filter);
+    const source = isHerbalIndexEnabled() ? items : items.filter((x) => x.category !== "herbal");
+    if (filter === "all") return source;
+    return source.filter((x) => x.category === filter);
   }, [items, filter]);
 
   const setFilterAnimated = useCallback((next: ExploreCategory) => {

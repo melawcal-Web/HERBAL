@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { assertTherapist, therapistCanEditProfile } from "@/lib/formula";
+import { isHerbalIndexEnabled, memberLandingPath } from "@/lib/herbal-index-flag";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { ProfileForm } from "./profile-form";
 import { TherapistSchedulePanel } from "@/components/dashboard/TherapistSchedulePanel";
@@ -27,7 +28,7 @@ function parseTimelineForForm(raw: unknown): { yearFrom: string; yearTo: string;
 export default async function TherapistProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!assertTherapist(session.user.role)) redirect(memberLandingPath());
 
   const profile = await prisma.therapistProfile.findUnique({
     where: { userId: session.user.id },
@@ -94,7 +95,8 @@ export default async function TherapistProfilePage() {
 
       {pendingApproval && canEdit ? (
         <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm text-amber-950">
-          התעודה ממתינה לאישור צוות המרכז. ניתן להשלים את הפרופיל כאן; הדף הציבורי והאינדקס יופעלו לאחר האישור.
+          התעודה ממתינה לאישור צוות המרכז. ניתן להשלים את הפרופיל כאן; הדף הציבורי
+          {isHerbalIndexEnabled() ? " והאינדקס" : ""} יופעלו לאחר האישור.
         </p>
       ) : null}
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { herbalIndexListPath, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 function deployLabel() {
   const iso = process.env.NEXT_PUBLIC_BUILD_TIME_ISO;
@@ -24,9 +25,15 @@ export function SiteFooter() {
           פלטפורמה לקהילה, לימודים ותיעוד קליני. Community, learning, and clinical documentation in one place.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
-          <Link href="/herbal-index" className="link-pill min-h-[44px] inline-flex items-center">
-            Herbal Index
-          </Link>
+          {isHerbalIndexEnabled() ? (
+            <Link href={herbalIndexListPath()} className="link-pill min-h-[44px] inline-flex items-center">
+              Herbal Index
+            </Link>
+          ) : (
+            <Link href="/therapists" className="link-pill min-h-[44px] inline-flex items-center">
+              מטפלים
+            </Link>
+          )}
           <Link href="/marketplace" className="link-pill min-h-[44px] inline-flex items-center">
             קורסים וסדנאות
           </Link>

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { assertTherapist } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { getTherapistViewReport } from "@/app/actions/commerce";
 import Link from "next/link";
 import { ViewReportTable } from "@/components/dashboard/ViewReportTable";
@@ -10,7 +11,7 @@ export const metadata = { title: "דוח צפיות ושימושים" };
 export default async function TherapistReportsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!assertTherapist(session.user.role)) redirect(memberLandingPath());
 
   const rows = await getTherapistViewReport();
 

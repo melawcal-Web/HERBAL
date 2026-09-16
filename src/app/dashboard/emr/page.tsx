@@ -3,11 +3,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 
 export default async function EmrListPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!assertTherapist(session.user.role)) redirect(memberLandingPath());
   if (!therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) redirect("/dashboard/profile");
 
   const logs = await prisma.clinicalLog.findMany({

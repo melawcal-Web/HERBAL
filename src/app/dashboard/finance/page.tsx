@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { assertTherapist } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { getTherapistFinanceLedger } from "@/app/actions/commerce";
 import { getTherapistPaymentSettings } from "@/app/actions/therapist-payments";
 import Link from "next/link";
@@ -12,7 +13,7 @@ export const metadata = { title: "כספים" };
 export default async function TherapistFinancePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!assertTherapist(session.user.role)) redirect(memberLandingPath());
 
   const [{ rows, totalCommissionOwed }, paymentSettings] = await Promise.all([
     getTherapistFinanceLedger(),

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 import { signIn } from "next-auth/react";
 import { useState, useTransition } from "react";
 
@@ -29,7 +30,8 @@ export default function SignInForm({
       )}
       {showPendingTherapistBanner && (
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-          נרשמתם כמטפלים — חשבונכם במצב ממתין לאישור תעודה. לאחר אישור האדמין יופעלו הדף הציבורי, האינדקס ו-EMR.
+          נרשמתם כמטפלים — חשבונכם במצב ממתין לאישור תעודה. לאחר אישור האדמין יופעלו הדף הציבורי
+          {isHerbalIndexEnabled() ? ", האינדקס" : ""} ו-EMR.
         </p>
       )}
       <p className="mt-2 text-slate-600">אפשר להתחבר עם אימייל+סיסמה (כולל Yahoo) או עם חשבון Google.</p>

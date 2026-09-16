@@ -2,12 +2,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { NewClinicalLogForm } from "./new-log-form";
 
 export default async function NewClinicalLogPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
-  if (!assertTherapist(session.user.role)) redirect("/herbal-index");
+  if (!assertTherapist(session.user.role)) redirect(memberLandingPath());
   if (!therapistCanUseClinicalTools(session.user.role, session.user.therapistVerification)) redirect("/dashboard/profile");
 
   const clients = await prisma.user.findMany({

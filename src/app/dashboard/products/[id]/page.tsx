@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertAdmin, assertTherapist, therapistCanEditProfile } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { parseProductAudience, parseProductMetadata } from "@/lib/product-metadata";
 import { DigitalMaterialForm } from "@/components/dashboard/DigitalMaterialForm";
 
@@ -28,7 +29,7 @@ export default async function DashboardEditProductPage({ params }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
   if (!assertTherapist(session.user.role) && !assertAdmin(session.user.role)) {
-    redirect("/herbal-index");
+    redirect(memberLandingPath());
   }
 
   if (session.user.role === "therapist") {

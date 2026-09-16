@@ -8,6 +8,7 @@ import {
   type HomeHeroCopy,
   type VisionSlide,
 } from "@/lib/home-vision";
+import { hideHerbalIndexPublicCopy } from "@/lib/herbal-index-flag";
 
 export type HeroSlide = { imageUrl: string; caption: string };
 export type { VisionSlide, HomeHeroCopy } from "@/lib/home-vision";
@@ -89,12 +90,21 @@ export async function getSiteTitle(): Promise<string> {
   }
 }
 
+function sanitizeVisionSlides(slides: VisionSlide[]): VisionSlide[] {
+  return slides.map((slide) => ({
+    ...slide,
+    eyebrow: slide.eyebrow ? hideHerbalIndexPublicCopy(slide.eyebrow) : slide.eyebrow,
+    title: hideHerbalIndexPublicCopy(slide.title),
+    body: hideHerbalIndexPublicCopy(slide.body),
+  }));
+}
+
 export async function getVisionSlides(): Promise<VisionSlide[]> {
   try {
     const row = await prisma.siteConfig.findUnique({ where: { id: "default" } });
-    return parseVisionSlides(row?.visionSlides ?? null);
+    return sanitizeVisionSlides(parseVisionSlides(row?.visionSlides ?? null));
   } catch {
-    return parseVisionSlides(null);
+    return sanitizeVisionSlides(parseVisionSlides(null));
   }
 }
 

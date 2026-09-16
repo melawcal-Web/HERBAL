@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 type Persona = "therapist" | "student" | "interested";
 
@@ -42,7 +43,8 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-md px-4 py-12">
       <h1 className="font-display text-2xl text-herbal-900">הרשמה מאובטחת</h1>
       <p className="mt-2 text-slate-600">
-        בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ת, או חבר קהילה — גלישה בקהילה ובאינדקס.
+        בחרו מסלול: מטפל/ת (נדרשת תעודה ואישור מנהל), סטודנט/ת, או חבר קהילה — גלישה בקהילה
+        {isHerbalIndexEnabled() ? " ובאינדקס" : ""}.
       </p>
       <div className="mt-8 space-y-3">
         <GoogleSignInButton callbackUrl="/dashboard/profile" />

@@ -1,5 +1,6 @@
 import type { Session } from "next-auth";
 import { assertAdmin, assertTherapist, therapistCanUseClinicalTools } from "@/lib/formula";
+import { memberLandingPath } from "@/lib/herbal-index-flag";
 
 /** יעד ברירת מחדל אחרי התחברות — ללא לוח בקרה כללי */
 export function postLoginPath(session: Session | null): string {
@@ -8,7 +9,7 @@ export function postLoginPath(session: Session | null): string {
   if (assertAdmin(role)) return "/admin/content";
   if (assertTherapist(role)) return "/dashboard/profile";
   if (therapistCanUseClinicalTools(role, therapistVerification)) return "/dashboard/emr";
-  return "/herbal-index";
+  return memberLandingPath();
 }
 
 export function therapistOperationsPath(): string {
