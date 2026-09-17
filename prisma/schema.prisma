@@ -166,7 +166,7 @@ model TherapistProfile {
   showPublicCalendar Boolean @default(false) @map("show_public_calendar")
   /** ציר זמן ניסיון והשכלה — [{ yearFrom, yearTo?, description }] */
   portfolioTimeline Json? @map("portfolio_timeline")
-  /** אמצעי תשלום שבחר המטפל — { bit: { enabled, phone, paymentLink }, paybox: {...} } */
+  /** אמצעי תשלום: { bit, paybox, grow } — כל אחד { enabled, phone?, paymentLink? } */
   paymentSettings Json? @map("payment_settings")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -322,6 +322,8 @@ model ContentAcquisition {
   userId               String?              @map("user_id")
   guestEmail           String?              @map("guest_email") @db.VarChar(191)
   guestName            String?              @map("guest_name") @db.VarChar(120)
+  /** נייד הרוכש/ת — נדרש ברישום אחרי כוונת תשלום לחומר דיגיטלי */
+  guestPhone           String?              @map("guest_phone") @db.VarChar(64)
   contentKind          ContentKind          @map("content_kind")
   contentId            String               @map("content_id") @db.VarChar(64)
   contentTitle         String               @map("content_title") @db.VarChar(300)
@@ -330,6 +332,8 @@ model ContentAcquisition {
   amountNis            Decimal              @default(0) @map("amount_nis") @db.Decimal(10, 2)
   centerCommissionNis  Decimal              @default(0) @map("center_commission_nis") @db.Decimal(10, 2)
   manualRequestId      String?              @unique @map("manual_request_id")
+  /** אסימון גישה לתוכן שנשלח במייל אחרי רישום רכישה */
+  accessToken          String?              @unique @map("access_token") @db.VarChar(64)
   metadata             Json?
   createdAt            DateTime             @default(now()) @map("created_at")
 

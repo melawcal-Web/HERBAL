@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import type { ProductType } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { joinProductWaitlist } from "@/app/actions/waitlist";
@@ -12,6 +13,7 @@ import { ProductPaymentHandoff } from "@/components/products/ProductPaymentHando
 import { emptyTherapistPaymentSettings, type TherapistPaymentSettings } from "@/lib/therapist-payments";
 import { ChaptersAccordion } from "@/components/content/ChaptersAccordion";
 import { chaptersFromProductMeta } from "@/lib/content-description-chapters";
+import { publicProductHref } from "@/lib/product-href";
 
 export type WaitlistProductModel = {
   id: string;
@@ -38,9 +40,12 @@ function money(n: unknown) {
 export function WaitlistProductCard({
   product,
   paymentSettings,
+  embedded = false,
 }: {
   product: WaitlistProductModel;
   paymentSettings?: TherapistPaymentSettings | null;
+  /** When true, skip cover/title — used inside the product detail page */
+  embedded?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -61,21 +66,41 @@ export function WaitlistProductCard({
   const coverImage = storedImageSrc(product.imageUrl);
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-200 hover:shadow-md">
-      {coverImage ? (
-        <div className="aspect-[16/10] w-full bg-herbal-50">
+    <article
+      className={
+        embedded
+          ? "flex flex-col"
+          : "flex flex-col overflow-hidden rounded-2xl border border-herbal-100 bg-white shadow-sm transition hover:border-herbal-200 hover:shadow-md"
+      }
+    >
+      {embedded ? null : coverImage ? (
+        <Link href={publicProductHref(product.id)} className="aspect-[16/10] w-full bg-herbal-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={coverImage} alt="" className="h-full w-full object-cover" />
-        </div>
+        </Link>
       ) : (
-        <div className="aspect-[16/10] w-full bg-gradient-to-br from-herbal-50 to-herbal-100" />
+        <Link href={publicProductHref(product.id)} className="aspect-[16/10] w-full bg-gradient-to-br from-herbal-50 to-herbal-100" />
       )}
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-lg font-bold text-herbal-900">{product.title}</h3>
-        {aud ? <p className="mt-1 text-xs text-slate-500">קהל: {aud}</p> : null}
-        <ChaptersAccordion chapters={chapters} className="mt-3" />
-        {when ? <p className="mt-2 text-xs text-slate-500">מועד: {when}</p> : null}
-        {meta.location ? <p className="text-xs text-slate-500">מיקום: {meta.location}</p> : null}
+      <div className={embedded ? "flex flex-1 flex-col" : "flex flex-1 flex-col p-5"}>
+        {embedded ? null : (
+          <>
+            <h3 className="font-display text-lg font-bold text-herbal-900">
+              <Link href={publicProductHref(product.id)} className="hover:underline">
+                {product.title}
+              </Link>
+            </h3>
+            {aud ? <p className="mt-1 text-xs text-slate-500">קהל: {aud}</p> : null}
+            <ChaptersAccordion chapters={chapters} className="mt-3" />
+            {when ? <p className="mt-2 text-xs text-slate-500">מועד: {when}</p> : null}
+            {meta.location ? <p className="text-xs text-slate-500">מיקום: {meta.location}</p> : null}
+            <Link
+              href={publicProductHref(product.id)}
+              className="mt-3 inline-flex text-sm font-semibold text-herbal-700 underline-offset-4 hover:underline"
+            >
+              לפרטי המוצר
+            </Link>
+          </>
+        )}
 
         {product.isWaitlist ? (
           <div className="mt-4">
@@ -90,10 +115,12 @@ export function WaitlistProductCard({
           </div>
         ) : null}
 
-        <div className="mt-4 flex items-end justify-between gap-2 border-t border-herbal-50 pt-3">
-          <span className="text-sm font-semibold text-herbal-900">{money(product.price)}</span>
-          <span className="text-xs text-slate-500">חברים: {money(product.memberPrice)}</span>
-        </div>
+        {embedded ? null : (
+          <div className="mt-4 flex items-end justify-between gap-2 border-t border-herbal-50 pt-3">
+            <span className="text-sm font-semibold text-herbal-900">{money(product.price)}</span>
+            <span className="text-xs text-slate-500">חברים: {money(product.memberPrice)}</span>
+          </div>
+        )}
 
         {product.isWaitlist ? (
           <form

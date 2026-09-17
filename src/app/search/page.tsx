@@ -16,6 +16,7 @@ import { auth } from "@/auth";
 import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 import { memberCallbackPathFromSearch } from "@/lib/member-callback-path";
 import { herbalArticleHref, isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
+import { publicProductHref } from "@/lib/product-href";
 
 export const metadata = {
   title: "חיפוש",
@@ -116,7 +117,7 @@ export default async function SearchPage({ searchParams }: Props) {
             {productRows.map((p) => (
               <li key={p.id}>
                 <Link
-                  href="/marketplace"
+                  href={publicProductHref(p.id)}
                   className="block rounded-xl border border-herbal-100 bg-white px-4 py-3 text-herbal-900 shadow-sm transition hover:border-herbal-300"
                 >
                   <span className="font-semibold">{p.title}</span>

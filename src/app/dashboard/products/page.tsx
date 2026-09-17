@@ -6,6 +6,7 @@ import { assertAdmin, assertTherapist, therapistCanEditProfile } from "@/lib/for
 import { memberLandingPath } from "@/lib/herbal-index-flag";
 import { audienceLabels } from "@/lib/content-audience";
 import { parseProductAudience, parseProductMetadata, productTypeLabel } from "@/lib/product-metadata";
+import { publicProductHref } from "@/lib/product-href";
 import { DigitalMaterialForm } from "@/components/dashboard/DigitalMaterialForm";
 import { TherapistProductActiveToggle } from "./product-active-toggle";
 
@@ -112,6 +113,14 @@ export default async function DashboardProductsPage() {
                     >
                       עריכה
                     </Link>
+                    {p.active ? (
+                      <Link
+                        href={publicProductHref(p.id)}
+                        className="rounded-lg border border-herbal-200 bg-white px-3 py-1.5 text-xs font-semibold text-herbal-900 hover:bg-herbal-50"
+                      >
+                        דף ציבורי
+                      </Link>
+                    ) : null}
                     <TherapistProductActiveToggle productId={p.id} active={p.active} title={p.title} />
                   </div>
                 </td>

@@ -1,17 +1,18 @@
-export const THERAPIST_PAYMENT_METHODS = ["bit", "paybox"] as const;
+export const THERAPIST_PAYMENT_METHODS = ["bit", "paybox", "grow"] as const;
 export type TherapistPaymentMethodId = (typeof THERAPIST_PAYMENT_METHODS)[number];
 
 export type TherapistPaymentMethodConfig = {
   enabled: boolean;
-  /** Israeli mobile for P2P transfer / payment request */
+  /** Israeli mobile for P2P transfer / payment request (Bit / PayBox) */
   phone: string;
-  /** Optional Bit/PayBox payment-request URL the therapist generated in-app */
+  /** Optional Bit/PayBox/Grow (or other provider) payment-request URL */
   paymentLink: string;
 };
 
 export type TherapistPaymentSettings = {
   bit: TherapistPaymentMethodConfig;
   paybox: TherapistPaymentMethodConfig;
+  grow: TherapistPaymentMethodConfig;
 };
 
 const emptyMethod = (): TherapistPaymentMethodConfig => ({
@@ -21,7 +22,7 @@ const emptyMethod = (): TherapistPaymentMethodConfig => ({
 });
 
 export function emptyTherapistPaymentSettings(): TherapistPaymentSettings {
-  return { bit: emptyMethod(), paybox: emptyMethod() };
+  return { bit: emptyMethod(), paybox: emptyMethod(), grow: emptyMethod() };
 }
 
 function asRecord(raw: unknown): Record<string, unknown> | null {
@@ -48,6 +49,7 @@ export function parseTherapistPaymentSettings(raw: unknown): TherapistPaymentSet
   return {
     bit: parseMethod(o.bit),
     paybox: parseMethod(o.paybox),
+    grow: parseMethod(o.grow),
   };
 }
 
@@ -80,13 +82,22 @@ export function isHttpsPaymentLink(url: string): boolean {
 }
 
 export function paymentMethodLabel(id: TherapistPaymentMethodId): string {
-  return id === "bit" ? "Bit" : "PayBox";
+  switch (id) {
+    case "bit":
+      return "Bit";
+    case "paybox":
+      return "PayBox";
+    case "grow":
+      return "Grow";
+  }
 }
 
 export function enabledPaymentMethods(settings: TherapistPaymentSettings): TherapistPaymentMethodId[] {
   return THERAPIST_PAYMENT_METHODS.filter((id) => {
     const m = settings[id];
-    return m.enabled && Boolean(m.phone.trim() || m.paymentLink.trim());
+    if (!m.enabled) return false;
+    if (id === "grow") return Boolean(m.paymentLink.trim());
+    return Boolean(m.phone.trim() || m.paymentLink.trim());
   });
 }
 
@@ -119,8 +130,7 @@ function appendAmountToLink(link: string, amountNis: number, description: string
 /**
  * Build a checkout handoff URL.
  * Prefer the therapist's in-app payment-request link; otherwise open Bit/PayBox
- * toward their phone. Full merchant APIs (Tranzila / Grow) can later replace
- * the constructed URLs without changing this return shape.
+ * toward their phone. Grow (or similar) is link-only.
  */
 export function buildPaymentHandoff(
   method: TherapistPaymentMethodId,
@@ -143,6 +153,7 @@ export function buildPaymentHandoff(
     };
   }
 
+  if (method === "grow") return null;
   if (!phoneNational) return null;
 
   const href =
@@ -163,4 +174,16 @@ export function buildPaymentHandoff(
 /** @internal documented for API extension — e164 is the Bit/PayBox account key */
 export function paymentPhoneE164(national: string | null): string | null {
   return national ? ilMobileToE164(national) : null;
+}
+
+export function configuredPaymentHandoffs(
+  settings: TherapistPaymentSettings,
+  opts: { amountNis: number; description: string },
+): PaymentHandoff[] {
+  const out: PaymentHandoff[] = [];
+  for (const id of enabledPaymentMethods(settings)) {
+    const handoff = buildPaymentHandoff(id, settings[id], opts);
+    if (handoff) out.push(handoff);
+  }
+  return out;
 }

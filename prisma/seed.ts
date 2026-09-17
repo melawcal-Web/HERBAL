@@ -327,6 +327,7 @@ async function main() {
       paymentSettings: {
         bit: { enabled: true, phone: "0521001001", paymentLink: "" },
         paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+        grow: { enabled: true, phone: "", paymentLink: "https://secure.meshulam.co.il/" },
       },
     },
     create: {
@@ -353,6 +354,7 @@ async function main() {
       paymentSettings: {
         bit: { enabled: true, phone: "0521001001", paymentLink: "" },
         paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+        grow: { enabled: true, phone: "", paymentLink: "https://secure.meshulam.co.il/" },
       },
     },
   });

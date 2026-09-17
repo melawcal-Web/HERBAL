@@ -1,12 +1,24 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import type { AcquisitionEventType, ContentKind, PriceCategory } from "@prisma/client";
+import { Prisma, type AcquisitionEventType, type ContentKind, type PriceCategory } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assertTherapist } from "@/lib/formula";
 import { centerCommissionForAmount, decimalFromNumber } from "@/lib/commerce";
+import { productTypeToContentKind } from "@/lib/content-kind";
+import { isDigitalProductType } from "@/lib/product-metadata";
+import { productAccessHref } from "@/lib/product-href";
+import { sendSiteTransactionalEmail } from "@/lib/site-mail";
+import { publicSiteOrigin } from "@/lib/site-origin";
+import {
+  enabledPaymentMethods,
+  normalizeIlMobile,
+  parseTherapistPaymentSettings,
+  type TherapistPaymentMethodId,
+} from "@/lib/therapist-payments";
 
 const logSchema = z.object({
   therapistId: z.string().min(1),
@@ -86,6 +98,149 @@ export async function requestManualAccess(input: {
   });
 
   revalidatePath("/dashboard/approvals");
+}
+
+const purchaseSchema = z.object({
+  productId: z.string().min(1),
+  buyerName: z.string().trim().min(2, "יש למלא שם").max(120),
+  buyerEmail: z.string().trim().email("אימייל לא תקין").max(191),
+  buyerPhone: z.string().trim().min(8).max(64),
+  paymentMethod: z.enum(["bit", "paybox", "grow"]),
+});
+
+function newAccessToken(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+export async function registerDigitalProductPurchase(input: {
+  productId: string;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  paymentMethod: TherapistPaymentMethodId;
+}): Promise<{ accessPath: string; emailSent: boolean }> {
+  const parsed = purchaseSchema.safeParse(input);
+  if (!parsed.success) {
+    const msg = parsed.error.flatten().fieldErrors;
+    throw new Error(Object.values(msg)[0]?.[0] ?? "נא למלא שם, אימייל וטלפון תקינים");
+  }
+
+  const phone = normalizeIlMobile(parsed.data.buyerPhone);
+  if (!phone) throw new Error("מספר טלפון חייב להיות נייד ישראלי תקין (05xxxxxxxx)");
+
+  const product = await prisma.product.findFirst({
+    where: { id: parsed.data.productId, active: true },
+    include: {
+      therapist: {
+        select: {
+          id: true,
+          therapistProfile: { select: { paymentSettings: true } },
+        },
+      },
+    },
+  });
+  if (!product?.therapistId) throw new Error("המוצר לא זמין לרכישה");
+  if (product.isWaitlist || !isDigitalProductType(product.type)) {
+    throw new Error("מוצר זה אינו נרכש כחומר דיגיטלי");
+  }
+
+  const settings = parseTherapistPaymentSettings(product.therapist?.therapistProfile?.paymentSettings);
+  const methods = enabledPaymentMethods(settings);
+  if (!methods.includes(parsed.data.paymentMethod)) {
+    throw new Error("אמצעי התשלום שנבחר אינו זמין למוצר זה");
+  }
+
+  const session = await auth();
+  let priceCategory: PriceCategory = "regular";
+  let amountNis = Number(product.price);
+  if (session?.user?.id) {
+    const buyer = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { subStatus: true },
+    });
+    if (buyer?.subStatus === "active") {
+      priceCategory = "member";
+      amountNis = Number(product.memberPrice);
+    }
+  }
+  if (amountNis <= 0) {
+    priceCategory = "free";
+    amountNis = 0;
+  }
+
+  const email = parsed.data.buyerEmail.trim().toLowerCase();
+  const name = parsed.data.buyerName.trim();
+  const contentKind = productTypeToContentKind(product.type);
+
+  const existing = await prisma.contentAcquisition.findFirst({
+    where: {
+      contentId: product.id,
+      contentKind,
+      eventType: "acquisition",
+      guestEmail: email,
+      accessToken: { not: null },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  let token = existing?.accessToken ?? null;
+  if (!token) {
+    token = newAccessToken();
+    const commission = centerCommissionForAmount(amountNis, priceCategory);
+    await prisma.contentAcquisition.create({
+      data: {
+        therapistId: product.therapistId,
+        userId: session?.user?.id ?? null,
+        guestEmail: email,
+        guestName: name,
+        guestPhone: phone,
+        contentKind,
+        contentId: product.id,
+        contentTitle: product.title,
+        eventType: "acquisition",
+        priceCategory,
+        amountNis: decimalFromNumber(amountNis),
+        centerCommissionNis: decimalFromNumber(commission),
+        accessToken: token,
+        metadata: {
+          paymentMethod: parsed.data.paymentMethod,
+          source: "digital_product_checkout",
+        } as Prisma.InputJsonValue,
+      },
+    });
+  } else if (existing && !existing.guestPhone) {
+    await prisma.contentAcquisition.update({
+      where: { id: existing.id },
+      data: { guestPhone: phone, guestName: name },
+    });
+  }
+
+  const accessPath = productAccessHref(token);
+  const accessUrl = `${publicSiteOrigin()}${accessPath}`;
+  const mail = await sendSiteTransactionalEmail({
+    to: email,
+    subject: `קישור גישה — ${product.title}`,
+    text: [
+      `שלום ${name},`,
+      "",
+      `תודה על הרכישה: ${product.title}`,
+      "",
+      "קישור הגישה לתוכן (שמרו אותו):",
+      accessUrl,
+      "",
+      `סכום: ₪${amountNis}`,
+      `אמצעי שנבחר: ${parsed.data.paymentMethod}`,
+      "",
+      "אם לא ביצעתם תשלום, התעלמו מהודעה זו ופנו למטפל/ת.",
+    ].join("\n"),
+  });
+
+  revalidatePath("/dashboard/finance");
+  revalidatePath("/dashboard/reports");
+  revalidatePath(accessPath);
+  revalidatePath(`/products/${product.id}`);
+
+  return { accessPath, emailSent: mail.ok };
 }
 
 async function requireTherapistId(): Promise<string> {

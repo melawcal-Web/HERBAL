@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { WaitlistProductCard, type WaitlistProductModel } from "@/components/products/WaitlistProductCard";
+import { DigitalProductCard } from "@/components/products/DigitalProductCard";
 import { ContentSearchFilter } from "@/components/search/ContentSearchFilter";
 import { filterProductRow, type ContentSearchParams } from "@/lib/content-search";
 import { contentVisibleForViewer } from "@/lib/content-audience";
@@ -9,6 +10,7 @@ import type { ContentFilterType } from "@/components/search/ContentSearchFilter"
 import { auth } from "@/auth";
 import { MemberAuthWall } from "@/components/auth/MemberAuthWall";
 import { memberCallbackPathFromSearch } from "@/lib/member-callback-path";
+import { isDigitalProductType, publicSafeProductMetadata } from "@/lib/product-metadata";
 
 export const metadata = {
   title: "קורסים וסדנאות",
@@ -55,7 +57,7 @@ export default async function MarketplacePage({ searchParams }: Props) {
       minParticipants: p.minParticipants,
       currentRegistered: p.currentRegistered,
       isWaitlist: p.isWaitlist,
-      metadata: p.metadata,
+      metadata: publicSafeProductMetadata(p.metadata),
       tags: p.tags,
       audience: p.audience,
       therapistId: p.therapistId,
@@ -71,9 +73,13 @@ export default async function MarketplacePage({ searchParams }: Props) {
       </Suspense>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
-        {models.map((p) => (
-          <WaitlistProductCard key={p.id} product={p} />
-        ))}
+        {models.map((p) =>
+          isDigitalProductType(p.type) && !p.isWaitlist ? (
+            <DigitalProductCard key={p.id} product={p} />
+          ) : (
+            <WaitlistProductCard key={p.id} product={p} />
+          ),
+        )}
       </div>
       {models.length === 0 && <p className="mt-6 text-slate-600">אין פריטים פעילים התואמים לסינון.</p>}
     </div>
