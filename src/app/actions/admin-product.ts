@@ -170,6 +170,7 @@ export async function createAdminProduct(
 
     await revalidateProductSurfaces([therapistId]);
     revalidatePath(`/admin/products/${created.id}`);
+    revalidatePath(`/products/${created.id}`);
 
     return { ok: true as const, message: "המוצר נוסף ומוצג בקורסים וסדנאות (ובדף המטפל אם שויך)." };
   } catch (e) {
@@ -238,6 +239,7 @@ export async function updateAdminProduct(
 
     await revalidateProductSurfaces([existing.therapistId, therapistId]);
     revalidatePath(`/admin/products/${existing.id}`);
+    revalidatePath(`/products/${existing.id}`);
 
     return { ok: true as const, message: "המוצר עודכן." };
   } catch (e) {
@@ -268,4 +270,5 @@ export async function setAdminProductActive(productId: string, active: boolean):
 
   await revalidateProductSurfaces([existing.therapistId]);
   revalidatePath(`/admin/products/${existing.id}`);
+  revalidatePath(`/products/${existing.id}`);
 }

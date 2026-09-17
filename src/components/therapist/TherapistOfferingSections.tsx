@@ -61,7 +61,7 @@ export function TherapistOfferingSections({
             >
               {items.map((p) =>
                 digital ? (
-                  <DigitalProductCard key={p.id} product={p} paymentSettings={paymentSettings} />
+                  <DigitalProductCard key={p.id} product={p} />
                 ) : (
                   <WaitlistProductCard key={p.id} product={p} paymentSettings={paymentSettings} />
                 ),

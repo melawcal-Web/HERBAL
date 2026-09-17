@@ -104,7 +104,10 @@ export default function SignInForm({
       <GoogleSignInButton callbackUrl={callbackUrl} />
 
       <p className="mt-8 text-center text-sm text-slate-600">
-        <Link href="/auth/register" className="font-semibold text-herbal-800 underline-offset-4 hover:underline">
+        <Link
+          href={`/auth/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          className="font-semibold text-herbal-800 underline-offset-4 hover:underline"
+        >
           אין לכם חשבון? הרשמה
         </Link>
       </p>

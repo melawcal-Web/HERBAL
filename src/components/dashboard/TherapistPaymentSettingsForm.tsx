@@ -9,7 +9,7 @@ import {
   type TherapistPaymentSettings,
 } from "@/lib/therapist-payments";
 
-const METHODS: { id: TherapistPaymentMethodId; title: string; hint: string }[] = [
+const METHODS: { id: TherapistPaymentMethodId; title: string; hint: string; linkOnly?: boolean }[] = [
   {
     id: "bit",
     title: "Bit",
@@ -19,6 +19,12 @@ const METHODS: { id: TherapistPaymentMethodId; title: string; hint: string }[] =
     id: "paybox",
     title: "PayBox",
     hint: "מספר הנייד ב-PayBox, ו/או קישור לבקשת תשלום / קבוצה שהעתקתם מהאפליקציה.",
+  },
+  {
+    id: "grow",
+    title: "Grow / סליקה",
+    hint: "קישור לדף תשלום ב-Grow, Meshulam או ספק אחר. מוצג ללקוח רק אם מולא.",
+    linkOnly: true,
   },
 ];
 
@@ -62,9 +68,8 @@ export function TherapistPaymentSettingsForm({ initial }: { initial?: TherapistP
       }}
     >
       <p className="text-sm leading-relaxed text-slate-600">
-        הלקוח בוחר אמצעי תשלום בעמוד המוצר ונפתח Bit או PayBox לתשלום אליכם. קישור בקשת תשלום מהאפליקציה
-        מומלץ כשיש סכום קבוע; מספר נייד מספיק להעברה ידנית. חיבור API מלא (סליקה) ניתן להוסיף מאוחר יותר בלי
-        לשנות את מבנה השדות.
+        הלקוח רואה בדף המוצר רק את האמצעים שמילאתם: העברה ב-Bit/PayBox לפי מספר נייד, ו/או קישור Grow
+        (או ספק סליקה אחר). קישור בקשת תשלום מהאפליקציה מומלץ כשיש סכום קבוע; מספר נייד מספיק להעברה ידנית.
       </p>
 
       {METHODS.map((m) => {
@@ -82,20 +87,24 @@ export function TherapistPaymentSettingsForm({ initial }: { initial?: TherapistP
               לאפשר תשלום ב-{m.title} בדף המוצר
             </label>
             <p className="mt-1 text-xs text-slate-500">{m.hint}</p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className={`mt-3 grid gap-3 ${m.linkOnly ? "" : "sm:grid-cols-2"}`}>
+              {m.linkOnly ? null : (
+                <div>
+                  <label className="text-xs font-semibold text-slate-700">מספר נייד</label>
+                  <input
+                    className={fieldClass()}
+                    dir="ltr"
+                    inputMode="tel"
+                    placeholder="0501234567"
+                    value={cfg.phone}
+                    onChange={(e) => patch(m.id, { phone: e.target.value })}
+                  />
+                </div>
+              )}
               <div>
-                <label className="text-xs font-semibold text-slate-700">מספר נייד</label>
-                <input
-                  className={fieldClass()}
-                  dir="ltr"
-                  inputMode="tel"
-                  placeholder="0501234567"
-                  value={cfg.phone}
-                  onChange={(e) => patch(m.id, { phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">קישור בקשת תשלום (אופציונלי)</label>
+                <label className="text-xs font-semibold text-slate-700">
+                  {m.linkOnly ? "קישור דף תשלום (https)" : "קישור בקשת תשלום (אופציונלי)"}
+                </label>
                 <input
                   className={fieldClass()}
                   dir="ltr"

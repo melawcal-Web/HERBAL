@@ -114,6 +114,20 @@ export function parseProductAudience(raw: unknown): ContentAudienceId[] {
   return raw.filter((x): x is ContentAudienceId => typeof x === "string" && allowed.has(x as ContentAudienceId));
 }
 
+/** הסתרת קישורים פרטיים (הורדה / ניגון) מתצוגה ציבורית לפני רכישה */
+export function publicSafeProductMetadata(
+  raw: Prisma.JsonValue | null | undefined,
+): Prisma.JsonValue | null {
+  const parsed = parseProductMetadata(raw);
+  const { downloadUrl: _d, playbackUrl: _p, videoId: _v, zoomUrl: _z, ...rest } = parsed;
+  void _d;
+  void _p;
+  void _v;
+  void _z;
+  if (Object.keys(rest).length === 0) return null;
+  return rest as Prisma.JsonValue;
+}
+
 /** מעדכן downloadUrl בלי למחוק שדות מטא-דאטה אחרים */
 export function withProductDownloadUrl(
   raw: Prisma.JsonValue | null | undefined,

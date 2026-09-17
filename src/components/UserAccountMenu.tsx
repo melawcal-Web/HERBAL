@@ -10,7 +10,7 @@ type MenuItem = { href: string; label: string };
 
 function buildMenuItems(session: Session): MenuItem[] {
   const role = session.user.role;
-  const items: MenuItem[] = [];
+  const items: MenuItem[] = [{ href: "/account/profile", label: "פרטי חשבון" }];
 
   if (assertTherapist(role) || assertAdmin(role)) {
     items.push({ href: "/dashboard/profile", label: "הפרופיל שלי" });

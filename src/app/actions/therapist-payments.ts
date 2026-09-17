@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { assertTherapist } from "@/lib/formula";
 import { writeAudit } from "@/lib/audit";
 import {
+  emptyTherapistPaymentSettings,
   isHttpsPaymentLink,
   normalizeIlMobile,
   parseTherapistPaymentSettings,
@@ -14,7 +15,10 @@ import {
   type TherapistPaymentSettings,
 } from "@/lib/therapist-payments";
 
-function cleanMethod(input: TherapistPaymentMethodConfig): TherapistPaymentMethodConfig {
+function cleanMethod(
+  input: TherapistPaymentMethodConfig,
+  opts?: { requireLink?: boolean },
+): TherapistPaymentMethodConfig {
   const phoneRaw = input.phone.trim();
   const linkRaw = input.paymentLink.trim();
   const phone = phoneRaw ? normalizeIlMobile(phoneRaw) : null;
@@ -24,7 +28,10 @@ function cleanMethod(input: TherapistPaymentMethodConfig): TherapistPaymentMetho
   if (linkRaw && !isHttpsPaymentLink(linkRaw)) {
     throw new Error("קישור תשלום חייב להתחיל ב-https");
   }
-  const phoneOut = phone ?? "";
+  if (opts?.requireLink && input.enabled && !linkRaw) {
+    throw new Error("קישור Grow / סליקה חייב להיות כתובת https");
+  }
+  const phoneOut = opts?.requireLink ? "" : (phone ?? "");
   const paymentLink = linkRaw;
   const enabled = Boolean(input.enabled) && Boolean(phoneOut || paymentLink);
   return { enabled, phone: phoneOut, paymentLink };
@@ -51,6 +58,7 @@ export async function updateTherapistPaymentSettings(input: TherapistPaymentSett
   const next: TherapistPaymentSettings = {
     bit: cleanMethod(input.bit),
     paybox: cleanMethod(input.paybox),
+    grow: cleanMethod(input.grow ?? emptyTherapistPaymentSettings().grow, { requireLink: true }),
   };
 
   const profile = await prisma.therapistProfile.update({
@@ -67,6 +75,7 @@ export async function updateTherapistPaymentSettings(input: TherapistPaymentSett
     metadata: {
       bitEnabled: next.bit.enabled,
       payboxEnabled: next.paybox.enabled,
+      growEnabled: next.grow.enabled,
     },
   });
 

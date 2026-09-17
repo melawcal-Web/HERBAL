@@ -3,6 +3,7 @@ import { contentKindLabel } from "@/lib/commerce";
 import { productTypeToContentKind } from "@/lib/content-kind";
 import { herbalArticleHref } from "@/lib/herbal-index-flag";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { publicProductHref } from "@/lib/product-href";
 
 export type ContentHubItem = {
   id: string;
@@ -58,7 +59,7 @@ export async function listContentHubItems(limit = 80): Promise<ContentHubItem[]>
       date: p.createdAt,
       therapistName: p.therapist?.name ?? "המרכז",
       therapistProfileId: profileId,
-      href: profileId ? `/therapists/${profileId}` : "/marketplace",
+      href: publicProductHref(p.id),
     });
   }
 

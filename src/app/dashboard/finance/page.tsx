@@ -28,7 +28,7 @@ export default async function TherapistFinancePage() {
       </p>
 
       <section className="mt-8 rounded-2xl border border-herbal-200/80 bg-white/90 p-5 shadow-sm sm:p-7">
-        <h2 className="font-display text-xl font-bold text-herbal-900">תשלום מלקוחות — Bit ו-PayBox</h2>
+        <h2 className="font-display text-xl font-bold text-herbal-900">תשלום מלקוחות — Bit, PayBox ו-Grow</h2>
         <div className="mt-4">
           <TherapistPaymentSettingsForm initial={paymentSettings} />
         </div>

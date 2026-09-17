@@ -3,6 +3,7 @@ import type { BlogStyleListItem } from "@/components/content/BlogStyleList";
 import { productTypeLabel } from "@/lib/product-metadata";
 import { herbalArticleHref } from "@/lib/herbal-index-flag";
 import { therapistPublicHref } from "@/lib/therapist-public";
+import { publicProductHref } from "@/lib/product-href";
 
 export const PORTFOLIO_KINDS = ["articles", "courses", "recipes", "lectures"] as const;
 export type PortfolioContentKind = (typeof PORTFOLIO_KINDS)[number];
@@ -94,7 +95,7 @@ export function productsToBlogList(
 ): BlogStyleListItem[] {
   return rows.map((p) => ({
     id: p.id,
-    href: "/marketplace",
+    href: publicProductHref(p.id),
     title: p.title,
     excerpt: p.description,
     imageUrl: p.imageUrl,

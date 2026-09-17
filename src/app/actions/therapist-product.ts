@@ -83,7 +83,10 @@ async function revalidateTherapistProductSurfaces(userId: string, productId?: st
   revalidatePath("/content-hub");
   revalidatePath("/dashboard/content");
   revalidatePath("/dashboard/products");
-  if (productId) revalidatePath(`/dashboard/products/${productId}`);
+  if (productId) {
+    revalidatePath(`/dashboard/products/${productId}`);
+    revalidatePath(`/products/${productId}`);
+  }
 }
 
 export type TherapistDigitalProductInput = {

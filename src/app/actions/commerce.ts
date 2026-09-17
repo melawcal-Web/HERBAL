@@ -158,7 +158,14 @@ export type ViewReportRow = {
 export async function getTherapistViewReport(): Promise<ViewReportRow[]> {
   const therapistId = await requireTherapistId();
   const rows = await prisma.contentAcquisition.findMany({
-    where: { therapistId },
+    where: {
+      therapistId,
+      OR: [
+        { eventType: "view" },
+        { eventType: "acquisition", purchaseStatus: "paid" },
+        { eventType: "acquisition", purchaseStatus: null },
+      ],
+    },
     orderBy: { createdAt: "desc" },
     take: 500,
     include: { user: { select: { name: true, email: true } } },
@@ -191,7 +198,11 @@ export async function getTherapistFinanceLedger(): Promise<{
 }> {
   const therapistId = await requireTherapistId();
   const rows = await prisma.contentAcquisition.findMany({
-    where: { therapistId, eventType: "acquisition" },
+    where: {
+      therapistId,
+      eventType: "acquisition",
+      OR: [{ purchaseStatus: "paid" }, { purchaseStatus: null }],
+    },
     orderBy: { createdAt: "desc" },
     take: 500,
     include: { user: { select: { name: true, email: true } } },

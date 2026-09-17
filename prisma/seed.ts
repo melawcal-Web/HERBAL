@@ -327,6 +327,7 @@ async function main() {
       paymentSettings: {
         bit: { enabled: true, phone: "0521001001", paymentLink: "" },
         paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+        grow: { enabled: true, phone: "", paymentLink: "https://secure.meshulam.co.il/" },
       },
     },
     create: {
@@ -353,6 +354,7 @@ async function main() {
       paymentSettings: {
         bit: { enabled: true, phone: "0521001001", paymentLink: "" },
         paybox: { enabled: true, phone: "0521001001", paymentLink: "" },
+        grow: { enabled: true, phone: "", paymentLink: "https://secure.meshulam.co.il/" },
       },
     },
   });
@@ -1111,12 +1113,13 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: demoClientEmail },
-    update: { role: "client", passwordHash: clHash, name: "מיכל אהרון" },
+    update: { role: "client", passwordHash: clHash, name: "מיכל אהרון", phone: "0501112233" },
     create: {
       email: demoClientEmail,
       name: "מיכל אהרון",
       passwordHash: clHash,
       role: "client",
+      phone: "0501112233",
     },
   });
 
