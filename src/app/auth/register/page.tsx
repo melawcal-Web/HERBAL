@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { isHerbalIndexEnabled } from "@/lib/herbal-index-flag";
 
 type Persona = "therapist" | "student" | "interested";
 
-export default function RegisterPage() {
+function safeCallback(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = safeCallback(searchParams.get("callbackUrl"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -34,8 +41,11 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
-    const q = data.pendingTherapistApproval ? "registered=1&pendingTherapist=1" : "registered=1";
-    router.push(`/auth/signin?${q}`);
+    const q = new URLSearchParams();
+    q.set("registered", "1");
+    if (data.pendingTherapistApproval) q.set("pendingTherapist", "1");
+    if (callbackUrl) q.set("callbackUrl", callbackUrl);
+    router.push(`/auth/signin?${q.toString()}`);
     router.refresh();
   }
 
@@ -47,7 +57,7 @@ export default function RegisterPage() {
         {isHerbalIndexEnabled() ? " ובאינדקס" : ""}.
       </p>
       <div className="mt-8 space-y-3">
-        <GoogleSignInButton callbackUrl="/dashboard/profile" />
+        <GoogleSignInButton callbackUrl={callbackUrl ?? "/account/profile"} />
       </div>
 
       <div className="my-8 flex items-center gap-3">
@@ -142,7 +152,10 @@ export default function RegisterPage() {
         </button>
       </form>
       <p className="mt-8 text-center text-sm text-slate-600">
-        <Link href="/auth/signin" className="font-semibold text-herbal-800 underline-offset-4 hover:underline">
+        <Link
+          href={callbackUrl ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin"}
+          className="font-semibold text-herbal-800 underline-offset-4 hover:underline"
+        >
           כבר רשומים? כניסה
         </Link>
         {" · "}
@@ -151,5 +164,13 @@ export default function RegisterPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 py-12 text-slate-600">טוענים…</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

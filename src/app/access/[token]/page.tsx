@@ -26,6 +26,9 @@ export default async function ProductAccessPage({ params }: Props) {
     where: { accessToken: decoded, eventType: "acquisition" },
   });
   if (!purchase) notFound();
+  if (purchase.purchaseStatus === "pending" || purchase.purchaseStatus === "unpaid") {
+    notFound();
+  }
 
   const product = await prisma.product.findFirst({
     where: { id: purchase.contentId },
@@ -42,7 +45,7 @@ export default async function ProductAccessPage({ params }: Props) {
       <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-herbal-700/85">גישה לתוכן שנרכש</p>
       <h1 className="mt-2 font-display text-3xl font-bold text-herbal-900">{purchase.contentTitle}</h1>
       <p className="mt-2 text-sm text-slate-600">
-        שלום {purchase.guestName ?? "אורח/ת"} — הרכישה נרשמה
+        שלום {purchase.guestName ?? "רוכש/ת"} — הרכישה אושרה
         {purchase.guestEmail ? ` עבור ${purchase.guestEmail}` : ""}.
       </p>
 

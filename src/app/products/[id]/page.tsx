@@ -19,6 +19,7 @@ import {
 import { storedImageSrc } from "@/lib/stored-image-url";
 import { therapistPublicHref } from "@/lib/therapist-public";
 import { configuredPaymentHandoffs, parseTherapistPaymentSettings } from "@/lib/therapist-payments";
+import { DIGITAL_UNPAID_STRIKE_LIMIT, isBuyerProfileComplete } from "@/lib/buyer-profile";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,7 @@ export default async function PublicProductDetailPage({ params }: Props) {
   const buyer = session?.user?.id
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { subStatus: true },
+        select: { subStatus: true, name: true, email: true, phone: true, digitalUnpaidStrikes: true },
       })
     : null;
   const amountNis = buyer?.subStatus === "active" ? Number(product.memberPrice) : Number(product.price);
@@ -169,8 +170,10 @@ export default async function PublicProductDetailPage({ params }: Props) {
                   productId={product.id}
                   amountNis={amountNis}
                   handoffs={handoffs}
-                  defaultName={session?.user?.name ?? ""}
-                  defaultEmail={session?.user?.email ?? ""}
+                  signedIn={Boolean(session?.user?.id)}
+                  profileComplete={isBuyerProfileComplete(buyer)}
+                  blocked={(buyer?.digitalUnpaidStrikes ?? 0) >= DIGITAL_UNPAID_STRIKE_LIMIT}
+                  callbackPath={`/products/${product.id}`}
                 />
               </div>
             </div>

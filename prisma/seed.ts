@@ -1113,12 +1113,13 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: demoClientEmail },
-    update: { role: "client", passwordHash: clHash, name: "מיכל אהרון" },
+    update: { role: "client", passwordHash: clHash, name: "מיכל אהרון", phone: "0501112233" },
     create: {
       email: demoClientEmail,
       name: "מיכל אהרון",
       passwordHash: clHash,
       role: "client",
+      phone: "0501112233",
     },
   });
 
