@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { parseProductMetadata } from "@/lib/product-metadata";
+import { isProductFileUrl, parseProductMetadata } from "@/lib/product-metadata";
 import { storedImageSrc } from "@/lib/stored-image-url";
 import { publicProductHref } from "@/lib/product-href";
-import { isProductFileUrl } from "@/lib/product-metadata";
+import { OptionalCoverImage } from "@/components/products/OptionalCoverImage";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +48,7 @@ export default async function ProductAccessPage({ params }: Props) {
 
       {cover ? (
         <div className="mt-6 overflow-hidden rounded-2xl border border-herbal-100 bg-herbal-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cover} alt="" className="aspect-[16/9] w-full object-cover" />
+          <OptionalCoverImage src={cover} className="aspect-[16/9] w-full object-cover" />
         </div>
       ) : null}
 

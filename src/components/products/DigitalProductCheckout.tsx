@@ -192,9 +192,9 @@ export function DigitalProductCheckout({
           <button
             type="submit"
             disabled={pending}
-            className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-herbal-600 text-sm font-semibold text-white hover:bg-herbal-500 disabled:opacity-60"
+            className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-herbal-600 px-3 text-center text-sm font-semibold leading-snug text-white hover:bg-herbal-500 disabled:opacity-60"
           >
-            {pending ? "שומרים…" : "אישור תשלום וקבלת גישה"}
+            {pending ? "שומרים…" : "אישור וקבלת גישה"}
           </button>
         </form>
       ) : (

@@ -4,6 +4,7 @@ import { findTherapistProfileForPublicRoute } from "@/lib/therapist-public";
 import { TherapistPublicPageView } from "@/components/therapist/TherapistPublicPageView";
 import { getContentViewer } from "@/lib/content-viewer";
 import type { WaitlistProductModel } from "@/components/products/WaitlistProductCard";
+import { publicSafeProductMetadata } from "@/lib/product-metadata";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -68,12 +69,12 @@ export default async function TherapistByIdPage({ params, searchParams }: Props)
     title: p.title,
     description: p.description,
     imageUrl: p.imageUrl,
-    price: p.price,
-    memberPrice: p.memberPrice,
+    price: Number(p.price),
+    memberPrice: Number(p.memberPrice),
     minParticipants: p.minParticipants,
     currentRegistered: p.currentRegistered,
     isWaitlist: p.isWaitlist,
-    metadata: p.metadata,
+    metadata: publicSafeProductMetadata(p.metadata),
     tags: p.tags,
     audience: p.audience,
     therapistId: p.therapistId,
